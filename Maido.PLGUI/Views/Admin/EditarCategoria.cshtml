@@ -1,0 +1,69 @@
+@using Maido.Application.BL.BC.DTOs
+@model ActualizarCategoriaDto
+
+@{
+    ViewData["Title"] = "Editar Categoría";
+}
+
+<div class="admin-layout">
+    @await Html.PartialAsync("_AdminSidebar")
+    <div class="admin-content">
+        <div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="d-flex align-items-center mb-4">
+                <a asp-action="Categorias" class="btn btn-outline-secondary me-3">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <h2 class="mb-0">Editar Categoría</h2>
+            </div>
+
+            <div class="card maido-card">
+                <div class="card-body p-4">
+                    <form asp-action="EditarCategoria" method="post">
+                        <input type="hidden" asp-for="IdCategoria" />
+
+                        <div class="mb-3">
+                            <label asp-for="Nombre" class="form-label text-muted small text-uppercase fw-bold">Nombre</label>
+                            <input asp-for="Nombre" class="form-control form-control-lg maido-input" required />
+                            <span asp-validation-for="Nombre" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Descripcion" class="form-label text-muted small text-uppercase fw-bold">Descripción</label>
+                            <textarea asp-for="Descripcion" class="form-control maido-input" rows="3"></textarea>
+                            <span asp-validation-for="Descripcion" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Icono" class="form-label text-muted small text-uppercase fw-bold">Icono (Clase Bootstrap)</label>
+                                <input asp-for="Icono" class="form-control maido-input" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Orden" class="form-label text-muted small text-uppercase fw-bold">Orden</label>
+                                <input asp-for="Orden" type="number" class="form-control maido-input" />
+                                <span asp-validation-for="Orden" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" asp-for="Activo">
+                            <label class="form-check-label ms-2 fw-medium" asp-for="Activo">Activo (Visible en el catálogo)</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-gold btn-lg w-100">
+                            <i class="bi bi-save me-2"></i>Actualizar Categoría
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

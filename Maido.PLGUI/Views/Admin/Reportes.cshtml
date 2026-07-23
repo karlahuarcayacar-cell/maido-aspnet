@@ -1,0 +1,128 @@
+@using Maido.Application.BL.BC.DTOs
+@model FiltroReporteDto
+
+@{
+    ViewData["Title"] = "Reportes - Admin Maido";
+    var ventas    = ViewBag.Ventas    as IEnumerable<VentaPorFechaDto> ?? [];
+    var platillos = ViewBag.Platillos as IEnumerable<PlatilloMasVendidoDto> ?? [];
+}
+
+<div class="admin-layout">
+    @await Html.PartialAsync("_AdminSidebar")
+
+    <div class="admin-content">
+        <h2 class="mb-1">Reportes</h2>
+        <p class="text-muted mb-4">Análisis de ventas y platillos más vendidos</p>
+
+        <!-- Filtros -->
+        <form asp-action="Reportes" method="get" class="checkout-card mb-5">
+            <div class="row g-3 align-items-end">
+                <div class="col-sm-4">
+                    <label class="form-label">Fecha Inicio</label>
+                    <input type="date" name="FechaInicio" class="form-control"
+                           value="@Model.FechaInicio.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-sm-4">
+                    <label class="form-label">Fecha Fin</label>
+                    <input type="date" name="FechaFin" class="form-control"
+                           value="@Model.FechaFin.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-sm-2">
+                    <label class="form-label">Top N</label>
+                    <input type="number" name="Top" class="form-control" value="@Model.Top" min="5" max="50" />
+                </div>
+                <div class="col-sm-2">
+                    <button type="submit" class="btn btn-accent w-100">
+                        <i class="bi bi-bar-chart me-1"></i>Generar
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div class="row g-5">
+            <!-- Ventas por fecha -->
+            <div class="col-lg-6">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-calendar-range text-accent me-2"></i>Ventas por Fecha
+                </h5>
+                <div class="maido-table">
+                    <table class="table mb-0" style="color:var(--text-primary);">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th class="text-center">Pedidos</th>
+                                <th class="text-end">Monto Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var v in ventas)
+                            {
+                                <tr style="border-color:var(--border-subtle);">
+                                    <td>@v.Fecha.ToString("dd/MM/yyyy")</td>
+                                    <td class="text-center">@v.TotalPedidos</td>
+                                    <td class="text-end text-gold fw-bold">S/ @v.MontoTotal.ToString("F2")</td>
+                                </tr>
+                            }
+                            @if (!ventas.Any())
+                            {
+                                <tr><td colspan="3" class="text-center text-muted py-4">Sin datos en el periodo.</td></tr>
+                            }
+                        </tbody>
+                        @if (ventas.Any())
+                        {
+                            <tfoot>
+                                <tr style="border-top:2px solid var(--accent-red);">
+                                    <td class="fw-bold">TOTAL</td>
+                                    <td class="text-center fw-bold">@ventas.Sum(v => v.TotalPedidos)</td>
+                                    <td class="text-end fw-bold text-accent">
+                                        S/ @ventas.Sum(v => v.MontoTotal).ToString("F2")
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        }
+                    </table>
+                </div>
+            </div>
+
+            <!-- Platillos más vendidos -->
+            <div class="col-lg-6">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-trophy text-gold me-2"></i>Platillos Más Vendidos
+                </h5>
+                <div class="maido-table">
+                    <table class="table mb-0" style="color:var(--text-primary);">
+                        <thead>
+                            <tr>
+                                <th>Platillo</th>
+                                <th class="text-center">Unidades</th>
+                                <th class="text-end">Ingresos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{int rank = 1;}
+                            @foreach (var p in platillos)
+                            {
+                                <tr style="border-color:var(--border-subtle);">
+                                    <td>
+                                        @if (rank == 1) { <span class="me-1">🥇</span> }
+                                        else if (rank == 2) { <span class="me-1">🥈</span> }
+                                        else if (rank == 3) { <span class="me-1">🥉</span> }
+                                        else { <span class="me-1 text-muted">@rank.</span> }
+                                        @p.NombrePlatillo
+                                    </td>
+                                    <td class="text-center fw-bold">@p.TotalUnidades</td>
+                                    <td class="text-end text-gold fw-bold">S/ @p.TotalIngresos.ToString("F2")</td>
+                                </tr>
+                                rank++;
+                            }
+                            @if (!platillos.Any())
+                            {
+                                <tr><td colspan="3" class="text-center text-muted py-4">Sin datos en el periodo.</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

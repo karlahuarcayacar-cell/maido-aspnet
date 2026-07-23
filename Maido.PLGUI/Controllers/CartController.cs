@@ -1,0 +1,210 @@
+using Maido.Application.BL.BC.DTOs;
+using Maido.Application.BL.BC.Services;
+using Maido.PLGUI.Helpers;
+using Maido.PLGUI.Models;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Maido.PLGUI.Controllers;
+
+/// <summary>
+/// Controlador del carrito de compras y proceso de checkout.
+/// </summary>
+public class CartController : Controller
+{
+    private readonly IPlatilloService _platilloService;
+    private readonly IPedidoService   _pedidoService;
+
+    public CartController(IPlatilloService platilloService, IPedidoService pedidoService)
+    {
+        _platilloService = platilloService;
+        _pedidoService   = pedidoService;
+    }
+
+    // ─────────────────────────────────────────────────────
+    // AJAX: Agregar al carrito
+    // ─────────────────────────────────────────────────────
+    [HttpPost]
+    public async Task<IActionResult> AgregarItem([FromBody] AgregarCarritoRequest req)
+    {
+        var platillo = await _platilloService.ObtenerPorIdAsync(req.IdPlatillo);
+        if (platillo is null)
+            return Json(new { success = false, message = "Platillo no encontrado." });
+
+        var item = new CarritoItem
+        {
+            IdPlatillo = platillo.IdPlatillo,
+            Nombre     = platillo.Nombre,
+            Precio     = platillo.Precio,
+            Cantidad   = req.Cantidad > 0 ? req.Cantidad : 1,
+            ImagenUrl  = platillo.ImagenUrl
+        };
+        CarritoHelper.AgregarItem(HttpContext.Session, item);
+
+        return Json(new
+        {
+            success      = true,
+            totalItems   = CarritoHelper.TotalItems(HttpContext.Session),
+            subtotal     = CarritoHelper.Subtotal(HttpContext.Session)
+        });
+    }
+
+    // ─────────────────────────────────────────────────────
+    // AJAX: Actualizar cantidad
+    // ─────────────────────────────────────────────────────
+    [HttpPost]
+    public IActionResult ActualizarCantidad([FromBody] ActualizarCantidadRequest req)
+    {
+        CarritoHelper.ActualizarCantidad(HttpContext.Session, req.IdPlatillo, req.Cantidad);
+        var carrito   = CarritoHelper.ObtenerCarrito(HttpContext.Session);
+        var subtotal  = CarritoHelper.Subtotal(HttpContext.Session);
+        var igv       = Math.Round(subtotal * 0.18m, 2);
+        var total     = subtotal + igv;
+
+        return Json(new
+        {
+            success    = true,
+            totalItems = CarritoHelper.TotalItems(HttpContext.Session),
+            subtotal,
+            igv,
+            total
+        });
+    }
+
+    // ─────────────────────────────────────────────────────
+    // AJAX: Eliminar item
+    // ─────────────────────────────────────────────────────
+    [HttpPost]
+    public IActionResult EliminarItem([FromBody] EliminarItemRequest req)
+    {
+        CarritoHelper.EliminarItem(HttpContext.Session, req.IdPlatillo);
+        return Json(new
+        {
+            success    = true,
+            totalItems = CarritoHelper.TotalItems(HttpContext.Session),
+            subtotal   = CarritoHelper.Subtotal(HttpContext.Session)
+        });
+    }
+
+    // ─────────────────────────────────────────────────────
+    // AJAX: Obtener carrito (para mini-carrito / sidebar)
+    // ─────────────────────────────────────────────────────
+    [HttpGet]
+    public IActionResult ObtenerCarrito()
+    {
+        var carrito  = CarritoHelper.ObtenerCarrito(HttpContext.Session);
+        var subtotal = carrito.Sum(c => c.Subtotal);
+        var igv      = Math.Round(subtotal * 0.18m, 2);
+        var total    = subtotal + igv;
+
+        return Json(new { items = carrito, subtotal, igv, total });
+    }
+
+    // ─────────────────────────────────────────────────────
+    // GET: Página Completa del Carrito (Rediseño)
+    // ─────────────────────────────────────────────────────
+    [HttpGet]
+    public async Task<IActionResult> Index()
+    {
+        var carrito = CarritoHelper.ObtenerCarrito(HttpContext.Session);
+        var subtotal = carrito.Sum(c => c.Subtotal);
+        var igv = Math.Round(subtotal * 0.18m, 2);
+        
+        // Sugerencias (2 destacados al azar)
+        var todos = await _platilloService.ListarPublicoAsync(null, null);
+        var sugerencias = todos.Where(p => p.Destacado && !carrito.Any(c => c.IdPlatillo == p.IdPlatillo)).Take(2);
+
+        ViewBag.Carrito = carrito;
+        ViewBag.Subtotal = subtotal;
+        ViewBag.IGV = igv;
+        ViewBag.Total = subtotal + igv;
+        ViewBag.Sugerencias = sugerencias;
+
+        return View();
+    }
+
+    // ─────────────────────────────────────────────────────
+    // GET: Checkout (requiere autenticación)
+    // ─────────────────────────────────────────────────────
+    [HttpGet]
+    public IActionResult Checkout()
+    {
+        if (!SesionHelper.EstaAutenticado(HttpContext.Session))
+            return RedirectToAction("Login", "Account", new { returnUrl = "/Cart/Checkout" });
+
+        var carrito = CarritoHelper.ObtenerCarrito(HttpContext.Session);
+        if (!carrito.Any())
+            return RedirectToAction("Index", "Home");
+
+        var subtotal = carrito.Sum(c => c.Subtotal);
+        var igv      = Math.Round(subtotal * 0.18m, 2);
+        var total    = subtotal + igv;
+
+        ViewBag.Carrito  = carrito;
+        ViewBag.Subtotal = subtotal;
+        ViewBag.IGV      = igv;
+        ViewBag.Total    = total;
+
+        return View(new CheckoutDto());
+    }
+
+    // ─────────────────────────────────────────────────────
+    // POST: Procesar Checkout
+    // ─────────────────────────────────────────────────────
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Checkout(CheckoutDto checkout)
+    {
+        if (!SesionHelper.EstaAutenticado(HttpContext.Session))
+            return RedirectToAction("Login", "Account");
+
+        var carrito = CarritoHelper.ObtenerCarrito(HttpContext.Session);
+        if (!carrito.Any())
+        {
+            TempData["Error"] = "El carrito está vacío.";
+            return RedirectToAction("Index", "Home");
+        }
+
+        var idUsuario = SesionHelper.ObtenerIdUsuario(HttpContext.Session)!.Value;
+        var items = carrito.Select(c => new DetallePedidoDto
+        {
+            IdPlatillo = c.IdPlatillo,
+            Nombre     = c.Nombre,
+            Precio     = c.Precio,
+            Cantidad   = c.Cantidad
+        }).ToList();
+
+        var idPedido = await _pedidoService.RegistrarPedidoAsync(idUsuario, items, checkout);
+
+        if (idPedido > 0)
+        {
+            CarritoHelper.LimpiarCarrito(HttpContext.Session);
+            return RedirectToAction("Confirmacion", new { id = idPedido });
+        }
+
+        TempData["Error"] = "Ocurrió un error al procesar el pedido. Intente nuevamente.";
+        return RedirectToAction("Checkout");
+    }
+
+    // ─────────────────────────────────────────────────────
+    // GET: Confirmación de pedido
+    // ─────────────────────────────────────────────────────
+    [HttpGet]
+    public async Task<IActionResult> Confirmacion(int id)
+    {
+        if (!SesionHelper.EstaAutenticado(HttpContext.Session))
+            return RedirectToAction("Login", "Account");
+
+        var pedido = await _pedidoService.ObtenerDetalleAsync(id);
+        if (pedido is null)
+            return RedirectToAction("Index", "Home");
+
+        return View(pedido);
+    }
+}
+
+// ─────────────────────────────────────────────────────
+// Request Models (para AJAX)
+// ─────────────────────────────────────────────────────
+public record AgregarCarritoRequest(int IdPlatillo, int Cantidad);
+public record ActualizarCantidadRequest(int IdPlatillo, int Cantidad);
+public record EliminarItemRequest(int IdPlatillo);

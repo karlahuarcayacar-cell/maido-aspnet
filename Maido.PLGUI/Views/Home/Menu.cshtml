@@ -1,0 +1,168 @@
+@using Maido.Application.BL.BC.DTOs
+@using Maido.PLGUI.Helpers
+@model IEnumerable<PlatilloDto>
+
+@{
+    ViewData["Title"] = "Menú - Maido";
+    ViewData["Description"] = "Explora el menú de cocina Nikkei de Maido. Entradas, Rolls, Platos de Fondo, Postres y Bebidas.";
+    var categorias = ViewBag.Categorias as IEnumerable<CategoriaDto> ?? [];
+    var idCatActual = ViewBag.IdCategoriaActual as int?;
+    var busqueda = ViewBag.Busqueda as string;
+}
+
+<!-- Hero Section -->
+<section class="section-hero">
+    <div class="container">
+        <p class="text-gold fw-semibold mb-1" style="letter-spacing:0.12em;">COCINA NIKKEI</p>
+        <h1>Descubre el Sabor <span class="text-accent">Maido</span></h1>
+        <div class="divider"></div>
+        <p class="lead">La fusión perfecta entre la tradición japonesa y la riqueza peruana</p>
+
+        <!-- Buscador -->
+        <form asp-controller="Home" asp-action="Menu" method="get" class="mt-3 mx-auto" style="max-width:420px">
+            <input type="hidden" name="idCategoria" value="@idCatActual" />
+            <div class="search-wrapper">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" name="busqueda" class="form-control form-control-lg"
+                       placeholder="Buscar platillo..." value="@busqueda" id="inputBusqueda" oninput="filtrarInstantaneo()" />
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Categorías -->
+<section class="py-3 sticky-top" style="top:66px; background:var(--bg-main); z-index:100; border-bottom:1px solid var(--border-subtle);">
+    <div class="container">
+        <div class="d-flex categoria-pills align-items-center">
+            <a href="javascript:void(0)" onclick="cambiarCategoria(null, this)"
+               class="btn btn-categoria @(idCatActual == null && string.IsNullOrEmpty(busqueda) ? "active" : "")">
+                <i class="bi bi-grid-fill me-1"></i>Todos
+            </a>
+            @foreach (var cat in categorias)
+            {
+                <a href="javascript:void(0)" onclick="cambiarCategoria(@cat.IdCategoria, this)"
+                   class="btn btn-categoria @(idCatActual == cat.IdCategoria ? "active" : "")">
+                    <i class="bi @cat.Icono me-1"></i>@cat.Nombre
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Grilla de Platillos -->
+<section class="py-5">
+    <div class="container" id="contenedor-grilla">
+        @await Html.PartialAsync("_PlatillosGrid", Model)
+    </div>
+</section>
+
+@section Scripts {
+    <style>
+        .skeleton-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            height: 380px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .skeleton-img {
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            animation: pulse 1.5s infinite;
+        }
+        .skeleton-text {
+            height: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+            border-radius: 4px;
+            animation: pulse 1.5s infinite;
+        }
+        @@keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+    </style>
+
+    <script>
+        let currentIdCategoria = @(idCatActual.HasValue ? idCatActual.Value.ToString() : "null");
+        let searchTimeout = null;
+
+        function cambiarCategoria(idCat, elemento) {
+            currentIdCategoria = idCat;
+            // Actualizar UI de active pills
+            document.querySelectorAll('.btn-categoria').forEach(btn => btn.classList.remove('active'));
+            elemento.classList.add('active');
+            
+            // Vaciar input de búsqueda al cambiar categoría
+            document.getElementById('inputBusqueda').value = '';
+            
+            ejecutarFiltro();
+        }
+
+        function filtrarInstantaneo() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                ejecutarFiltro();
+            }, 350); // 350ms debounce
+        }
+
+        function limpiarFiltros() {
+            document.getElementById('inputBusqueda').value = '';
+            currentIdCategoria = null;
+            document.querySelectorAll('.btn-categoria').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.btn-categoria').classList.add('active');
+            ejecutarFiltro();
+        }
+
+        function ejecutarFiltro() {
+            const busqueda = document.getElementById('inputBusqueda').value;
+            const contenedor = document.getElementById('contenedor-grilla');
+            
+            // Mostrar Skeleton Loader
+            let skeletonHtml = '<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-4">';
+            for(let i=0; i<8; i++) {
+                skeletonHtml += `
+                    <div class="col">
+                        <div class="skeleton-card">
+                            <div class="skeleton-img"></div>
+                            <div class="p-3">
+                                <div class="skeleton-text" style="width: 70%;"></div>
+                                <div class="skeleton-text" style="width: 40%; margin-bottom: 20px;"></div>
+                                <div class="skeleton-text" style="width: 100%;"></div>
+                                <div class="skeleton-text" style="width: 90%;"></div>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+            skeletonHtml += '</div>';
+            contenedor.innerHTML = skeletonHtml;
+
+            // Hacer fetch
+            let url = '/Home/FiltrarMenu?';
+            if (currentIdCategoria) url += 'idCategoria=' + currentIdCategoria + '&';
+            if (busqueda) url += 'busqueda=' + encodeURIComponent(busqueda);
+
+            // Cambiar la URL en el navegador sin recargar usando History API
+            window.history.replaceState({}, '', '/Home/Menu?' + (url.split('?')[1] || ''));
+
+            fetch(url)
+                .then(res => res.text())
+                .then(html => {
+                    contenedor.innerHTML = html;
+                })
+                .catch(err => {
+                    console.error('Error fetching menu:', err);
+                    contenedor.innerHTML = '<div class="alert alert-danger">Ocurrió un error cargando el menú.</div>';
+                });
+        }
+        
+        // Evitar submit del form
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            filtrarInstantaneo();
+        });
+    </script>
+}

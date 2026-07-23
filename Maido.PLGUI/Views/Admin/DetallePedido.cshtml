@@ -1,0 +1,131 @@
+@using Maido.Application.BL.BC.DTOs
+@model PedidoDetalleDto
+
+@{
+    ViewData["Title"] = $"Pedido #{Model.IdPedido} - Admin";
+    var estados = new[] { "Pendiente", "En Preparacion", "En Camino", "Entregado", "Cancelado" };
+}
+
+<div class="admin-layout">
+    @await Html.PartialAsync("_AdminSidebar")
+
+    <div class="admin-content">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <a asp-action="Pedidos" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="mb-0">Pedido <span class="text-gold">#@Model.IdPedido</span></h2>
+                <p class="text-muted small mb-0">@Model.FechaPedido.ToString("dddd, dd MMMM yyyy HH:mm")</p>
+            </div>
+            <span class="badge-estado badge-@Model.Estado.Replace(" ",".")">@Model.Estado</span>
+        </div>
+
+        <div class="row g-4">
+            <!-- Info del pedido -->
+            <div class="col-lg-8">
+                <div class="checkout-card mb-4">
+                    <h6 class="text-muted text-uppercase mb-3" style="letter-spacing:.06em;">Cliente</h6>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <p class="text-muted small mb-1">Nombre</p>
+                            <p class="fw-semibold">@Model.NombreCliente</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="text-muted small mb-1">Email</p>
+                            <p>@Model.Email</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="text-muted small mb-1">Teléfono</p>
+                            <p>@(Model.Telefono ?? "—")</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="text-muted small mb-1">Tipo de entrega</p>
+                            <p class="fw-semibold">@Model.TipoPedido</p>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.DireccionEntrega))
+                        {
+                            <div class="col-12">
+                                <p class="text-muted small mb-1">Dirección</p>
+                                <p>@Model.DireccionEntrega</p>
+                            </div>
+                        }
+                        <div class="col-sm-6">
+                            <p class="text-muted small mb-1">Método de pago</p>
+                            <p>@Model.MetodoPago</p>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Observaciones))
+                        {
+                            <div class="col-12">
+                                <p class="text-muted small mb-1">Observaciones</p>
+                                <p class="text-secondary">@Model.Observaciones</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Items -->
+                <div class="checkout-card">
+                    <h6 class="text-muted text-uppercase mb-3" style="letter-spacing:.06em;">Detalle del Pedido</h6>
+                    <table class="table mb-0" style="color:var(--text-primary);">
+                        <thead>
+                            <tr style="border-color:var(--border-subtle);">
+                                <th>Platillo</th>
+                                <th class="text-center">Cant.</th>
+                                <th class="text-end">P. Unit.</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr style="border-color:var(--border-subtle);">
+                                    <td>@item.Nombre</td>
+                                    <td class="text-center">@item.Cantidad</td>
+                                    <td class="text-end text-muted">S/ @item.Precio.ToString("F2")</td>
+                                    <td class="text-end fw-bold">S/ @item.Subtotal.ToString("F2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr style="border-color:var(--border-subtle);">
+                                <td colspan="3" class="text-end text-muted">Subtotal</td>
+                                <td class="text-end">S/ @Model.Subtotal.ToString("F2")</td>
+                            </tr>
+                            <tr style="border-color:var(--border-subtle);">
+                                <td colspan="3" class="text-end text-muted">IGV (18%)</td>
+                                <td class="text-end">S/ @Model.IGV.ToString("F2")</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold fs-5">Total</td>
+                                <td class="text-end fw-bold fs-5 text-accent">S/ @Model.Total.ToString("F2")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Panel de estado -->
+            <div class="col-lg-4">
+                <div class="checkout-card">
+                    <h6 class="text-muted text-uppercase mb-3" style="letter-spacing:.06em;">Cambiar Estado</h6>
+                    <form asp-action="ActualizarEstadoPedido" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="idPedido" value="@Model.IdPedido" />
+                        <div class="mb-3">
+                            <select name="estado" class="form-select" id="selectEstado">
+                                @foreach (var e in estados)
+                                {
+                                    <option value="@e" selected="@(Model.Estado == e)">@e</option>
+                                }
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-accent w-100">
+                            <i class="bi bi-arrow-repeat me-2"></i>Actualizar Estado
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

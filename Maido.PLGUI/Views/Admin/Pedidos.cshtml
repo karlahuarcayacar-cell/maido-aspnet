@@ -1,0 +1,116 @@
+@using Maido.Application.BL.BC.DTOs
+@model PedidosPaginadoDto
+
+@{
+    ViewData["Title"] = "Monitor de Pedidos - Admin";
+    var estadoActual = ViewBag.EstadoActual as string;
+    var fechaInicio  = ViewBag.FechaInicio as DateTime?;
+    var fechaFin     = ViewBag.FechaFin as DateTime?;
+
+    var estados = new[] { "Pendiente", "En Preparacion", "En Camino", "Entregado", "Cancelado" };
+}
+
+<div class="admin-layout">
+    @await Html.PartialAsync("_AdminSidebar")
+
+    <div class="admin-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-0">Monitor de Pedidos</h2>
+                <p class="text-muted small mb-0">@Model.TotalRegistros pedidos encontrados</p>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <form asp-action="Pedidos" method="get" class="row g-2 mb-4">
+            <div class="col-sm-3">
+                <select name="estado" class="form-select" onchange="this.form.submit()">
+                    <option value="">Todos los estados</option>
+                    @foreach (var e in estados)
+                    {
+                        <option value="@e" selected="@(estadoActual == e)">@e</option>
+                    }
+                </select>
+            </div>
+            <div class="col-sm-3">
+                <input type="date" name="fechaInicio" class="form-control"
+                       value="@fechaInicio?.ToString("yyyy-MM-dd")" placeholder="Desde" />
+            </div>
+            <div class="col-sm-3">
+                <input type="date" name="fechaFin" class="form-control"
+                       value="@fechaFin?.ToString("yyyy-MM-dd")" placeholder="Hasta" />
+            </div>
+            <div class="col-sm-3">
+                <button type="submit" class="btn btn-outline-accent w-100">
+                    <i class="bi bi-funnel me-1"></i>Filtrar
+                </button>
+            </div>
+        </form>
+
+        <!-- Tabla -->
+        <div class="maido-table">
+            <table class="table table-hover mb-0" style="color:var(--text-primary);">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Pago</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Items)
+                    {
+                        <tr>
+                            <td class="fw-bold text-gold">#@p.IdPedido</td>
+                            <td>@p.NombreCliente</td>
+                            <td class="text-muted small">@p.FechaPedido.ToString("dd/MM/yy HH:mm")</td>
+                            <td>@p.TipoPedido</td>
+                            <td class="text-muted">@p.MetodoPago</td>
+                            <td class="fw-bold">S/ @p.Total.ToString("F2")</td>
+                            <td><span class="badge-estado badge-@p.Estado.Replace(" ",".")">@p.Estado</span></td>
+                            <td>
+                                <a asp-action="DetallePedido" asp-route-id="@p.IdPedido"
+                                   class="btn btn-sm btn-outline-accent">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Items.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                No hay pedidos con los filtros seleccionados.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        @if (Model.TotalPaginas > 1)
+        {
+            <nav class="mt-4 d-flex justify-content-center">
+                <ul class="pagination">
+                    @for (int i = 1; i <= Model.TotalPaginas; i++)
+                    {
+                        <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                            <a class="page-link"
+                               asp-action="Pedidos"
+                               asp-route-pagina="@i"
+                               asp-route-estado="@estadoActual"
+                               asp-route-fechaInicio="@fechaInicio?.ToString("yyyy-MM-dd")"
+                               asp-route-fechaFin="@fechaFin?.ToString("yyyy-MM-dd")">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    </div>
+</div>

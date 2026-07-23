@@ -1,0 +1,31 @@
+<nav class="admin-sidebar d-none d-lg-flex flex-column">
+    <p class="sidebar-title">Principal</p>
+    <a asp-controller="Admin" asp-action="Dashboard"
+       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active" : "")">
+        <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+
+    <p class="sidebar-title mt-3">Mantenimiento</p>
+    <a asp-controller="Admin" asp-action="Platillos"
+       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString()?.StartsWith("Platillo") == true ? "active" : "")">
+        <i class="bi bi-egg-fried"></i> Platillos
+    </a>
+    <a asp-controller="Admin" asp-action="Categorias"
+       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString()?.StartsWith("Categor") == true ? "active" : "")">
+        <i class="bi bi-tags"></i> Categorías
+    </a>
+    <a asp-controller="Admin" asp-action="Usuarios"
+       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Usuarios" ? "active" : "")">
+        <i class="bi bi-people"></i> Usuarios
+    </a>
+
+    <p class="sidebar-title mt-3">Operaciones</p>
+    <a asp-controller="Admin" asp-action="Pedidos"
+       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString()?.StartsWith("Pedido") == true ? "active" : "")">
+        <i class="bi bi-receipt"></i> Pedidos
+    </a>
+    <a asp-controller="Admin" asp-action="Reportes"
+       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Reportes" ? "active" : "")">
+        <i class="bi bi-bar-chart-line"></i> Reportes
+    </a>
+</nav>

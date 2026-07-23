@@ -1,0 +1,97 @@
+@using Maido.Application.BL.BC.DTOs
+@model PedidoDetalleDto
+
+@{
+    ViewData["Title"] = "Confirmación de Pedido - Maido";
+}
+
+<div class="container py-5">
+    <div class="confirmation-card">
+
+        <!-- Ícono de confirmación animado -->
+        <div class="confirmation-icon mb-3">✅</div>
+
+        <h1 class="fw-bold mb-1">¡Pedido Confirmado!</h1>
+        <p class="text-muted mb-4">Tu pedido <strong class="text-gold">#@Model.IdPedido</strong> ha sido registrado exitosamente.</p>
+
+        <!-- Resumen -->
+        <div class="resumen-checkout text-start mb-4">
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <p class="text-muted small mb-1">Cliente</p>
+                    <p class="fw-semibold mb-0">@Model.NombreCliente</p>
+                </div>
+                <div class="col-sm-6">
+                    <p class="text-muted small mb-1">Fecha y hora</p>
+                    <p class="fw-semibold mb-0">@Model.FechaPedido.ToString("dd/MM/yyyy HH:mm")</p>
+                </div>
+                <div class="col-sm-6">
+                    <p class="text-muted small mb-1">Tipo de entrega</p>
+                    <p class="fw-semibold mb-0">
+                        @if (Model.TipoPedido == "Delivery")
+                        {
+                            <span><i class="bi bi-bicycle me-1 text-accent"></i>Delivery</span>
+                        }
+                        else
+                        {
+                            <span><i class="bi bi-shop me-1 text-gold"></i>Recojo en local</span>
+                        }
+                    </p>
+                </div>
+                <div class="col-sm-6">
+                    <p class="text-muted small mb-1">Método de pago</p>
+                    <p class="fw-semibold mb-0">@Model.MetodoPago</p>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.DireccionEntrega))
+                {
+                    <div class="col-12">
+                        <p class="text-muted small mb-1">Dirección de entrega</p>
+                        <p class="fw-semibold mb-0">@Model.DireccionEntrega</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Detalle de items -->
+        <div class="text-start mb-4">
+            <h6 class="text-muted mb-3 text-uppercase" style="letter-spacing:0.06em;">Detalle del pedido</h6>
+            @foreach (var item in Model.Items)
+            {
+                <div class="d-flex justify-content-between py-2 border-bottom border-subtle">
+                    <span>@item.Nombre <span class="text-muted">× @item.Cantidad</span></span>
+                    <span class="text-gold fw-semibold">S/ @item.Subtotal.ToString("F2")</span>
+                </div>
+            }
+
+            <!-- Totales -->
+            <div class="mt-3">
+                <div class="d-flex justify-content-between text-muted mb-1">
+                    <span>Subtotal</span><span>S/ @Model.Subtotal.ToString("F2")</span>
+                </div>
+                <div class="d-flex justify-content-between text-muted mb-2">
+                    <span>IGV (18%)</span><span>S/ @Model.IGV.ToString("F2")</span>
+                </div>
+                <div class="d-flex justify-content-between fw-bold fs-5">
+                    <span>Total</span>
+                    <span class="text-accent">S/ @Model.Total.ToString("F2")</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estado actual -->
+        <div class="mb-4">
+            <span class="badge-estado badge-@Model.Estado.Replace(" ", ".")">@Model.Estado</span>
+        </div>
+
+        <!-- Botones -->
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a asp-controller="Cliente" asp-action="MisPedidos" class="btn btn-outline-accent">
+                <i class="bi bi-clock-history me-2"></i>Mis Pedidos
+            </a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-accent">
+                <i class="bi bi-grid-fill me-2"></i>Seguir Comprando
+            </a>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,130 @@
+@using Maido.Application.BL.BC.DTOs
+@model CheckoutDto
+
+@{
+    ViewData["Title"] = "Confirmar Pedido - Maido";
+    var carrito  = ViewBag.Carrito as List<Maido.PLGUI.Models.CarritoItem> ?? [];
+    var subtotal = (decimal)(ViewBag.Subtotal ?? 0m);
+    var igv      = (decimal)(ViewBag.IGV ?? 0m);
+    var total    = (decimal)(ViewBag.Total ?? 0m);
+}
+
+<div class="container py-5">
+    <h1 class="mb-1">Confirmar Pedido</h1>
+    <p class="text-muted mb-5">Revisa tus productos y completa los datos de entrega</p>
+
+    <div class="row g-4">
+        <!-- Formulario de entrega -->
+        <div class="col-lg-7">
+            <div class="checkout-card">
+                <h5 class="fw-bold mb-4"><i class="bi bi-truck me-2 text-accent"></i>Datos de entrega</h5>
+
+                <form asp-controller="Cart" asp-action="Checkout" method="post" id="formCheckout">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Pedido *</label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check flex-fill">
+                                <input class="form-check-input" type="radio" name="TipoPedido"
+                                       id="radioDelivery" value="Delivery" checked
+                                       onchange="toggleDireccion(this.value)" />
+                                <label class="form-check-label" for="radioDelivery">
+                                    <i class="bi bi-bicycle me-1 text-accent"></i>Delivery
+                                </label>
+                            </div>
+                            <div class="form-check flex-fill">
+                                <input class="form-check-input" type="radio" name="TipoPedido"
+                                       id="radioRecojo" value="Recojo"
+                                       onchange="toggleDireccion(this.value)" />
+                                <label class="form-check-label" for="radioRecojo">
+                                    <i class="bi bi-shop me-1 text-gold"></i>Recojo en local
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3" id="divDireccion">
+                        <label class="form-label">Dirección de entrega *</label>
+                        <input type="text" name="DireccionEntrega" class="form-control" id="inputDireccion"
+                               placeholder="Av. Ejemplo 123, Miraflores" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Teléfono de contacto *</label>
+                        <input type="tel" name="Telefono" class="form-control"
+                               placeholder="999 888 777" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Método de pago *</label>
+                        <select name="MetodoPago" class="form-select" required>
+                            <option value="Efectivo">💵 Efectivo</option>
+                            <option value="Tarjeta">💳 Tarjeta</option>
+                            <option value="Yape">📱 Yape</option>
+                            <option value="Plin">📱 Plin</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Observaciones <span class="text-muted">(opcional)</span></label>
+                        <textarea name="Observaciones" class="form-control" rows="2"
+                                  placeholder="Alergias, preferencias especiales..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-accent w-100 py-3 fs-5" id="btnFinalizar">
+                        <i class="bi bi-lock-fill me-2"></i>Finalizar Pedido — S/ @total.ToString("F2")
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Resumen del carrito -->
+        <div class="col-lg-5">
+            <div class="resumen-checkout h-100">
+                <h5 class="fw-bold mb-3"><i class="bi bi-bag me-2 text-gold"></i>Tu pedido</h5>
+
+                @foreach (var item in carrito)
+                {
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-subtle">
+                        <div>
+                            <span class="fw-semibold">@item.Nombre</span>
+                            <span class="text-muted ms-2">×@item.Cantidad</span>
+                        </div>
+                        <span class="text-gold fw-bold">S/ @item.Subtotal.ToString("F2")</span>
+                    </div>
+                }
+
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between text-muted mb-1">
+                        <span>Subtotal</span><span>S/ @subtotal.ToString("F2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted mb-3">
+                        <span>IGV (18%)</span><span>S/ @igv.ToString("F2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between fw-bold fs-5">
+                        <span>Total</span>
+                        <span class="text-accent">S/ @total.ToString("F2")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function toggleDireccion(valor) {
+    const div   = document.getElementById('divDireccion');
+    const input = document.getElementById('inputDireccion');
+    if (valor === 'Delivery') {
+        div.style.display = 'block';
+        input.required = true;
+    } else {
+        div.style.display = 'none';
+        input.required = false;
+        input.value = '';
+    }
+}
+</script>
+}

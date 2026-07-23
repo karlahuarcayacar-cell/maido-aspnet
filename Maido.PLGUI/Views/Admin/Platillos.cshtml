@@ -1,0 +1,140 @@
+@using Maido.Application.BL.BC.DTOs
+@model PlatillosPaginadoDto
+
+@{
+    ViewData["Title"] = "Gestión de Platillos - Admin";
+    var categorias = ViewBag.Categorias as IEnumerable<CategoriaDto> ?? [];
+    var idCat = ViewBag.IdCategoriaActual as int?;
+    var busqueda = ViewBag.Busqueda as string;
+}
+
+<div class="admin-layout">
+    @await Html.PartialAsync("_AdminSidebar")
+
+    <div class="admin-content">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-0">Gestión de Platillos</h2>
+                <p class="text-muted small mb-0">@Model.TotalRegistros registros en total</p>
+            </div>
+            <a asp-action="CrearPlatillo" class="btn btn-accent">
+                <i class="bi bi-plus-lg me-2"></i>Nuevo Platillo
+            </a>
+        </div>
+
+        <!-- Filtros -->
+        <form asp-action="Platillos" method="get" class="row g-2 mb-4">
+            <div class="col-sm-4">
+                <select name="idCategoria" class="form-select" onchange="this.form.submit()">
+                    <option value="">Todas las categorías</option>
+                    @foreach (var cat in categorias)
+                    {
+                        <option value="@cat.IdCategoria" selected="@(idCat == cat.IdCategoria)">@cat.Nombre</option>
+                    }
+                </select>
+            </div>
+            <div class="col-sm-6">
+                <div class="search-wrapper">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" name="busqueda" class="form-control" placeholder="Buscar platillo..." value="@busqueda" />
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <button type="submit" class="btn btn-outline-accent w-100">Filtrar</button>
+            </div>
+        </form>
+
+        <!-- Tabla -->
+        <div class="maido-table">
+            <table class="table table-hover mb-0" style="color:var(--text-primary);">
+                <thead>
+                    <tr>
+                        <th>Platillo</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Disponible</th>
+                        <th>Destacado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    @if (!string.IsNullOrEmpty(p.ImagenUrl))
+                                    {
+                                        <img src="@p.ImagenUrl" alt="@p.Nombre" width="44" height="44"
+                                             class="rounded" style="object-fit:cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div style="width:44px;height:44px;background:var(--bg-elevated);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">🍽️</div>
+                                    }
+                                    <div>
+                                        <div class="fw-semibold">@p.Nombre</div>
+                                        <div class="text-muted" style="font-size:0.75rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                            @p.Descripcion
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="text-gold">@p.NombreCategoria</span></td>
+                            <td class="fw-bold">S/ @p.Precio.ToString("F2")</td>
+                            <td>
+                                @if (p.Disponible)
+                                {
+                                    <span class="badge bg-success bg-opacity-25 text-success">Activo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger bg-opacity-25 text-danger">Oculto</span>
+                                }
+                            </td>
+                            <td>
+                                @if (p.Destacado) { <i class="bi bi-star-fill text-warning"></i> }
+                                else { <i class="bi bi-star text-muted"></i> }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="EditarPlatillo" asp-route-id="@p.IdPlatillo"
+                                   class="btn btn-sm btn-outline-accent me-1">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="EliminarPlatillo" method="post" class="d-inline"
+                                      id="formElimP@(p.IdPlatillo)">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@p.IdPlatillo" />
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            onclick="confirmarEliminacion('formElimP@(p.IdPlatillo)')">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        @if (Model.TotalPaginas > 1)
+        {
+            <nav class="mt-4 d-flex justify-content-center">
+                <ul class="pagination">
+                    @for (int i = 1; i <= Model.TotalPaginas; i++)
+                    {
+                        <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                            <a class="page-link"
+                               asp-action="Platillos"
+                               asp-route-pagina="@i"
+                               asp-route-idCategoria="@idCat"
+                               asp-route-busqueda="@busqueda">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    </div>
+</div>

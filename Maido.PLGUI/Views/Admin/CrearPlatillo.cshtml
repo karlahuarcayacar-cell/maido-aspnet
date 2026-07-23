@@ -1,0 +1,110 @@
+@using Maido.Application.BL.BC.DTOs
+@model CrearPlatilloDto
+
+@{
+    ViewData["Title"] = "Nuevo Platillo - Admin";
+    var categorias = ViewBag.Categorias as IEnumerable<CategoriaDto> ?? [];
+}
+
+<div class="admin-layout">
+    @await Html.PartialAsync("_AdminSidebar")
+
+    <div class="admin-content">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <a asp-action="Platillos" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h2 class="mb-0">Nuevo Platillo</h2>
+        </div>
+
+        <div class="checkout-card" style="max-width:680px;">
+            <form asp-action="CrearPlatillo" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                <div class="row g-3">
+                    <!-- Nombre -->
+                    <div class="col-12">
+                        <label class="form-label">Nombre del Platillo *</label>
+                        <input type="text" name="Nombre" class="form-control" placeholder="Ej: Dragon Roll" required />
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="col-12">
+                        <label class="form-label">Descripción</label>
+                        <textarea name="Descripcion" class="form-control" rows="3"
+                                  placeholder="Describe los ingredientes y sabores del platillo..."></textarea>
+                    </div>
+
+                    <!-- Precio + Categoría -->
+                    <div class="col-sm-5">
+                        <label class="form-label">Precio (S/) *</label>
+                        <input type="number" name="Precio" class="form-control" step="0.01" min="0.01"
+                               placeholder="0.00" required />
+                    </div>
+
+                    <div class="col-sm-7">
+                        <label class="form-label">Categoría *</label>
+                        <select name="IdCategoria" class="form-select" required>
+                            <option value="">Seleccionar categoría</option>
+                            @foreach (var cat in categorias)
+                            {
+                                <option value="@cat.IdCategoria">@cat.Nombre</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Imagen -->
+                    <div class="col-12">
+                        <label class="form-label"><i class="bi bi-image me-1"></i>Imagen del Platillo</label>
+                        <input type="file" name="imagenFile" class="form-control" id="imagenInput"
+                               accept=".jpg,.jpeg,.png,.webp" onchange="previewImagen(this)" />
+                        <p class="form-text">Formatos: JPG, PNG, WebP. Se guardará en /uploads/platillos/</p>
+                        <img id="imgPreview" class="img-upload-preview mt-2 d-none" src="#" alt="Preview" />
+                    </div>
+
+                    <!-- Opciones -->
+                    <div class="col-sm-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="Disponible" id="chkDisponible"
+                                   value="true" checked />
+                            <label class="form-check-label" for="chkDisponible">Disponible en menú</label>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="Destacado" id="chkDestacado"
+                                   value="true" />
+                            <label class="form-check-label" for="chkDestacado">⭐ Platillo Destacado</label>
+                        </div>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="col-12 d-flex gap-3 mt-2">
+                        <button type="submit" class="btn btn-accent px-4">
+                            <i class="bi bi-floppy me-2"></i>Guardar Platillo
+                        </button>
+                        <a asp-action="Platillos" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function previewImagen(input) {
+    const preview = document.getElementById('imgPreview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            preview.src = e.target.result;
+            preview.classList.remove('d-none');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+}

@@ -1,0 +1,83 @@
+@{
+    ViewData["Title"] = "Crear Cuenta - Maido";
+}
+
+<div class="auth-wrapper">
+    <div class="auth-card" style="max-width:500px;">
+
+        <div class="auth-logo">鮨</div>
+        <h1 class="auth-title">Crear Cuenta</h1>
+        <p class="text-center text-muted mb-4 small">Únete a la experiencia Nikkei de Maido</p>
+
+        <form asp-controller="Account" asp-action="Register" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-6">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" name="Nombre" class="form-control" id="regNombre"
+                           placeholder="Juan" required />
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Apellido</label>
+                    <input type="text" name="Apellido" class="form-control" id="regApellido"
+                           placeholder="García" required />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><i class="bi bi-envelope me-1"></i>Correo electrónico</label>
+                <input type="email" name="Email" class="form-control" id="regEmail"
+                       placeholder="tu@email.com" autocomplete="email" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><i class="bi bi-phone me-1"></i>Teléfono <span class="text-muted">(opcional)</span></label>
+                <input type="tel" name="Telefono" class="form-control" id="regTelefono"
+                       placeholder="999 888 777" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><i class="bi bi-lock me-1"></i>Contraseña</label>
+                <div class="input-group">
+                    <input type="password" name="Password" class="form-control" id="regPass"
+                           placeholder="Mínimo 6 caracteres" required />
+                    <button class="btn" type="button" style="background:var(--bg-elevated);border:1.5px solid var(--border-subtle);color:var(--text-muted);"
+                            onclick="togglePassword('regPass', this)">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label"><i class="bi bi-lock-fill me-1"></i>Confirmar contraseña</label>
+                <input type="password" name="ConfirmarPassword" class="form-control" id="regPassConf"
+                       placeholder="Repetir contraseña" required />
+            </div>
+
+            <button type="submit" class="btn btn-accent w-100 py-2" id="btnRegistrar">
+                <i class="bi bi-person-plus me-2"></i>Crear Mi Cuenta
+            </button>
+        </form>
+
+        <hr class="my-4" style="border-color:var(--border-subtle);">
+        <p class="text-center text-muted small">
+            ¿Ya tienes cuenta?
+            <a asp-controller="Account" asp-action="Login" class="text-gold fw-semibold">Inicia sesión</a>
+        </p>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function togglePassword(id, btn) {
+    const input = document.getElementById(id);
+    const isText = input.type === 'text';
+    input.type = isText ? 'password' : 'text';
+    btn.innerHTML = isText ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+}
+</script>
+}

@@ -1,0 +1,68 @@
+@using Maido.Application.BL.BC.DTOs
+@model IEnumerable<PlatilloDto>
+
+@if (Model != null && Model.Any())
+{
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-4 page-transition">
+        @foreach (var p in Model)
+        {
+            <div class="col">
+                <article class="maido-card h-100 d-flex flex-column" style="transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <!-- Imagen -->
+                    @if (!string.IsNullOrEmpty(p.ImagenUrl))
+                    {
+                        <img src="@p.ImagenUrl" alt="@p.Nombre" class="card-img-top" loading="lazy" />
+                    }
+                    else
+                    {
+                        <div class="img-placeholder">🍽️</div>
+                    }
+
+                    <div class="card-body d-flex flex-column flex-grow-1">
+                        <!-- Header: Nombre + badge destacado -->
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <h5 class="card-title mb-0 fs-6 fw-bold">@p.Nombre</h5>
+                            @if (p.Destacado)
+                            {
+                                <span class="badge-destacado ms-2 flex-shrink-0">⭐ Chef</span>
+                            }
+                        </div>
+
+                        <!-- Categoría -->
+                        <p class="text-muted small mb-2">@p.NombreCategoria</p>
+
+                        <!-- Descripción -->
+                        @if (!string.IsNullOrEmpty(p.Descripcion))
+                        {
+                            <p class="card-text text-secondary small flex-grow-1"
+                               style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                                @p.Descripcion
+                            </p>
+                        }
+
+                        <!-- Footer: precio + botón -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <span class="platillo-precio">S/ @p.Precio.ToString("F2")</span>
+                            <button class="btn btn-accent btn-sm px-3"
+                                    id="btnAgregar-@p.IdPlatillo"
+                                    onclick="agregarAlCarrito(@p.IdPlatillo, 1)">
+                                <i class="bi bi-plus-lg me-1"></i>Agregar
+                            </button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state page-transition">
+        <i class="bi bi-search"></i>
+        <h4 class="mb-2">Sin resultados</h4>
+        <p>No encontramos platillos para tu búsqueda.</p>
+        <button type="button" class="btn btn-outline-accent mt-2" onclick="limpiarFiltros()">
+            Ver todo el menú
+        </button>
+    </div>
+}

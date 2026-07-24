@@ -26,6 +26,11 @@ El script completo de la base de datos se encuentra en la raíz del proyecto: `m
 - Incluye Store Procedures para todo el CRUD y procesos transaccionales (registro de pedidos).
 - Incluye datos semilla (usuarios, categorías y 13 platillos con imágenes de Unsplash).
 
+## Notas de Arquitectura y Decisiones de Diseño
+- **Acceso a Datos Asíncrono:** Absolutamente todos los repositorios (en `Maido.Infrastructure`) emplean el paradigma asíncrono de C# (`Task` y `async`/`await`). Esto significa que los hilos del servidor (`Worker Threads`) no se bloquean esperando la respuesta de SQL Server, lo que permite escalar el sistema y soportar miles de usuarios concurrentes (fundamental en horarios de alta demanda de delivery).
+- **Gestión de Conexiones:** Se utiliza `DbConnectionFactory` (inyectado como Singleton) para instanciar las conexiones `SqlConnection` de manera optimizada. Los repositorios abren y cierran (vía bloques `using`) la conexión asíncronamente.
+  - *Nota Técnica:* Las clases heredadas `BDConexion` e `IBDConexion` (que abrían conexiones síncronas de manera inmediata) se mantienen en la carpeta `Persistence` como legado, pero han sido reemplazadas completamente por `DbConnectionFactory` en el contenedor de inyección de dependencias (`InfrastructureServiceExtensions.cs`) para favorecer el modelo asíncrono puro.
+
 ## Registro de Cambios (Changelog)
 
 ### [23-07-2026] - Finalización de Vistas de Administración

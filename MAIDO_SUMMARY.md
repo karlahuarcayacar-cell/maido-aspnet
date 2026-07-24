@@ -35,6 +35,7 @@ El script completo de la base de datos se encuentra en la raíz del proyecto: `m
 
 ### [24-07-2026] - Ajustes Visuales
 - **Home/Index (Stats):** Se ajustó el fondo de la sección de métricas ("15+ Años de excelencia") para que sea transparente, integrándose perfectamente con el fondo profundo oscuro del resto de la página.
+- **Home/Index (Hero Carousel):** Se reemplazó la imagen estática de fondo principal por un carrusel dinámico de 4 imágenes en alta resolución que cambia suavemente (Fade) cada 4 segundos, dándole mucha más vida a la página de inicio.
 
 ### [23-07-2026] - Rediseño de Landing Page
 - **Home/Index:** Se reemplazó la vista principal por una *Landing Page* cinematográfica a pantalla completa, con métricas clave, sección de *Delivery* e imágenes inmersivas según el diseño provisto por el usuario.

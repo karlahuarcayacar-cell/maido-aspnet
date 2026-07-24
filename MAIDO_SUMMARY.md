@@ -33,6 +33,9 @@ El script completo de la base de datos se encuentra en la raíz del proyecto: `m
 - **Estilos de Tablas:** Se implementó una corrección global en el archivo `maido.css` y las vistas Razor para forzar que el fondo de las tablas Bootstrap respete el modo oscuro (dark theme) del diseño.
 - **Detalle de Pedidos (Fix):** Se ajustó el mapeo JSON en la base de datos y la función de repositorio en C# para sincronizar las columnas al procesar o ver resúmenes de pedidos, solucionando los errores de `IndexOutOfRangeException` y `NULL insertions`.
 
+### [24-07-2026] - Ajustes Visuales
+- **Home/Index (Stats):** Se ajustó el fondo de la sección de métricas ("15+ Años de excelencia") para que sea transparente, integrándose perfectamente con el fondo profundo oscuro del resto de la página.
+
 ### [23-07-2026] - Rediseño de Landing Page
 - **Home/Index:** Se reemplazó la vista principal por una *Landing Page* cinematográfica a pantalla completa, con métricas clave, sección de *Delivery* e imágenes inmersivas según el diseño provisto por el usuario.
 - **Home/Menu:** La antigua cuadrícula del catálogo se migró a `/Home/Menu` para separar claramente la experiencia de introducción de la experiencia de compra (e-commerce). Se implementaron Transiciones de Página (Fade-In) y Búsqueda Instantánea con Skeleton Loaders sin recarga de página (AJAX).

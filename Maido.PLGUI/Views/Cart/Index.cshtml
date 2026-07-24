@@ -57,17 +57,7 @@
     .btn-qty:hover {
         color: var(--accent);
     }
-    .promo-input {
-        background: var(--bg-main);
-        border: 1px solid var(--border-subtle);
-        color: var(--text-main);
-        border-radius: var(--radius);
-    }
-    .promo-input:focus {
-        border-color: var(--accent);
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(217,56,30,0.2);
-    }
+
 </style>
 
 <div class="container page-transition" style="margin-top: 5rem; margin-bottom: 5rem;">
@@ -171,14 +161,6 @@
                     <div class="d-flex justify-content-between pt-2">
                         <span class="fs-5 fw-bold text-white display-font">Total</span>
                         <span class="text-gold display-font fs-4 fw-bold" id="resumen-total">S/ @total.ToString("F2")</span>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <label class="d-block text-muted text-uppercase fw-bold mb-2" style="font-size:0.75rem; letter-spacing:1px;">Código Promocional</label>
-                    <div class="position-relative">
-                        <input type="text" class="form-control py-2 promo-input" placeholder="Ingresa tu código" />
-                        <button class="btn btn-sm btn-secondary position-absolute end-0 top-0 mt-1 me-1">Aplicar</button>
                     </div>
                 </div>
 

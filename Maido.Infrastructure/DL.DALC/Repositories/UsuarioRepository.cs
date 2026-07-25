@@ -95,6 +95,9 @@ public class UsuarioRepository : IUsuarioRepository
             IdRol = reader.GetInt32(reader.GetOrdinal("IdRol"))
         };
 
+        if (ColumnExists(reader, "FechaRegistro") && !reader.IsDBNull(reader.GetOrdinal("FechaRegistro")))
+            usuario.FechaRegistro = reader.GetDateTime(reader.GetOrdinal("FechaRegistro"));
+
         if (ColumnExists(reader, "PasswordHash"))
             usuario.PasswordHash = reader.GetString(reader.GetOrdinal("PasswordHash"));
 

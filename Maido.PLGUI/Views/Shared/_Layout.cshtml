@@ -89,10 +89,12 @@
                 <!-- Auth -->
                 @if (Context.Session.GetInt32("Maido_IdUsuario") != null)
                 {
+                    var nombre = Context.Session.GetString("Maido_Nombre") ?? "U";
+                    var inicial = nombre.Substring(0, 1).ToUpper();
                     <div class="dropdown">
-                        <button class="btn btn-user dropdown-toggle" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle me-1"></i>
-                            @Context.Session.GetString("Maido_Nombre")
+                        <button class="btn btn-user dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+                            <span class="user-avatar">@inicial</span>
+                            @nombre
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark maido-dropdown">
                             <li>
@@ -108,9 +110,14 @@
                 }
                 else
                 {
-                    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-accent">
-                        <i class="bi bi-person me-1"></i>Ingresar
-                    </a>
+                    <div class="d-flex gap-2">
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-accent">
+                            <i class="bi bi-person me-1"></i>Ingresar
+                        </a>
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-accent">
+                            <i class="bi bi-person-plus me-1"></i>Registrarse
+                        </a>
+                    </div>
                 }
             </div>
         </div>

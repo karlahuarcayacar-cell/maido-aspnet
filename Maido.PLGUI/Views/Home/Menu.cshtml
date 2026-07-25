@@ -19,7 +19,7 @@
         <p class="lead">La fusión perfecta entre la tradición japonesa y la riqueza peruana</p>
 
         <!-- Buscador -->
-        <form asp-controller="Home" asp-action="Menu" method="get" class="mt-3 mx-auto" style="max-width:420px">
+        <form id="formBusqueda" asp-controller="Home" asp-action="Menu" method="get" class="mt-3 mx-auto" style="max-width:420px">
             <input type="hidden" name="idCategoria" value="@idCatActual" />
             <div class="search-wrapper">
                 <i class="bi bi-search search-icon"></i>
@@ -160,7 +160,7 @@
         }
         
         // Evitar submit del form
-        document.querySelector('form').addEventListener('submit', function(e) {
+        document.getElementById('formBusqueda').addEventListener('submit', function(e) {
             e.preventDefault();
             filtrarInstantaneo();
         });

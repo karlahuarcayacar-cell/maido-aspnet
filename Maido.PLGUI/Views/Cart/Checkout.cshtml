@@ -56,14 +56,38 @@
                                placeholder="999 888 777" required />
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Método de pago *</label>
-                        <select name="MetodoPago" class="form-select" required>
-                            <option value="Efectivo">💵 Efectivo</option>
-                            <option value="Tarjeta">💳 Tarjeta</option>
-                            <option value="Yape">📱 Yape</option>
-                            <option value="Plin">📱 Plin</option>
-                        </select>
+                    <div class="mb-4">
+                        <label class="form-label mb-3">Método de pago *</label>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <input type="radio" name="MetodoPago" value="Efectivo" id="payEfectivo" class="d-none payment-input" required checked>
+                                <label class="payment-method-card w-100 mb-0" for="payEfectivo">
+                                    <i class="bi bi-cash-stack payment-icon"></i>
+                                    <span class="payment-name">Efectivo</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="radio" name="MetodoPago" value="Tarjeta" id="payTarjeta" class="d-none payment-input">
+                                <label class="payment-method-card w-100 mb-0" for="payTarjeta">
+                                    <i class="bi bi-credit-card payment-icon"></i>
+                                    <span class="payment-name">Tarjeta</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="radio" name="MetodoPago" value="Yape" id="payYape" class="d-none payment-input">
+                                <label class="payment-method-card w-100 mb-0" for="payYape">
+                                    <i class="bi bi-phone payment-icon"></i>
+                                    <span class="payment-name">Yape</span>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="radio" name="MetodoPago" value="Plin" id="payPlin" class="d-none payment-input">
+                                <label class="payment-method-card w-100 mb-0" for="payPlin">
+                                    <i class="bi bi-phone-vibrate payment-icon"></i>
+                                    <span class="payment-name">Plin</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mb-4">

@@ -133,9 +133,9 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; color: var(--text-primary); }
     transition: all var(--transition);
 }
 .btn-outline-accent:hover {
-    background: var(--accent-red);
-    color: #fff;
-    box-shadow: var(--shadow-glow);
+    background: rgba(217, 56, 30, 0.15);
+    color: var(--accent-red);
+    box-shadow: 0 0 15px rgba(217, 56, 30, 0.2);
 }
 
 .btn-gold {
@@ -172,6 +172,21 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; color: var(--text-primary); }
     transition: all var(--transition);
 }
 .btn-user:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
+
+/* ─── USER AVATAR ───────────────────────────────────── */
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, var(--accent-red), #c42d16);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 8px rgba(217,56,30,0.4);
+}
 
 /* ─── CART BADGE ────────────────────────────────────── */
 .cart-badge {
@@ -491,6 +506,39 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; color: var(--text-primary); }
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
     padding: 1.5rem;
+}
+
+/* ─── PAYMENT METHOD CARDS ──────────────────────────── */
+.payment-method-card {
+    background: var(--bg-elevated);
+    border: 1.5px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.payment-method-card:hover {
+    border-color: rgba(224,169,109,0.5); /* gold subtle */
+}
+.payment-input:checked + .payment-method-card {
+    border-color: var(--accent-gold);
+    background: rgba(224,169,109,0.1);
+    box-shadow: 0 0 15px rgba(224,169,109,0.15);
+}
+.payment-icon {
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    transition: color var(--transition);
+}
+.payment-input:checked + .payment-method-card .payment-icon {
+    color: var(--accent-gold);
+}
+.payment-name {
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 /* ─── AUTH PAGES ─────────────────────────────────────── */

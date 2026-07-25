@@ -33,6 +33,14 @@ El script completo de la base de datos se encuentra en la raíz del proyecto: `m
 
 ## Registro de Cambios (Changelog)
 
+### [25-07-2026] - Mejoras UX y Corrección de Errores
+- **Gestión de Usuarios (Fix):** Se corrigió un error en el panel de administración donde la columna "Registro" mostraba la fecha `01/01/0001`. El problema se debía a que el repositorio de datos (`UsuarioRepository`) omitía extraer la columna `FechaRegistro` del `SqlDataReader` al mapear la entidad, dejando la fecha en su valor por defecto.
+- **Navegación (Fix):** Se corrigió un bug en `/Home/Menu` donde el formulario de búsqueda interceptaba el botón de "Cerrar Sesión", impidiendo que los usuarios pudieran salir de su cuenta. Se aplicó un ID específico al formulario en lugar de un selector genérico en JS.
+- **Navegación (Auth):** Se agregó un botón directo de "Registrarse" junto al botón de "Ingresar" para mejorar la experiencia de nuevos usuarios.
+- **Avatar Dinámico:** Se reemplazó el icono estático de usuario en el menú desplegable (Layout) por un círculo estilizado que extrae dinámicamente la inicial del usuario, con degradado "Nikkei Noir".
+- **Botones (UI):** Se actualizó el estado de `hover` del botón secundario (`.btn-outline-accent`) para que ya no tome un color sólido, diferenciándolo visualmente del botón primario (Registrarse/Acción Principal).
+- **Checkout (UI):** El selector `<select>` tradicional de "Método de Pago" fue rediseñado y reemplazado por un *Grid* moderno de tarjetas interactuables con efecto "Glow" dorado al ser seleccionadas, mejorando dramáticamente el Checkout.
+
 ### [23-07-2026] - Finalización de Vistas de Administración
 - **Vistas Faltantes:** Se crearon las vistas `Categorias`, `CrearCategoria`, `EditarCategoria` y `Usuarios` en el panel de Administración. 
 - **Estilos de Tablas:** Se implementó una corrección global en el archivo `maido.css` y las vistas Razor para forzar que el fondo de las tablas Bootstrap respete el modo oscuro (dark theme) del diseño.

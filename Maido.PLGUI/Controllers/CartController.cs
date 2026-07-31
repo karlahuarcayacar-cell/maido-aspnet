@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Maido.Application.BL.BC.DTOs;
 using Maido.Application.BL.BC.Services;
 using Maido.PLGUI.Helpers;
@@ -12,12 +13,12 @@ namespace Maido.PLGUI.Controllers;
 public class CartController : Controller
 {
     private readonly IPlatilloService _platilloService;
-    private readonly IPedidoService   _pedidoService;
+    private readonly IPedidoService _pedidoService;
 
     public CartController(IPlatilloService platilloService, IPedidoService pedidoService)
     {
         _platilloService = platilloService;
-        _pedidoService   = pedidoService;
+        _pedidoService = pedidoService;
     }
 
     // ─────────────────────────────────────────────────────
@@ -33,18 +34,18 @@ public class CartController : Controller
         var item = new CarritoItem
         {
             IdPlatillo = platillo.IdPlatillo,
-            Nombre     = platillo.Nombre,
-            Precio     = platillo.Precio,
-            Cantidad   = req.Cantidad > 0 ? req.Cantidad : 1,
-            ImagenUrl  = platillo.ImagenUrl
+            Nombre = platillo.Nombre,
+            Precio = platillo.Precio,
+            Cantidad = req.Cantidad > 0 ? req.Cantidad : 1,
+            ImagenUrl = platillo.ImagenUrl
         };
         CarritoHelper.AgregarItem(HttpContext.Session, item);
 
         return Json(new
         {
-            success      = true,
-            totalItems   = CarritoHelper.TotalItems(HttpContext.Session),
-            subtotal     = CarritoHelper.Subtotal(HttpContext.Session)
+            success = true,
+            totalItems = CarritoHelper.TotalItems(HttpContext.Session),
+            subtotal = CarritoHelper.Subtotal(HttpContext.Session)
         });
     }
 
@@ -55,14 +56,14 @@ public class CartController : Controller
     public IActionResult ActualizarCantidad([FromBody] ActualizarCantidadRequest req)
     {
         CarritoHelper.ActualizarCantidad(HttpContext.Session, req.IdPlatillo, req.Cantidad);
-        var carrito   = CarritoHelper.ObtenerCarrito(HttpContext.Session);
-        var subtotal  = CarritoHelper.Subtotal(HttpContext.Session);
-        var igv       = Math.Round(subtotal * 0.18m, 2);
-        var total     = subtotal + igv;
+        var carrito = CarritoHelper.ObtenerCarrito(HttpContext.Session);
+        var subtotal = CarritoHelper.Subtotal(HttpContext.Session);
+        var igv = Math.Round(subtotal * 0.18m, 2);
+        var total = subtotal + igv;
 
         return Json(new
         {
-            success    = true,
+            success = true,
             totalItems = CarritoHelper.TotalItems(HttpContext.Session),
             subtotal,
             igv,
@@ -79,9 +80,9 @@ public class CartController : Controller
         CarritoHelper.EliminarItem(HttpContext.Session, req.IdPlatillo);
         return Json(new
         {
-            success    = true,
+            success = true,
             totalItems = CarritoHelper.TotalItems(HttpContext.Session),
-            subtotal   = CarritoHelper.Subtotal(HttpContext.Session)
+            subtotal = CarritoHelper.Subtotal(HttpContext.Session)
         });
     }
 
@@ -91,10 +92,10 @@ public class CartController : Controller
     [HttpGet]
     public IActionResult ObtenerCarrito()
     {
-        var carrito  = CarritoHelper.ObtenerCarrito(HttpContext.Session);
+        var carrito = CarritoHelper.ObtenerCarrito(HttpContext.Session);
         var subtotal = carrito.Sum(c => c.Subtotal);
-        var igv      = Math.Round(subtotal * 0.18m, 2);
-        var total    = subtotal + igv;
+        var igv = Math.Round(subtotal * 0.18m, 2);
+        var total = subtotal + igv;
 
         return Json(new { items = carrito, subtotal, igv, total });
     }
@@ -108,7 +109,7 @@ public class CartController : Controller
         var carrito = CarritoHelper.ObtenerCarrito(HttpContext.Session);
         var subtotal = carrito.Sum(c => c.Subtotal);
         var igv = Math.Round(subtotal * 0.18m, 2);
-        
+
         // Sugerencias (2 destacados al azar)
         var todos = await _platilloService.ListarPublicoAsync(null, null);
         var sugerencias = todos.Where(p => p.Destacado && !carrito.Any(c => c.IdPlatillo == p.IdPlatillo)).Take(2);
@@ -136,13 +137,13 @@ public class CartController : Controller
             return RedirectToAction("Index", "Home");
 
         var subtotal = carrito.Sum(c => c.Subtotal);
-        var igv      = Math.Round(subtotal * 0.18m, 2);
-        var total    = subtotal + igv;
+        var igv = Math.Round(subtotal * 0.18m, 2);
+        var total = subtotal + igv;
 
-        ViewBag.Carrito  = carrito;
+        ViewBag.Carrito = carrito;
         ViewBag.Subtotal = subtotal;
-        ViewBag.IGV      = igv;
-        ViewBag.Total    = total;
+        ViewBag.IGV = igv;
+        ViewBag.Total = total;
 
         return View(new CheckoutDto());
     }
@@ -164,13 +165,43 @@ public class CartController : Controller
             return RedirectToAction("Index", "Home");
         }
 
+        // ── Validaciones manuales (sin tocar el DTO) ──────────────
+        if (string.IsNullOrWhiteSpace(checkout.Telefono))
+        {
+            ModelState.AddModelError("Telefono", "El teléfono es obligatorio.");
+        }
+        else if (!Regex.IsMatch(checkout.Telefono.Trim(), @"^9\d{8}$"))
+        {
+            ModelState.AddModelError("Telefono", "Ingresa un celular válido: 9 dígitos, solo números, empieza con 9.");
+        }
+
+        if (checkout.TipoPedido == "Delivery" && string.IsNullOrWhiteSpace(checkout.DireccionEntrega))
+        {
+            ModelState.AddModelError("DireccionEntrega", "La dirección de entrega es obligatoria para Delivery.");
+        }
+        // ────────────────────────────────────────────────────────
+
+        if (!ModelState.IsValid)
+        {
+            var subtotalError = carrito.Sum(c => c.Subtotal);
+            var igvError = Math.Round(subtotalError * 0.18m, 2);
+            var totalError = subtotalError + igvError;
+
+            ViewBag.Carrito = carrito;
+            ViewBag.Subtotal = subtotalError;
+            ViewBag.IGV = igvError;
+            ViewBag.Total = totalError;
+
+            return View(checkout);
+        }
+
         var idUsuario = SesionHelper.ObtenerIdUsuario(HttpContext.Session)!.Value;
         var items = carrito.Select(c => new DetallePedidoDto
         {
             IdPlatillo = c.IdPlatillo,
-            Nombre     = c.Nombre,
-            Precio     = c.Precio,
-            Cantidad   = c.Cantidad
+            Nombre = c.Nombre,
+            Precio = c.Precio,
+            Cantidad = c.Cantidad
         }).ToList();
 
         var idPedido = await _pedidoService.RegistrarPedidoAsync(idUsuario, items, checkout);

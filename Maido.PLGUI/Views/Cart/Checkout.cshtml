@@ -47,13 +47,16 @@
                     <div class="mb-3" id="divDireccion">
                         <label class="form-label">Dirección de entrega *</label>
                         <input type="text" name="DireccionEntrega" class="form-control" id="inputDireccion"
-                               placeholder="Av. Ejemplo 123, Miraflores" />
+                               placeholder="Av. Ejemplo 123, Miraflores" maxlength="300" />
+                        @Html.ValidationMessage("DireccionEntrega", new { @class = "text-danger small" })
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Teléfono de contacto *</label>
-                        <input type="tel" name="Telefono" class="form-control"
-                               placeholder="999 888 777" required />
+                        <input type="tel" name="Telefono" class="form-control" id="inputTelefono"
+                               placeholder="999888777" maxlength="9" inputmode="numeric"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9)" />
+                        @Html.ValidationMessage("Telefono", new { @class = "text-danger small" })
                     </div>
 
                     <div class="mb-4">

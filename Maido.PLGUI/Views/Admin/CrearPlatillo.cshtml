@@ -27,21 +27,23 @@
                     <!-- Nombre -->
                     <div class="col-12">
                         <label class="form-label">Nombre del Platillo *</label>
-                        <input type="text" name="Nombre" class="form-control" placeholder="Ej: Dragon Roll" required />
+                        <input type="text" name="Nombre" class="form-control" placeholder="Ej: Dragon Roll"
+                               value="@Model.Nombre" required />
                     </div>
 
                     <!-- Descripción -->
                     <div class="col-12">
-                        <label class="form-label">Descripción</label>
+                        <label class="form-label">Descripción *</label>
                         <textarea name="Descripcion" class="form-control" rows="3"
-                                  placeholder="Describe los ingredientes y sabores del platillo..."></textarea>
+                                  placeholder="Describe los ingredientes y sabores del platillo...">@Model.Descripcion</textarea>
+                        @Html.ValidationMessage("Descripcion", new { @class = "text-danger small" })
                     </div>
 
                     <!-- Precio + Categoría -->
                     <div class="col-sm-5">
                         <label class="form-label">Precio (S/) *</label>
                         <input type="number" name="Precio" class="form-control" step="0.01" min="0.01"
-                               placeholder="0.00" required />
+                               placeholder="0.00" value="@(Model.Precio > 0 ? Model.Precio.ToString() : "")" required />
                     </div>
 
                     <div class="col-sm-7">
@@ -50,7 +52,7 @@
                             <option value="">Seleccionar categoría</option>
                             @foreach (var cat in categorias)
                             {
-                                <option value="@cat.IdCategoria">@cat.Nombre</option>
+                                <option value="@cat.IdCategoria" selected="@(Model.IdCategoria == cat.IdCategoria)">@cat.Nombre</option>
                             }
                         </select>
                     </div>
@@ -68,14 +70,14 @@
                     <div class="col-sm-6">
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" name="Disponible" id="chkDisponible"
-                                   value="true" checked />
+                                   value="true" @(Model.Disponible ? "checked" : "") />
                             <label class="form-check-label" for="chkDisponible">Disponible en menú</label>
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" name="Destacado" id="chkDestacado"
-                                   value="true" />
+                                   value="true" @(Model.Destacado ? "checked" : "") />
                             <label class="form-check-label" for="chkDestacado">⭐ Platillo Destacado</label>
                         </div>
                     </div>

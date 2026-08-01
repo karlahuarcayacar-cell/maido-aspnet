@@ -90,6 +90,9 @@ public class AdminController : Controller
     {
         if (!EsAdmin()) return AccesoDenegado();
 
+        if (string.IsNullOrWhiteSpace(dto.Descripcion))
+            ModelState.AddModelError("Descripcion", "La descripción del platillo es obligatoria.");
+
         if (!ModelState.IsValid)
         {
             ViewBag.Categorias = await _categoriaService.ListarPublicasAsync();
@@ -132,6 +135,9 @@ public class AdminController : Controller
     public async Task<IActionResult> EditarPlatillo(ActualizarPlatilloDto dto, IFormFile? imagenFile)
     {
         if (!EsAdmin()) return AccesoDenegado();
+
+        if (string.IsNullOrWhiteSpace(dto.Descripcion))
+            ModelState.AddModelError("Descripcion", "La descripción del platillo es obligatoria.");
 
         if (!ModelState.IsValid)
         {

@@ -30,8 +30,9 @@
                     </div>
 
                     <div class="col-12">
-                        <label class="form-label">Descripción</label>
+                        <label class="form-label">Descripción *</label>
                         <textarea name="Descripcion" class="form-control" rows="3">@Model.Descripcion</textarea>
+                        @Html.ValidationMessage("Descripcion", new { @class = "text-danger small" })
                     </div>
 
                     <div class="col-sm-5">

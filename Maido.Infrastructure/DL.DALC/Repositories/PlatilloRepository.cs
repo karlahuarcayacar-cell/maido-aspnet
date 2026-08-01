@@ -139,16 +139,34 @@ public class PlatilloRepository : IPlatilloRepository
 
     private Platillo MapPlatillo(SqlDataReader reader)
     {
-        return new Platillo
+        var platillo = new Platillo
         {
             IdPlatillo = reader.GetInt32(reader.GetOrdinal("IdPlatillo")),
             Nombre = reader.GetString(reader.GetOrdinal("Nombre")),
-            Descripcion = reader.GetString(reader.GetOrdinal("Descripcion")),
+            Descripcion = reader.IsDBNull(reader.GetOrdinal("Descripcion")) ? null : reader.GetString(reader.GetOrdinal("Descripcion")),
             Precio = reader.GetDecimal(reader.GetOrdinal("Precio")),
             ImagenUrl = reader.IsDBNull(reader.GetOrdinal("ImagenUrl")) ? null : reader.GetString(reader.GetOrdinal("ImagenUrl")),
             IdCategoria = reader.GetInt32(reader.GetOrdinal("IdCategoria")),
             Disponible = reader.GetBoolean(reader.GetOrdinal("Disponible")),
             Destacado = reader.GetBoolean(reader.GetOrdinal("Destacado"))
         };
+
+        if (ColumnExists(reader, "NombreCategoria") && !reader.IsDBNull(reader.GetOrdinal("NombreCategoria")))
+            platillo.NombreCategoria = reader.GetString(reader.GetOrdinal("NombreCategoria"));
+
+        if (ColumnExists(reader, "FechaAlta") && !reader.IsDBNull(reader.GetOrdinal("FechaAlta")))
+            platillo.FechaAlta = reader.GetDateTime(reader.GetOrdinal("FechaAlta"));
+
+        return platillo;
+    }
+
+    private bool ColumnExists(SqlDataReader reader, string columnName)
+    {
+        for (int i = 0; i < reader.FieldCount; i++)
+        {
+            if (reader.GetName(i).Equals(columnName, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        return false;
     }
 }

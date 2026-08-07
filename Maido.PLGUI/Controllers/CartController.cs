@@ -104,7 +104,9 @@ public class CartController : Controller
 
         // Sugerencias (2 destacados al azar)
         var todos = await _platilloService.ListarPublicoAsync(null, null);
-        var sugerencias = todos.Where(p => p.Destacado && !carrito.Any(c => c.IdPlatillo == p.IdPlatillo)).Take(2);
+        var sugerencias = todos.Where(p => p.Destacado && !carrito.Any(c => c.IdPlatillo == p.IdPlatillo))
+                               .OrderBy(x => Guid.NewGuid())
+                               .Take(2);
 
         ViewBag.Carrito = carrito;
         ViewBag.Subtotal = subtotal;

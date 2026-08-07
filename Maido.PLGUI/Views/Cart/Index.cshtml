@@ -3,62 +3,11 @@
 @{
     ViewData["Title"] = "Tu Pedido - Maido";
     var carrito = ViewBag.Carrito as List<CarritoItem> ?? new List<CarritoItem>();
-    var subtotal = (decimal)ViewBag.Subtotal;
-    var igv = (decimal)ViewBag.IGV;
-    var total = (decimal)ViewBag.Total;
+    var subtotal = (decimal)(ViewBag.Subtotal ?? 0m);
+    var igv = (decimal)(ViewBag.IGV ?? 0m);
+    var total = (decimal)(ViewBag.Total ?? 0m);
     var sugerencias = ViewBag.Sugerencias as IEnumerable<PlatilloDto> ?? new List<PlatilloDto>();
 }
-
-<style>
-    .accent-line {
-        width: 60px;
-        height: 2px;
-        background: linear-gradient(90deg, var(--accent) 0%, var(--gold) 100%);
-    }
-    .glass-card {
-        background: rgba(30, 30, 36, 0.7);
-        backdrop-filter: blur(12px);
-        border: 1px solid var(--border-subtle);
-        border-radius: var(--radius-lg);
-    }
-    .nikkei-glow-red {
-        box-shadow: 0 6px 20px rgba(217, 56, 30, 0.4);
-    }
-    .item-img {
-        width: 120px;
-        height: 120px;
-        flex-shrink: 0;
-        border-radius: var(--radius);
-        overflow: hidden;
-        border: 1px solid var(--border-subtle);
-    }
-    .sug-img {
-        width: 64px;
-        height: 64px;
-        border-radius: 4px;
-        overflow: hidden;
-        border: 1px solid var(--border-subtle);
-    }
-    .qty-control-box {
-        display: flex;
-        align-items: center;
-        border: 1px solid var(--border-subtle);
-        border-radius: var(--radius);
-        background: var(--bg-card);
-        padding: 0 0.5rem;
-    }
-    .btn-qty {
-        background: transparent;
-        border: none;
-        color: var(--text-muted);
-        padding: 0.5rem;
-        transition: color 0.2s;
-    }
-    .btn-qty:hover {
-        color: var(--accent);
-    }
-
-</style>
 
 <div class="container page-transition" style="margin-top: 5rem; margin-bottom: 5rem;">
     <!-- Title Section -->
@@ -73,10 +22,11 @@
             <div class="d-flex flex-column gap-4" id="cart-items-container">
                 @if (!carrito.Any())
                 {
-                    <div class="glass-card p-5 text-center text-muted">
-                        <i class="bi bi-bag-x fs-1 mb-3 d-block"></i>
-                        <h5>Tu carrito está vacío</h5>
-                        <a href="/Home/Menu" class="btn btn-outline-accent mt-3">Explorar Menú</a>
+                    <div class="glass-card p-5 text-center text-muted" id="empty-cart-msg">
+                        <i class="bi bi-bag-x mb-4 d-block text-accent shadow-glow" style="font-size: 4rem;"></i>
+                        <h4 class="display-font text-white mb-3">Tu carrito está vacío</h4>
+                        <p class="mb-4">Parece que aún no has decidido qué probar. Descubre nuestros exquisitos platos y dale un gusto a tu paladar.</p>
+                        <a href="/Home/Menu" class="btn btn-accent px-4 py-2 fw-bold shadow-glow text-uppercase" style="letter-spacing: 1px;">Explorar Menú</a>
                     </div>
                 }
                 else
@@ -84,8 +34,8 @@
                     foreach (var item in carrito)
                     {
                         <div class="glass-card p-4 d-flex flex-column flex-md-row gap-4 align-items-center transition-all item-row" id="row-@item.IdPlatillo">
-                            <div class="item-img">
-                                <img src="@item.ImagenUrl" alt="@item.Nombre" class="w-100 h-100" style="object-fit: cover;" />
+                            <div class="item-img shadow">
+                                <img src="@item.ImagenUrl" alt="@item.Nombre" class="w-100 h-100 opacity-75" style="object-fit: cover;" />
                             </div>
                             <div class="flex-grow-1 text-center text-md-start">
                                 <h3 class="fs-5 text-white mb-1 fw-semibold display-font">@item.Nombre</h3>
@@ -93,18 +43,18 @@
                             </div>
                             <div class="d-flex align-items-center gap-3">
                                 <div class="qty-control-box">
-                                    <button class="btn-qty" onclick="actualizarQty(@item.IdPlatillo, @(item.Cantidad - 1))">
+                                    <button class="btn-qty btn-minus" onclick="actualizarQtyLocal(@item.IdPlatillo, @(item.Cantidad - 1), @item.Precio)" id="btn-minus-@item.IdPlatillo">
                                         <i class="bi bi-dash"></i>
                                     </button>
-                                    <span class="px-3 fw-bold display-font" id="qty-val-@item.IdPlatillo">@item.Cantidad</span>
-                                    <button class="btn-qty" onclick="actualizarQty(@item.IdPlatillo, @(item.Cantidad + 1))">
+                                    <span class="px-3 fw-bold display-font text-white" id="qty-val-@item.IdPlatillo">@item.Cantidad</span>
+                                    <button class="btn-qty btn-plus" onclick="actualizarQtyLocal(@item.IdPlatillo, @(item.Cantidad + 1), @item.Precio)">
                                         <i class="bi bi-plus"></i>
                                     </button>
                                 </div>
                             </div>
                             <div class="text-end" style="min-width: 100px;">
                                 <span class="d-block text-gold fw-bold display-font fs-5" id="subt-val-@item.IdPlatillo">S/ @item.Subtotal.ToString("F2")</span>
-                                <button class="btn btn-link text-muted hover-accent text-decoration-none p-0 mt-2 d-flex align-items-center gap-1 ms-auto" onclick="removerItem(@item.IdPlatillo)">
+                                <button class="btn btn-link text-muted hover-accent text-decoration-none p-0 mt-2 d-flex align-items-center gap-1 ms-auto" onclick="removerItemLocal(@item.IdPlatillo)">
                                     <i class="bi bi-trash3"></i> <span style="font-size: 0.75rem; letter-spacing:1px;" class="text-uppercase fw-bold">Quitar</span>
                                 </button>
                             </div>
@@ -116,7 +66,7 @@
             <!-- Suggestions Section -->
             @if (sugerencias.Any())
             {
-                <div class="mt-5 pt-4 border-top border-subtle">
+                <div class="mt-5 pt-4 border-top border-secondary">
                     <h2 class="fs-5 text-white mb-4 d-flex align-items-center gap-2 display-font">
                         <i class="bi bi-stars text-accent"></i>
                         También podría gustarte
@@ -125,15 +75,15 @@
                         @foreach (var sug in sugerencias)
                         {
                             <div class="col-md-6">
-                                <div class="glass-card p-3 d-flex gap-3 align-items-center">
-                                    <div class="sug-img">
-                                        <img src="@sug.ImagenUrl" alt="@sug.Nombre" class="w-100 h-100" style="object-fit:cover;" />
+                                <div class="glass-card p-3 d-flex gap-3 align-items-center suggestion-card">
+                                    <div class="sug-img shadow">
+                                        <img src="@sug.ImagenUrl" alt="@sug.Nombre" class="w-100 h-100 opacity-75" style="object-fit:cover;" />
                                     </div>
                                     <div class="flex-grow-1">
                                         <h4 class="mb-0 fs-6 text-white text-uppercase" style="font-size:0.85rem; letter-spacing:1px;">@sug.Nombre</h4>
                                         <span class="text-gold display-font fw-bold">S/ @sug.Precio.ToString("F2")</span>
                                     </div>
-                                    <button class="btn btn-outline-accent rounded-circle" style="width:40px; height:40px; padding:0;" onclick="agregarAlCarrito(@sug.IdPlatillo, 1)">
+                                    <button class="btn btn-outline-accent rounded-circle shadow-glow" style="width:40px; height:40px; padding:0;" onclick="agregarAlCarrito(@sug.IdPlatillo, 1)">
                                         <i class="bi bi-plus fs-5"></i>
                                     </button>
                                 </div>
@@ -149,7 +99,7 @@
             <div class="glass-card p-4 position-sticky" style="top: 100px; z-index: 1010;">
                 <h2 class="fs-4 text-white mb-4 display-font fw-bold">Resumen</h2>
                 
-                <div class="d-flex flex-column gap-3 mb-4 border-bottom border-subtle pb-4">
+                <div class="d-flex flex-column gap-3 mb-4 border-bottom border-secondary pb-4">
                     <div class="d-flex justify-content-between text-muted">
                         <span>Subtotal</span>
                         <span class="display-font fw-bold text-white" id="resumen-subtotal">S/ @subtotal.ToString("F2")</span>
@@ -160,11 +110,11 @@
                     </div>
                     <div class="d-flex justify-content-between pt-2">
                         <span class="fs-5 fw-bold text-white display-font">Total</span>
-                        <span class="text-gold display-font fs-4 fw-bold" id="resumen-total">S/ @total.ToString("F2")</span>
+                        <span class="text-accent display-font fs-4 fw-bold" id="resumen-total">S/ @total.ToString("F2")</span>
                     </div>
                 </div>
 
-                <a href="@(carrito.Any() ? "/Cart/Checkout" : "#")" class="btn btn-accent w-100 py-3 text-uppercase fw-bold nikkei-glow-red d-flex align-items-center justify-content-center gap-2 @(!carrito.Any() ? "disabled" : "")">
+                <a href="@(carrito.Any() ? "/Cart/Checkout" : "#")" id="btn-proceder-pago" class="btn btn-accent w-100 py-3 text-uppercase fw-bold nikkei-glow-red d-flex align-items-center justify-content-center gap-2 @(!carrito.Any() ? "disabled" : "")">
                     Proceder al Pago
                     <i class="bi bi-arrow-right"></i>
                 </a>
@@ -180,9 +130,25 @@
 
 @section Scripts {
     <script>
-        async function actualizarQty(idPlatillo, nuevaCantidad) {
+        // Update DOM function
+        function setDOMResumen(subtotal, igv, total) {
+            document.getElementById('resumen-subtotal').textContent = `S/ ${subtotal.toFixed(2)}`;
+            document.getElementById('resumen-igv').textContent = `S/ ${igv.toFixed(2)}`;
+            document.getElementById('resumen-total').textContent = `S/ ${total.toFixed(2)}`;
+
+            const btn = document.getElementById('btn-proceder-pago');
+            if (total <= 0) {
+                btn.classList.add('disabled');
+                btn.href = "#";
+            } else {
+                btn.classList.remove('disabled');
+                btn.href = "/Cart/Checkout";
+            }
+        }
+
+        async function actualizarQtyLocal(idPlatillo, nuevaCantidad, precio) {
             if (nuevaCantidad <= 0) {
-                removerItem(idPlatillo);
+                removerItemLocal(idPlatillo);
                 return;
             }
             
@@ -194,20 +160,51 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    // Update header badge
                     actualizarBadge(data.totalItems);
                     
-                    // Update item row
+                    // Update DOM element directly without reload
                     document.getElementById('qty-val-' + idPlatillo).textContent = nuevaCantidad;
-                    // Note: Since ActualizarCantidad doesn't return the item subtotal, we need to reload or calculate
-                    location.reload(); 
+                    
+                    // Style the minus button red if quantity is 1
+                    const btnMinus = document.getElementById('btn-minus-' + idPlatillo);
+                    if (btnMinus) {
+                        if (nuevaCantidad === 1) {
+                            btnMinus.style.color = 'var(--accent-red)';
+                        } else {
+                            btnMinus.style.color = '';
+                        }
+                    }
+
+                    // Update subtotal
+                    const itemSubtotal = nuevaCantidad * precio;
+                    document.getElementById('subt-val-' + idPlatillo).textContent = `S/ ${itemSubtotal.toFixed(2)}`;
+
+                    // Update global summary
+                    setDOMResumen(data.subtotal, data.igv, data.total);
+
+                    // Re-bind onclick functions with new quantity
+                    const controls = document.querySelector(`#row-${idPlatillo} .qty-control-box`);
+                    if(controls) {
+                        const minus = controls.querySelector('.btn-minus');
+                        const plus = controls.querySelector('.btn-plus');
+                        minus.setAttribute('onclick', `actualizarQtyLocal(${idPlatillo}, ${nuevaCantidad - 1}, ${precio})`);
+                        plus.setAttribute('onclick', `actualizarQtyLocal(${idPlatillo}, ${nuevaCantidad + 1}, ${precio})`);
+                    }
                 }
             } catch (e) {
                 console.error(e);
             }
         }
 
-        async function removerItem(idPlatillo) {
+        async function removerItemLocal(idPlatillo) {
+            const row = document.getElementById('row-' + idPlatillo);
+            if(row) {
+                // Fade out animation
+                row.style.opacity = '0';
+                row.style.transform = 'scale(0.95)';
+                row.style.transition = 'all 0.4s ease';
+            }
+
             try {
                 const res = await fetch('/Cart/EliminarItem', {
                     method: 'POST',
@@ -216,11 +213,39 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    location.reload(); 
+                    setTimeout(() => {
+                        if(row) row.remove();
+                        actualizarBadge(data.totalItems);
+                        setDOMResumen(data.subtotal || 0, data.igv || 0, data.total || 0);
+
+                        // Show empty state if cart is completely empty
+                        if(data.totalItems === 0) {
+                            document.getElementById('cart-items-container').innerHTML = `
+                                <div class="glass-card p-5 text-center text-muted fade-in" id="empty-cart-msg">
+                                    <i class="bi bi-bag-x mb-4 d-block text-accent shadow-glow" style="font-size: 4rem;"></i>
+                                    <h4 class="display-font text-white mb-3">Tu carrito está vacío</h4>
+                                    <p class="mb-4">Parece que aún no has decidido qué probar. Descubre nuestros exquisitos platos y dale un gusto a tu paladar.</p>
+                                    <a href="/Home/Menu" class="btn btn-accent px-4 py-2 fw-bold shadow-glow text-uppercase" style="letter-spacing: 1px;">Explorar Menú</a>
+                                </div>
+                            `;
+                        }
+                    }, 400); // Wait for fade out
                 }
             } catch (e) {
                 console.error(e);
             }
         }
+        
+        // Ensure color hint on load for items with quantity = 1
+        document.addEventListener("DOMContentLoaded", () => {
+            const qtys = document.querySelectorAll('[id^="qty-val-"]');
+            qtys.forEach(q => {
+                if (q.textContent.trim() === "1") {
+                    const id = q.id.replace('qty-val-', '');
+                    const btnMinus = document.getElementById('btn-minus-' + id);
+                    if(btnMinus) btnMinus.style.color = 'var(--accent-red)';
+                }
+            });
+        });
     </script>
 }

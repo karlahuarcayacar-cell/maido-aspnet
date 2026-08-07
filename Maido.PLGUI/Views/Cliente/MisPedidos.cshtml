@@ -3,75 +3,91 @@
 
 @{
     ViewData["Title"] = "Mis Pedidos - Maido";
+    var nombreUsuario = ViewBag.NombreUsuario as string ?? "Cliente";
 }
 
-<div class="container py-5">
-    <div class="d-flex align-items-center justify-content-between mb-4">
+<div class="container page-transition" style="margin-top: 5rem; margin-bottom: 5rem;">
+    <!-- Title Section -->
+    <header class="mb-5 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
         <div>
-            <h1 class="mb-0">Mis Pedidos</h1>
-            <p class="text-muted mb-0">Historial de tus pedidos en Maido</p>
+            <h1 class="display-font fs-1 text-white mb-2 fw-bold">Hola, <span class="text-accent">@nombreUsuario</span></h1>
+            <div class="accent-line mb-3" style="width: 60px; height: 3px; background: linear-gradient(90deg, var(--accent-red) 0%, var(--accent-gold) 100%);"></div>
+            <p class="text-secondary mb-0">Aquí está el historial de tus experiencias Nikkei.</p>
         </div>
-        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-accent">
-            <i class="bi bi-plus-lg me-2"></i>Nuevo Pedido
+        <a asp-controller="Home" asp-action="Menu" class="btn btn-outline-accent d-flex align-items-center gap-2 px-4 shadow-glow">
+            <i class="bi bi-plus-lg"></i>Nuevo Pedido
         </a>
-    </div>
+    </header>
 
     @if (Model != null && Model.Any())
     {
-        <div class="maido-table">
-            <table class="table table-dark table-hover mb-0" style="background-color: transparent;">
-                <thead>
-                    <tr>
-                        <th># Pedido</th>
-                        <th>Fecha</th>
-                        <th>Tipo</th>
-                        <th>Pago</th>
-                        <th>Total</th>
-                        <th>Estado</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var p in Model)
-                    {
-                        <tr>
-                            <td class="fw-bold text-gold">#@p.IdPedido</td>
-                            <td class="text-muted">@p.FechaPedido.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>
-                                @if (p.TipoPedido == "Delivery")
-                                {
-                                    <span><i class="bi bi-bicycle me-1 text-accent"></i>Delivery</span>
-                                }
-                                else
-                                {
-                                    <span><i class="bi bi-shop me-1 text-gold"></i>Recojo</span>
-                                }
-                            </td>
-                            <td class="text-muted">@p.MetodoPago</td>
-                            <td class="fw-bold text-accent">S/ @p.Total.ToString("F2")</td>
-                            <td>
-                                <span class="badge-estado badge-@p.Estado.Replace(" ", ".")">@p.Estado</span>
-                            </td>
-                            <td>
-                                <a asp-controller="Cart" asp-action="Confirmacion" asp-route-id="@p.IdPedido"
-                                   class="btn btn-sm btn-outline-accent">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="row g-4">
+            @foreach (var p in Model)
+            {
+                <!-- Badge Color Logic -->
+                string badgeColor = p.Estado.ToLower() switch
+                {
+                    "entregado" => "success",
+                    "pendiente" => "warning text-dark",
+                    "en camino" => "info text-dark",
+                    "cancelado" => "danger",
+                    _ => "secondary"
+                };
+                string iconDelivery = p.TipoPedido == "Delivery" ? "bi-bicycle text-accent" : "bi-shop text-gold";
+
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div class="glass-card p-4 h-100 d-flex flex-column position-relative overflow-hidden maido-card">
+                        <!-- Header Card -->
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <span class="badge bg-@badgeColor rounded-pill text-uppercase" style="letter-spacing: 0.5px; font-size: 0.7rem;">
+                                    @p.Estado
+                                </span>
+                                <h4 class="text-white mt-2 mb-0 display-font fw-bold">#@p.IdPedido</h4>
+                            </div>
+                            <span class="text-gold display-font fs-4 fw-bold">S/ @p.Total.ToString("F2")</span>
+                        </div>
+
+                        <!-- Details -->
+                        <div class="mt-2 mb-4 flex-grow-1">
+                            <ul class="list-unstyled mb-0 d-flex flex-column gap-2 text-muted small">
+                                <li class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-calendar-event opacity-75"></i>
+                                    @p.FechaPedido.ToString("dd MMM yyyy, HH:mm")
+                                </li>
+                                <li class="d-flex align-items-center gap-2">
+                                    <i class="bi @iconDelivery opacity-75"></i>
+                                    @p.TipoPedido
+                                </li>
+                                <li class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-credit-card opacity-75"></i>
+                                    Pagado con @p.MetodoPago
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Action Button -->
+                        <a asp-controller="Cart" asp-action="Confirmacion" asp-route-id="@p.IdPedido" 
+                           class="btn btn-outline-secondary w-100 text-uppercase fw-bold text-white" 
+                           style="letter-spacing: 1px; font-size: 0.85rem; border-color: rgba(255,255,255,0.1);">
+                            Ver Recibo <i class="bi bi-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            }
         </div>
     }
     else
     {
-        <div class="empty-state">
-            <i class="bi bi-receipt-cutoff"></i>
-            <h4>Aún no tienes pedidos</h4>
-            <p class="text-muted">Explora nuestro menú y haz tu primer pedido Nikkei.</p>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-accent mt-2">
-                <i class="bi bi-grid-fill me-2"></i>Ver Menú
+        <!-- Empty State -->
+        <div class="glass-card p-5 text-center my-5 fade-in">
+            <i class="bi bi-receipt-cutoff mb-4 d-block text-accent shadow-glow" style="font-size: 4rem;"></i>
+            <h3 class="display-font text-white mb-3 fw-bold">Aún no tienes pedidos</h3>
+            <p class="text-muted mb-4 mx-auto" style="max-width: 500px;">
+                Parece que tu historial está tan limpio como un plato recién lavado. Explora nuestro menú y haz tu primer pedido Nikkei Noir hoy mismo.
+            </p>
+            <a asp-controller="Home" asp-action="Menu" class="btn btn-accent px-5 py-3 fw-bold shadow-glow text-uppercase" style="letter-spacing: 1px;">
+                <i class="bi bi-grid-fill me-2"></i>Descubrir Menú
             </a>
         </div>
     }

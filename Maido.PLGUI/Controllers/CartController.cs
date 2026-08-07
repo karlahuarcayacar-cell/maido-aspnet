@@ -136,14 +136,13 @@ public class CartController : Controller
         ViewBag.Total = total;
 
        
-        var idUsuario = SesionHelper.ObtenerIdUsuario(HttpContext.Session)!.Value;
-        var usuarios = await _usuarioService.ListarAsync();
-        var usuario = usuarios.FirstOrDefault(u => u.IdUsuario == idUsuario);
+        var emailUsuario = HttpContext.Session.GetString("Maido_Email");
+        var perfil = emailUsuario != null ? await _usuarioService.ObtenerPerfilPorEmailAsync(emailUsuario) : null;
 
         var checkout = new CheckoutDto
         {
-            Telefono = usuario?.Telefono,
-            DireccionEntrega = usuario?.Direccion
+            Telefono = perfil?.Telefono,
+            DireccionEntrega = perfil?.Direccion
         };
 
         return View(checkout);

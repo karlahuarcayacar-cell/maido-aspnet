@@ -39,7 +39,7 @@
                         <td>
                             @if (u.IdRol == 1)
                             {
-                                <span class="badge bg-gold text-dark border border-gold"><i class="bi bi-shield-lock me-1"></i>Admin</span>
+                                <span class="badge bg-gold text-white border border-gold"><i class="bi bi-shield-lock me-1"></i>Admin</span>
                             }
                             else
                             {
@@ -60,18 +60,20 @@
                         <td class="text-end">
                             @if (u.IdRol != 1) @* No permitir cambiar estado de admins *@
                             {
-                                <form asp-action="ToggleUsuario" method="post" class="d-inline">
+                                <form asp-action="ToggleUsuario" method="post" class="d-inline" id="formToggle-@u.IdUsuario">
                                     <input type="hidden" name="idUsuario" value="@u.IdUsuario" />
                                     <input type="hidden" name="activo" value="@((!u.Activo).ToString().ToLower())" />
                                     @if (u.Activo)
                                     {
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Desactivar" onclick="return confirm('¿Desactivar este usuario?');">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Desactivar"
+                                                onclick="confirmarToggleUsuario('formToggle-@u.IdUsuario', '@u.NombreCompleto', false)">
                                             <i class="bi bi-person-x"></i>
                                         </button>
                                     }
                                     else
                                     {
-                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Activar" onclick="return confirm('¿Activar este usuario?');">
+                                        <button type="button" class="btn btn-sm btn-outline-success" title="Activar"
+                                                onclick="confirmarToggleUsuario('formToggle-@u.IdUsuario', '@u.NombreCompleto', true)">
                                             <i class="bi bi-person-check"></i>
                                         </button>
                                     }
@@ -90,3 +92,40 @@
 </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .swal2-popup.maido-swal-popup {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg, 12px);
+        }
+        .swal2-popup.maido-swal-popup .swal2-title,
+        .swal2-popup.maido-swal-popup .swal2-html-container {
+            color: var(--text-primary);
+        }
+    </style>
+    <script>
+        function confirmarToggleUsuario(formId, nombreUsuario, activando) {
+            Swal.fire({
+                title: activando ? '¿Activar usuario?' : '¿Desactivar usuario?',
+                html: activando
+                    ? `<strong>${nombreUsuario}</strong> recuperará el acceso al sistema.`
+                    : `<strong>${nombreUsuario}</strong> perderá el acceso al sistema.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: activando ? 'Sí, activar' : 'Sí, desactivar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: activando ? '#2E7D32' : '#dc3545',
+                cancelButtonColor: '#6c757d',
+                customClass: { popup: 'maido-swal-popup' }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
+    </script>
+}

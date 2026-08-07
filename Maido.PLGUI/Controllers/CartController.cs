@@ -9,21 +9,21 @@ namespace Maido.PLGUI.Controllers;
 
 /// <summary>
 /// Controlador del carrito de compras y proceso de checkout.
-/// </summary>
+
 public class CartController : Controller
 {
     private readonly IPlatilloService _platilloService;
     private readonly IPedidoService _pedidoService;
+    private readonly IUsuarioService _usuarioService;
 
-    public CartController(IPlatilloService platilloService, IPedidoService pedidoService)
+    public CartController(IPlatilloService platilloService, IPedidoService pedidoService, IUsuarioService usuarioService)
     {
         _platilloService = platilloService;
         _pedidoService = pedidoService;
+        _usuarioService = usuarioService;
     }
 
-    // ─────────────────────────────────────────────────────
-    // AJAX: Agregar al carrito
-    // ─────────────────────────────────────────────────────
+   
     [HttpPost]
     public async Task<IActionResult> AgregarItem([FromBody] AgregarCarritoRequest req)
     {
@@ -49,9 +49,7 @@ public class CartController : Controller
         });
     }
 
-    // ─────────────────────────────────────────────────────
-    // AJAX: Actualizar cantidad
-    // ─────────────────────────────────────────────────────
+    
     [HttpPost]
     public IActionResult ActualizarCantidad([FromBody] ActualizarCantidadRequest req)
     {
@@ -71,9 +69,7 @@ public class CartController : Controller
         });
     }
 
-    // ─────────────────────────────────────────────────────
-    // AJAX: Eliminar item
-    // ─────────────────────────────────────────────────────
+   
     [HttpPost]
     public IActionResult EliminarItem([FromBody] EliminarItemRequest req)
     {
@@ -86,9 +82,7 @@ public class CartController : Controller
         });
     }
 
-    // ─────────────────────────────────────────────────────
-    // AJAX: Obtener carrito (para mini-carrito / sidebar)
-    // ─────────────────────────────────────────────────────
+   
     [HttpGet]
     public IActionResult ObtenerCarrito()
     {
@@ -100,9 +94,7 @@ public class CartController : Controller
         return Json(new { items = carrito, subtotal, igv, total });
     }
 
-    // ─────────────────────────────────────────────────────
-    // GET: Página Completa del Carrito (Rediseño)
-    // ─────────────────────────────────────────────────────
+   
     [HttpGet]
     public async Task<IActionResult> Index()
     {
@@ -123,11 +115,9 @@ public class CartController : Controller
         return View();
     }
 
-    // ─────────────────────────────────────────────────────
-    // GET: Checkout (requiere autenticación)
-    // ─────────────────────────────────────────────────────
+ 
     [HttpGet]
-    public IActionResult Checkout()
+    public async Task<IActionResult> Checkout()
     {
         if (!SesionHelper.EstaAutenticado(HttpContext.Session))
             return RedirectToAction("Login", "Account", new { returnUrl = "/Cart/Checkout" });
@@ -145,12 +135,19 @@ public class CartController : Controller
         ViewBag.IGV = igv;
         ViewBag.Total = total;
 
-        return View(new CheckoutDto());
+       
+        var idUsuario = SesionHelper.ObtenerIdUsuario(HttpContext.Session)!.Value;
+        var usuarios = await _usuarioService.ListarAsync();
+        var usuario = usuarios.FirstOrDefault(u => u.IdUsuario == idUsuario);
+
+        var checkout = new CheckoutDto
+        {
+            Telefono = usuario?.Telefono
+        };
+
+        return View(checkout);
     }
 
-    // ─────────────────────────────────────────────────────
-    // POST: Procesar Checkout
-    // ─────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Checkout(CheckoutDto checkout)
@@ -165,7 +162,7 @@ public class CartController : Controller
             return RedirectToAction("Index", "Home");
         }
 
-        // ── Validaciones manuales (sin tocar el DTO) ──────────────
+       
         if (string.IsNullOrWhiteSpace(checkout.Telefono))
         {
             ModelState.AddModelError("Telefono", "El teléfono es obligatorio.");
@@ -179,10 +176,11 @@ public class CartController : Controller
         {
             ModelState.AddModelError("DireccionEntrega", "La dirección de entrega es obligatoria para Delivery.");
         }
-        // ────────────────────────────────────────────────────────
+       
 
         if (!ModelState.IsValid)
         {
+       
             var subtotalError = carrito.Sum(c => c.Subtotal);
             var igvError = Math.Round(subtotalError * 0.18m, 2);
             var totalError = subtotalError + igvError;
@@ -216,9 +214,7 @@ public class CartController : Controller
         return RedirectToAction("Checkout");
     }
 
-    // ─────────────────────────────────────────────────────
-    // GET: Confirmación de pedido
-    // ─────────────────────────────────────────────────────
+
     [HttpGet]
     public async Task<IActionResult> Confirmacion(int id)
     {
@@ -233,9 +229,7 @@ public class CartController : Controller
     }
 }
 
-// ─────────────────────────────────────────────────────
-// Request Models (para AJAX)
-// ─────────────────────────────────────────────────────
+
 public record AgregarCarritoRequest(int IdPlatillo, int Cantidad);
 public record ActualizarCantidadRequest(int IdPlatillo, int Cantidad);
 public record EliminarItemRequest(int IdPlatillo);

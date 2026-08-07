@@ -3,10 +3,11 @@
 
 @{
     ViewData["Title"] = "Confirmar Pedido - Maido";
-    var carrito  = ViewBag.Carrito as List<Maido.PLGUI.Models.CarritoItem> ?? [];
+    var carrito = ViewBag.Carrito as List<Maido.PLGUI.Models.CarritoItem> ?? [];
     var subtotal = (decimal)(ViewBag.Subtotal ?? 0m);
-    var igv      = (decimal)(ViewBag.IGV ?? 0m);
-    var total    = (decimal)(ViewBag.Total ?? 0m);
+    var igv = (decimal)(ViewBag.IGV ?? 0m);
+    var total = (decimal)(ViewBag.Total ?? 0m);
+    var esRecojo = Model.TipoPedido == "Recojo";
 }
 
 <div class="container py-5">
@@ -27,7 +28,7 @@
                         <div class="d-flex gap-3">
                             <div class="form-check flex-fill">
                                 <input class="form-check-input" type="radio" name="TipoPedido"
-                                       id="radioDelivery" value="Delivery" checked
+                                       id="radioDelivery" value="Delivery" @(esRecojo ? "" : "checked")
                                        onchange="toggleDireccion(this.value)" />
                                 <label class="form-check-label" for="radioDelivery">
                                     <i class="bi bi-bicycle me-1 text-accent"></i>Delivery
@@ -35,7 +36,7 @@
                             </div>
                             <div class="form-check flex-fill">
                                 <input class="form-check-input" type="radio" name="TipoPedido"
-                                       id="radioRecojo" value="Recojo"
+                                       id="radioRecojo" value="Recojo" @(esRecojo ? "checked" : "")
                                        onchange="toggleDireccion(this.value)" />
                                 <label class="form-check-label" for="radioRecojo">
                                     <i class="bi bi-shop me-1 text-gold"></i>Recojo en local
@@ -44,9 +45,10 @@
                         </div>
                     </div>
 
-                    <div class="mb-3" id="divDireccion">
+                    <div class="mb-3" id="divDireccion" style="@(esRecojo ? "display:none;" : "")">
                         <label class="form-label">Dirección de entrega *</label>
                         <input type="text" name="DireccionEntrega" class="form-control" id="inputDireccion"
+                               value="@Model.DireccionEntrega"
                                placeholder="Av. Ejemplo 123, Miraflores" maxlength="300" />
                         @Html.ValidationMessage("DireccionEntrega", new { @class = "text-danger small" })
                     </div>
@@ -54,6 +56,7 @@
                     <div class="mb-3">
                         <label class="form-label">Teléfono de contacto *</label>
                         <input type="tel" name="Telefono" class="form-control" id="inputTelefono"
+                               value="@Model.Telefono"
                                placeholder="999888777" maxlength="9" inputmode="numeric"
                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9)" />
                         @Html.ValidationMessage("Telefono", new { @class = "text-danger small" })
@@ -63,28 +66,32 @@
                         <label class="form-label mb-3">Método de pago *</label>
                         <div class="row g-3">
                             <div class="col-6">
-                                <input type="radio" name="MetodoPago" value="Efectivo" id="payEfectivo" class="d-none payment-input" required checked>
+                                <input type="radio" name="MetodoPago" value="Efectivo" id="payEfectivo" class="d-none payment-input" required
+                                @(string.IsNullOrEmpty(Model.MetodoPago) || Model.MetodoPago == "Efectivo" ? "checked" : "")>
                                 <label class="payment-method-card w-100 mb-0" for="payEfectivo">
                                     <i class="bi bi-cash-stack payment-icon"></i>
                                     <span class="payment-name">Efectivo</span>
                                 </label>
                             </div>
                             <div class="col-6">
-                                <input type="radio" name="MetodoPago" value="Tarjeta" id="payTarjeta" class="d-none payment-input">
+                                <input type="radio" name="MetodoPago" value="Tarjeta" id="payTarjeta" class="d-none payment-input"
+                                @(Model.MetodoPago == "Tarjeta" ? "checked" : "")>
                                 <label class="payment-method-card w-100 mb-0" for="payTarjeta">
                                     <i class="bi bi-credit-card payment-icon"></i>
                                     <span class="payment-name">Tarjeta</span>
                                 </label>
                             </div>
                             <div class="col-6">
-                                <input type="radio" name="MetodoPago" value="Yape" id="payYape" class="d-none payment-input">
+                                <input type="radio" name="MetodoPago" value="Yape" id="payYape" class="d-none payment-input"
+                                @(Model.MetodoPago == "Yape" ? "checked" : "")>
                                 <label class="payment-method-card w-100 mb-0" for="payYape">
                                     <i class="bi bi-phone payment-icon"></i>
                                     <span class="payment-name">Yape</span>
                                 </label>
                             </div>
                             <div class="col-6">
-                                <input type="radio" name="MetodoPago" value="Plin" id="payPlin" class="d-none payment-input">
+                                <input type="radio" name="MetodoPago" value="Plin" id="payPlin" class="d-none payment-input"
+                                @(Model.MetodoPago == "Plin" ? "checked" : "")>
                                 <label class="payment-method-card w-100 mb-0" for="payPlin">
                                     <i class="bi bi-phone-vibrate payment-icon"></i>
                                     <span class="payment-name">Plin</span>
@@ -96,7 +103,7 @@
                     <div class="mb-4">
                         <label class="form-label">Observaciones <span class="text-muted">(opcional)</span></label>
                         <textarea name="Observaciones" class="form-control" rows="2"
-                                  placeholder="Alergias, preferencias especiales..."></textarea>
+                                  placeholder="Alergias, preferencias especiales...">@Model.Observaciones</textarea>
                     </div>
 
                     <button type="submit" class="btn btn-accent w-100 py-3 fs-5" id="btnFinalizar">
@@ -140,18 +147,18 @@
 </div>
 
 @section Scripts {
-<script>
-function toggleDireccion(valor) {
-    const div   = document.getElementById('divDireccion');
-    const input = document.getElementById('inputDireccion');
-    if (valor === 'Delivery') {
-        div.style.display = 'block';
-        input.required = true;
-    } else {
-        div.style.display = 'none';
-        input.required = false;
-        input.value = '';
-    }
-}
-</script>
+    <script>
+        function toggleDireccion(valor) {
+            const div   = document.getElementById('divDireccion');
+            const input = document.getElementById('inputDireccion');
+            if (valor === 'Delivery') {
+                div.style.display = 'block';
+                input.required = true;
+            } else {
+                div.style.display = 'none';
+                input.required = false;
+                input.value = '';
+            }
+        }
+    </script>
 }

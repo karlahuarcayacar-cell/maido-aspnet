@@ -34,13 +34,11 @@
             <tbody>
                 @foreach (var c in Model)
                 {
+                    var icono = string.IsNullOrWhiteSpace(c.Icono) ? "bi-tag" : c.Icono;
                     <tr>
                         <td class="text-muted fw-bold">@c.Orden</td>
                         <td>
-                            @if (!string.IsNullOrEmpty(c.Icono))
-                            {
-                                <i class="bi @c.Icono fs-5 text-gold"></i>
-                            }
+                            <i class="bi @icono fs-5 text-gold"></i>
                         </td>
                         <td class="fw-bold">@c.Nombre</td>
                         <td class="text-muted">@(c.Descripcion?.Length > 50 ? c.Descripcion.Substring(0, 50) + "..." : c.Descripcion)</td>
@@ -56,11 +54,13 @@
                         </td>
                         <td class="text-end">
                             <div class="btn-group">
-                                <a asp-action="EditarCategoria" asp-route-id="@c.IdCategoria" class="btn btn-sm btn-outline-gold">
+                                <a asp-action="EditarCategoria" asp-route-id="@c.IdCategoria" class="btn btn-sm btn-outline-secondary">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form asp-action="EliminarCategoria" asp-route-id="@c.IdCategoria" method="post" class="d-inline ms-1" onsubmit="return confirm('¿Estás seguro de eliminar o desactivar esta categoría?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <form asp-action="EliminarCategoria" asp-route-id="@c.IdCategoria" method="post"
+                                      class="d-inline ms-1" id="formEliminar-@c.IdCategoria">
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            onclick="confirmarEliminarCategoria('formEliminar-@c.IdCategoria', '@c.Nombre')">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -80,3 +80,38 @@
 </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .swal2-popup.maido-swal-popup {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg, 12px);
+        }
+        .swal2-popup.maido-swal-popup .swal2-title,
+        .swal2-popup.maido-swal-popup .swal2-html-container {
+            color: var(--text-primary);
+        }
+    </style>
+    <script>
+        function confirmarEliminarCategoria(formId, nombreCategoria) {
+            Swal.fire({
+                title: '¿Eliminar categoría?',
+                html: `Se eliminará <strong>${nombreCategoria}</strong>. Esta acción no se puede deshacer.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                customClass: { popup: 'maido-swal-popup' }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
+    </script>
+}

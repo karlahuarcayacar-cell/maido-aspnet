@@ -27,6 +27,8 @@ public class HomeController : Controller
         var todos = await _platilloService.ListarPublicoAsync(null, null);
         var destacados = todos.Where(p => p.Destacado).Take(8);
         ViewBag.TotalCarrito = CarritoHelper.TotalItems(HttpContext.Session);
+        ViewBag.EsAdmin = SesionHelper.EstaAutenticado(HttpContext.Session)
+                          && SesionHelper.EsAdministrador(HttpContext.Session);
         return View(destacados);
     }
 
@@ -35,13 +37,15 @@ public class HomeController : Controller
     /// </summary>
     public async Task<IActionResult> Menu(int? idCategoria, string? busqueda)
     {
-        var platillos   = await _platilloService.ListarPublicoAsync(idCategoria, busqueda);
-        var categorias  = await _categoriaService.ListarPublicasAsync();
+        var platillos = await _platilloService.ListarPublicoAsync(idCategoria, busqueda);
+        var categorias = await _categoriaService.ListarPublicasAsync();
 
-        ViewBag.Categorias       = categorias;
+        ViewBag.Categorias = categorias;
         ViewBag.IdCategoriaActual = idCategoria;
-        ViewBag.Busqueda         = busqueda;
-        ViewBag.TotalCarrito     = CarritoHelper.TotalItems(HttpContext.Session);
+        ViewBag.Busqueda = busqueda;
+        ViewBag.TotalCarrito = CarritoHelper.TotalItems(HttpContext.Session);
+        ViewBag.EsAdmin = SesionHelper.EstaAutenticado(HttpContext.Session)
+                                    && SesionHelper.EsAdministrador(HttpContext.Session);
 
         return View(platillos);
     }
@@ -52,6 +56,8 @@ public class HomeController : Controller
     public async Task<IActionResult> FiltrarMenu(int? idCategoria, string? busqueda)
     {
         var platillos = await _platilloService.ListarPublicoAsync(idCategoria, busqueda);
+        ViewBag.EsAdmin = SesionHelper.EstaAutenticado(HttpContext.Session)
+                          && SesionHelper.EsAdministrador(HttpContext.Session);
         return PartialView("_PlatillosGrid", platillos);
     }
 

@@ -65,3 +65,14 @@ El script completo de la base de datos se encuentra en la raíz del proyecto: `m
 ### [23-07-2026] - Refinamiento de Base de Datos e Interfaz
 - **Monitor de Pedidos (Fix):** Se resolvió un error de `InvalidOperationException` al mapear correctamente la Tupla de pedidos hacia el modelo `PedidosPaginadoDto` en `AdminController`.
 - **Gestión de Usuarios (Fix):** Se corrigió un `IndexOutOfRangeException` al listar usuarios, haciendo condicional el mapeo del `PasswordHash` en el repositorio, ya que el reporte administrativo no incluye dicha columna de seguridad.
+
+### [06-08-2026] - Checkout, Panel Admin y Reportes en PDF
+
+| Módulo | Cambio |
+|---|---|
+| Checkout | Precarga el teléfono del usuario logueado (editable) y ya no se pierden los datos del formulario si falla la validación |
+| Menú | El botón "Agregar" se oculta cuando el usuario logueado es Administrador |
+| Dashboard | La columna "Cliente" ahora muestra el nombre completo en vez de "—" |
+| Categorías | Ícono de respaldo si no tiene uno asignado, confirmación de eliminar con SweetAlert2, botón "Editar" en gris, y se agregó `_ValidationScriptsPartial.cshtml` faltante |
+| Usuarios | Badge "Admin" con texto blanco (antes ilegible) y confirmaciones de activar/desactivar con SweetAlert2 |
+| Reportes | Nuevo botón "Generar" que descarga un PDF ejecutivo (QuestPDF) con indicadores, gráficos y tablas de detalle |

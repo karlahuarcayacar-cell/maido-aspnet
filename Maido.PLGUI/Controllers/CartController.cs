@@ -142,7 +142,8 @@ public class CartController : Controller
 
         var checkout = new CheckoutDto
         {
-            Telefono = usuario?.Telefono
+            Telefono = usuario?.Telefono,
+            DireccionEntrega = usuario?.Direccion
         };
 
         return View(checkout);

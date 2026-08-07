@@ -8,6 +8,7 @@ public class UsuarioDto
     public string NombreCompleto => $"{Nombre} {Apellido}";
     public string Email { get; set; } = string.Empty;
     public string? Telefono { get; set; }
+    public string? Direccion { get; set; }
     public int IdRol { get; set; }
     public string NombreRol { get; set; } = string.Empty;
     public bool Activo { get; set; }

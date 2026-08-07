@@ -97,6 +97,7 @@ public class UsuarioService : IUsuarioService
         Apellido      = u.Apellido,
         Email         = u.Email,
         Telefono      = u.Telefono,
+        Direccion     = u.Direccion,
         IdRol         = u.IdRol,
         NombreRol     = u.NombreRol,
         Activo        = u.Activo,

@@ -1,6 +1,7 @@
 using Maido.Application.BL.BC.DTOs;
 using Maido.Application.BL.BC.Services;
 using Maido.PLGUI.Helpers;
+using Maido.PLGUI.Reports;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Maido.PLGUI.Controllers;
@@ -11,27 +12,27 @@ namespace Maido.PLGUI.Controllers;
 /// </summary>
 public class AdminController : Controller
 {
-    private readonly IPlatilloService  _platilloService;
+    private readonly IPlatilloService _platilloService;
     private readonly ICategoriaService _categoriaService;
-    private readonly IPedidoService    _pedidoService;
-    private readonly IUsuarioService   _usuarioService;
-    private readonly IReporteService   _reporteService;
+    private readonly IPedidoService _pedidoService;
+    private readonly IUsuarioService _usuarioService;
+    private readonly IReporteService _reporteService;
     private readonly IWebHostEnvironment _env;
 
     public AdminController(
-        IPlatilloService  platilloService,
+        IPlatilloService platilloService,
         ICategoriaService categoriaService,
-        IPedidoService    pedidoService,
-        IUsuarioService   usuarioService,
-        IReporteService   reporteService,
+        IPedidoService pedidoService,
+        IUsuarioService usuarioService,
+        IReporteService reporteService,
         IWebHostEnvironment env)
     {
-        _platilloService  = platilloService;
+        _platilloService = platilloService;
         _categoriaService = categoriaService;
-        _pedidoService    = pedidoService;
-        _usuarioService   = usuarioService;
-        _reporteService   = reporteService;
-        _env              = env;
+        _pedidoService = pedidoService;
+        _usuarioService = usuarioService;
+        _reporteService = reporteService;
+        _env = env;
     }
 
     // ─────────────────────────────────────────────────────
@@ -53,7 +54,7 @@ public class AdminController : Controller
 
         var (pedidos, _) = await _pedidoService.ListarPaginadoAsync(1, 5, null, null, null);
         ViewBag.UltimosPedidos = pedidos;
-        ViewBag.NombreAdmin    = SesionHelper.ObtenerNombre(HttpContext.Session);
+        ViewBag.NombreAdmin = SesionHelper.ObtenerNombre(HttpContext.Session);
 
         return View();
     }
@@ -66,12 +67,12 @@ public class AdminController : Controller
     {
         if (!EsAdmin()) return AccesoDenegado();
 
-        var resultado  = await _platilloService.ListarPaginadoAsync(pagina, 10, idCategoria, busqueda);
+        var resultado = await _platilloService.ListarPaginadoAsync(pagina, 10, idCategoria, busqueda);
         var categorias = await _categoriaService.ListarTodasAsync();
 
-        ViewBag.Categorias         = categorias;
-        ViewBag.IdCategoriaActual  = idCategoria;
-        ViewBag.Busqueda           = busqueda;
+        ViewBag.Categorias = categorias;
+        ViewBag.IdCategoriaActual = idCategoria;
+        ViewBag.Busqueda = busqueda;
 
         return View(resultado);
     }
@@ -117,14 +118,14 @@ public class AdminController : Controller
         ViewBag.Categorias = await _categoriaService.ListarPublicasAsync();
         var dto = new ActualizarPlatilloDto
         {
-            IdPlatillo  = platillo.IdPlatillo,
-            Nombre      = platillo.Nombre,
+            IdPlatillo = platillo.IdPlatillo,
+            Nombre = platillo.Nombre,
             Descripcion = platillo.Descripcion,
-            Precio      = platillo.Precio,
-            ImagenUrl   = platillo.ImagenUrl,
+            Precio = platillo.Precio,
+            ImagenUrl = platillo.ImagenUrl,
             IdCategoria = platillo.IdCategoria,
-            Disponible  = platillo.Disponible,
-            Destacado   = platillo.Destacado
+            Disponible = platillo.Disponible,
+            Destacado = platillo.Destacado
         };
 
         return View(dto);
@@ -202,11 +203,11 @@ public class AdminController : Controller
         var dto = new ActualizarCategoriaDto
         {
             IdCategoria = cat.IdCategoria,
-            Nombre      = cat.Nombre,
+            Nombre = cat.Nombre,
             Descripcion = cat.Descripcion,
-            Icono       = cat.Icono,
-            Orden       = cat.Orden,
-            Activo      = cat.Activo
+            Icono = cat.Icono,
+            Orden = cat.Orden,
+            Activo = cat.Activo
         };
         return View(dto);
     }
@@ -242,7 +243,7 @@ public class AdminController : Controller
         if (!EsAdmin()) return AccesoDenegado();
 
         var (items, total) = await _pedidoService.ListarPaginadoAsync(pagina, 10, estado, fechaInicio, fechaFin);
-        
+
         var dto = new PedidosPaginadoDto
         {
             Items = items,
@@ -252,8 +253,8 @@ public class AdminController : Controller
         };
 
         ViewBag.EstadoActual = estado;
-        ViewBag.FechaInicio  = fechaInicio;
-        ViewBag.FechaFin     = fechaFin;
+        ViewBag.FechaInicio = fechaInicio;
+        ViewBag.FechaFin = fechaFin;
 
         return View(dto);
     }
@@ -307,14 +308,33 @@ public class AdminController : Controller
         if (!EsAdmin()) return AccesoDenegado();
 
         filtro ??= new FiltroReporteDto();
-        var ventas    = await _reporteService.ReporteVentasAsync(filtro.FechaInicio, filtro.FechaFin);
+        var ventas = await _reporteService.ReporteVentasAsync(filtro.FechaInicio, filtro.FechaFin);
         var platillos = await _reporteService.PlatillosMasVendidosAsync(filtro.FechaInicio, filtro.FechaFin, filtro.Top);
 
-        ViewBag.Ventas    = ventas;
+        ViewBag.Ventas = ventas;
         ViewBag.Platillos = platillos;
-        ViewBag.Filtro    = filtro;
+        ViewBag.Filtro = filtro;
 
         return View(filtro);
+    }
+
+    // ─────────────────────────────────────────────────────
+    // GET: Descargar reporte ejecutivo en PDF
+    // ─────────────────────────────────────────────────────
+    [HttpGet]
+    public async Task<IActionResult> ReportePdf(FiltroReporteDto? filtro)
+    {
+        if (!EsAdmin()) return AccesoDenegado();
+
+        filtro ??= new FiltroReporteDto();
+        var ventas = await _reporteService.ReporteVentasAsync(filtro.FechaInicio, filtro.FechaFin);
+        var platillos = await _reporteService.PlatillosMasVendidosAsync(filtro.FechaInicio, filtro.FechaFin, filtro.Top);
+        var nombreAdmin = SesionHelper.ObtenerNombre(HttpContext.Session) ?? "Admin Maido";
+
+        var pdfBytes = ReporteVentasPdfBuilder.Generar(filtro, ventas, platillos, nombreAdmin);
+        var nombreArchivo = $"reporte_maido_{DateTime.Now:yyyyMMdd_HHmm}.pdf";
+
+        return File(pdfBytes, "application/pdf", nombreArchivo);
     }
 
     // ═══════════════════════════════════════════════════
@@ -334,7 +354,7 @@ public class AdminController : Controller
         Directory.CreateDirectory(uploadsPath);
 
         var nombreArchivo = $"{Guid.NewGuid()}{ext}";
-        var rutaCompleta  = Path.Combine(uploadsPath, nombreArchivo);
+        var rutaCompleta = Path.Combine(uploadsPath, nombreArchivo);
 
         using var stream = new FileStream(rutaCompleta, FileMode.Create);
         await archivo.CopyToAsync(stream);

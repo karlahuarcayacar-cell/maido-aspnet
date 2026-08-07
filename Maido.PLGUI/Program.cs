@@ -26,6 +26,8 @@ builder.Services.AddSession(options =>
 builder.Services.AddInfrastructureServices();
 builder.Services.AddApplicationServices();
 
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
 // ─────────────────────────────────────────────────────
 // HttpContextAccessor (para sesiones en servicios)
 // ─────────────────────────────────────────────────────

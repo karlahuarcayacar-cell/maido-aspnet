@@ -107,10 +107,12 @@ public class UsuarioRepository : IUsuarioRepository
             Apellido = reader.GetString(reader.GetOrdinal("Apellido")),
             Email = reader.GetString(reader.GetOrdinal("Email")),
             Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? null : reader.GetString(reader.GetOrdinal("Telefono")),
-            Direccion = reader.IsDBNull(reader.GetOrdinal("Direccion")) ? null : reader.GetString(reader.GetOrdinal("Direccion")),
             Activo = reader.GetBoolean(reader.GetOrdinal("Activo")),
             IdRol = reader.GetInt32(reader.GetOrdinal("IdRol"))
         };
+
+        if (ColumnExists(reader, "Direccion") && !reader.IsDBNull(reader.GetOrdinal("Direccion")))
+            usuario.Direccion = reader.GetString(reader.GetOrdinal("Direccion"));
 
         if (ColumnExists(reader, "FechaRegistro") && !reader.IsDBNull(reader.GetOrdinal("FechaRegistro")))
             usuario.FechaRegistro = reader.GetDateTime(reader.GetOrdinal("FechaRegistro"));

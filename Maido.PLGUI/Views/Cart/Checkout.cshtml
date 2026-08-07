@@ -10,104 +10,109 @@
     var esRecojo = Model.TipoPedido == "Recojo";
 }
 
-<div class="container py-5">
-    <h1 class="mb-1">Confirmar Pedido</h1>
-    <p class="text-muted mb-5">Revisa tus productos y completa los datos de entrega</p>
+<div class="container page-transition" style="margin-top: 6rem; margin-bottom: 6rem;">
+    <div class="text-center mb-5">
+        <h1 class="display-font text-white mb-2" style="font-size: 2.5rem;">Confirmar <span class="text-accent">Pedido</span></h1>
+        <div class="accent-line mx-auto mb-3" style="width: 50px; height: 3px; background: linear-gradient(90deg, var(--accent-red) 0%, var(--accent-gold) 100%);"></div>
+        <p class="text-secondary">Revisa tus productos y completa los datos de entrega.</p>
+    </div>
 
     <div class="row g-4">
         <!-- Formulario de entrega -->
         <div class="col-lg-7">
-            <div class="checkout-card">
-                <h5 class="fw-bold mb-4"><i class="bi bi-truck me-2 text-accent"></i>Datos de entrega</h5>
+            <div class="glass-card p-4 p-md-5">
+                <h5 class="fw-bold mb-4 text-white"><i class="bi bi-truck me-2 text-accent"></i>Datos de entrega</h5>
 
                 <form asp-controller="Cart" asp-action="Checkout" method="post" id="formCheckout">
                     @Html.AntiForgeryToken()
 
-                    <div class="mb-3">
-                        <label class="form-label">Tipo de Pedido *</label>
+                    <div class="mb-4">
+                        <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Tipo de Pedido *</label>
                         <div class="d-flex gap-3">
-                            <div class="form-check flex-fill">
-                                <input class="form-check-input" type="radio" name="TipoPedido"
+                            <div class="flex-fill">
+                                <input class="form-check-input d-none payment-input" type="radio" name="TipoPedido"
                                        id="radioDelivery" value="Delivery" @(esRecojo ? "" : "checked")
                                        onchange="toggleDireccion(this.value)" />
-                                <label class="form-check-label" for="radioDelivery">
-                                    <i class="bi bi-bicycle me-1 text-accent"></i>Delivery
+                                <label class="payment-method-card w-100 mb-0 py-3 text-center" for="radioDelivery">
+                                    <i class="bi bi-bicycle payment-icon text-accent"></i>
+                                    <span class="payment-name d-block mt-2">Delivery</span>
                                 </label>
                             </div>
-                            <div class="form-check flex-fill">
-                                <input class="form-check-input" type="radio" name="TipoPedido"
+                            <div class="flex-fill">
+                                <input class="form-check-input d-none payment-input" type="radio" name="TipoPedido"
                                        id="radioRecojo" value="Recojo" @(esRecojo ? "checked" : "")
                                        onchange="toggleDireccion(this.value)" />
-                                <label class="form-check-label" for="radioRecojo">
-                                    <i class="bi bi-shop me-1 text-gold"></i>Recojo en local
+                                <label class="payment-method-card w-100 mb-0 py-3 text-center" for="radioRecojo">
+                                    <i class="bi bi-shop payment-icon text-gold"></i>
+                                    <span class="payment-name d-block mt-2">Recojo en local</span>
                                 </label>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mb-3" id="divDireccion" style="@(esRecojo ? "display:none;" : "")">
-                        <label class="form-label">Dirección de entrega *</label>
-                        <input type="text" name="DireccionEntrega" class="form-control" id="inputDireccion"
+                    <div class="mb-4" id="divDireccion" style="@(esRecojo ? "display:none;" : "")">
+                        <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Dirección de entrega *</label>
+                        <input type="text" name="DireccionEntrega" class="form-control form-control-lg bg-dark text-white border-secondary" id="inputDireccion"
                                value="@Model.DireccionEntrega"
-                               placeholder="Av. Ejemplo 123, Miraflores" maxlength="300" />
-                        @Html.ValidationMessage("DireccionEntrega", new { @class = "text-danger small" })
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Teléfono de contacto *</label>
-                        <input type="tel" name="Telefono" class="form-control" id="inputTelefono"
-                               value="@Model.Telefono"
-                               placeholder="999888777" maxlength="9" inputmode="numeric"
-                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9)" />
-                        @Html.ValidationMessage("Telefono", new { @class = "text-danger small" })
+                               placeholder="Ej. Av. Ejemplo 123, Miraflores" maxlength="300" />
+                        @Html.ValidationMessage("DireccionEntrega", new { @class = "text-danger small mt-1 d-block" })
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label mb-3">Método de pago *</label>
+                        <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Teléfono de contacto *</label>
+                        <input type="tel" name="Telefono" class="form-control form-control-lg bg-dark text-white border-secondary" id="inputTelefono"
+                               value="@Model.Telefono"
+                               placeholder="999888777" maxlength="9" inputmode="numeric"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9)" />
+                        @Html.ValidationMessage("Telefono", new { @class = "text-danger small mt-1 d-block" })
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted fw-bold small text-uppercase mb-3" style="letter-spacing: 1px;">Método de pago *</label>
                         <div class="row g-3">
                             <div class="col-6">
                                 <input type="radio" name="MetodoPago" value="Efectivo" id="payEfectivo" class="d-none payment-input" required
                                 @(string.IsNullOrEmpty(Model.MetodoPago) || Model.MetodoPago == "Efectivo" ? "checked" : "")>
-                                <label class="payment-method-card w-100 mb-0" for="payEfectivo">
+                                <label class="payment-method-card w-100 mb-0 py-3 text-center" for="payEfectivo">
                                     <i class="bi bi-cash-stack payment-icon"></i>
-                                    <span class="payment-name">Efectivo</span>
+                                    <span class="payment-name d-block mt-2">Efectivo</span>
                                 </label>
                             </div>
                             <div class="col-6">
                                 <input type="radio" name="MetodoPago" value="Tarjeta" id="payTarjeta" class="d-none payment-input"
                                 @(Model.MetodoPago == "Tarjeta" ? "checked" : "")>
-                                <label class="payment-method-card w-100 mb-0" for="payTarjeta">
+                                <label class="payment-method-card w-100 mb-0 py-3 text-center" for="payTarjeta">
                                     <i class="bi bi-credit-card payment-icon"></i>
-                                    <span class="payment-name">Tarjeta</span>
+                                    <span class="payment-name d-block mt-2">Tarjeta</span>
                                 </label>
                             </div>
                             <div class="col-6">
                                 <input type="radio" name="MetodoPago" value="Yape" id="payYape" class="d-none payment-input"
                                 @(Model.MetodoPago == "Yape" ? "checked" : "")>
-                                <label class="payment-method-card w-100 mb-0" for="payYape">
+                                <label class="payment-method-card w-100 mb-0 py-3 text-center" for="payYape">
                                     <i class="bi bi-phone payment-icon"></i>
-                                    <span class="payment-name">Yape</span>
+                                    <span class="payment-name d-block mt-2">Yape</span>
                                 </label>
                             </div>
                             <div class="col-6">
                                 <input type="radio" name="MetodoPago" value="Plin" id="payPlin" class="d-none payment-input"
                                 @(Model.MetodoPago == "Plin" ? "checked" : "")>
-                                <label class="payment-method-card w-100 mb-0" for="payPlin">
+                                <label class="payment-method-card w-100 mb-0 py-3 text-center" for="payPlin">
                                     <i class="bi bi-phone-vibrate payment-icon"></i>
-                                    <span class="payment-name">Plin</span>
+                                    <span class="payment-name d-block mt-2">Plin</span>
                                 </label>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="form-label">Observaciones <span class="text-muted">(opcional)</span></label>
-                        <textarea name="Observaciones" class="form-control" rows="2"
-                                  placeholder="Alergias, preferencias especiales...">@Model.Observaciones</textarea>
+                    <div class="mb-5">
+                        <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Observaciones <span class="text-secondary text-lowercase fw-normal">(opcional)</span></label>
+                        <textarea name="Observaciones" class="form-control bg-dark text-white border-secondary" rows="3"
+                                  placeholder="Alergias, preferencias especiales, o billete con el que pagarás...">@Model.Observaciones</textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-accent w-100 py-3 fs-5" id="btnFinalizar">
-                        <i class="bi bi-lock-fill me-2"></i>Finalizar Pedido — S/ @total.ToString("F2")
+                    <button type="submit" class="btn btn-accent w-100 py-3 fs-5 fw-bold shadow-glow text-uppercase" id="btnFinalizar" style="letter-spacing: 1px;">
+                        <i class="bi bi-lock-fill me-2"></i>Pagar S/ @total.ToString("F2")
                     </button>
                 </form>
             </div>
@@ -115,28 +120,35 @@
 
         <!-- Resumen del carrito -->
         <div class="col-lg-5">
-            <div class="resumen-checkout h-100">
-                <h5 class="fw-bold mb-3"><i class="bi bi-bag me-2 text-gold"></i>Tu pedido</h5>
+            <div class="glass-card p-4 position-sticky" style="top: 100px;">
+                <h5 class="fw-bold mb-4 text-white"><i class="bi bi-bag me-2 text-gold"></i>Tu pedido</h5>
 
-                @foreach (var item in carrito)
-                {
-                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-subtle">
-                        <div>
-                            <span class="fw-semibold">@item.Nombre</span>
-                            <span class="text-muted ms-2">×@item.Cantidad</span>
+                <div class="mb-4" style="max-height: 40vh; overflow-y: auto;">
+                    @foreach (var item in carrito)
+                    {
+                        <div class="d-flex justify-content-between align-items-center py-3 border-bottom border-secondary">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-dark rounded overflow-hidden" style="width: 50px; height: 50px;">
+                                    <img src="@item.ImagenUrl" alt="@item.Nombre" class="w-100 h-100 object-fit-cover opacity-75" />
+                                </div>
+                                <div>
+                                    <span class="fw-semibold text-white d-block">@item.Nombre</span>
+                                    <span class="text-muted small">Cantidad: @item.Cantidad</span>
+                                </div>
+                            </div>
+                            <span class="text-gold fw-bold">S/ @item.Subtotal.ToString("F2")</span>
                         </div>
-                        <span class="text-gold fw-bold">S/ @item.Subtotal.ToString("F2")</span>
-                    </div>
-                }
+                    }
+                </div>
 
-                <div class="mt-4">
-                    <div class="d-flex justify-content-between text-muted mb-1">
+                <div class="pt-2">
+                    <div class="d-flex justify-content-between text-muted mb-2">
                         <span>Subtotal</span><span>S/ @subtotal.ToString("F2")</span>
                     </div>
-                    <div class="d-flex justify-content-between text-muted mb-3">
+                    <div class="d-flex justify-content-between text-muted mb-3 pb-3 border-bottom border-secondary">
                         <span>IGV (18%)</span><span>S/ @igv.ToString("F2")</span>
                     </div>
-                    <div class="d-flex justify-content-between fw-bold fs-5">
+                    <div class="d-flex justify-content-between text-white fw-bold fs-4">
                         <span>Total</span>
                         <span class="text-accent">S/ @total.ToString("F2")</span>
                     </div>

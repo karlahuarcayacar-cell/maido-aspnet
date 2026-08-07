@@ -49,7 +49,8 @@ El script completo de la base de datos se encuentra en la raíz del proyecto: `m
 ### [07-08-2026] - Módulo "Mi Perfil"
 - **Gestión de Perfil:** Se implementó una nueva sección "Mi Perfil" que permite a los usuarios autenticados actualizar su Nombre, Apellido, Teléfono y Dirección de entrega predeterminada (su correo es de solo lectura).
 - **Backend:** Se creó el procedimiento almacenado `sp_ActualizarPerfilUsuario` y se expandió el ciclo de vida (Repository -> Service -> Controller) con el nuevo `PerfilDto`.
-- **UI/UX:** Se enriqueció el menú desplegable del usuario en el Navbar (`_Layout.cshtml`) separando visualmente las acciones de navegación (Mi Perfil, Mis Pedidos) de la acción destructiva (Cerrar Sesión). El menú principal ahora luce mucho más limpio tras mover "Mis Pedidos" a esta sección. Se diseñó la vista con estilo `glassmorphism` alineada al tema Nikkei Noir.
+- **UI/UX (Navbar y Perfil):** Se enriqueció el menú desplegable del usuario en el Navbar (`_Layout.cshtml`) separando visualmente las acciones de navegación (Mi Perfil, Mis Pedidos) de la acción destructiva (Cerrar Sesión). El menú principal ahora luce mucho más limpio tras mover "Mis Pedidos" a esta sección. Se diseñó la vista de Perfil con estilo `glassmorphism`.
+- **UI/UX (Checkout):** Se rediseñó la página de Confirmación de Pedido (`Checkout.cshtml`) adoptando por completo el estilo *Nikkei Noir*. Se aplicó un diseño de tarjetas de cristal (`glass-card`), formularios oscuros (`bg-dark`), selección de delivery/recojo interactiva mediante tarjetas y un panel de resumen pegadizo (`position-sticky`) con imágenes de los platillos.
 - **Bugfixes de Sesión y Carrito:** Se corrigió el error donde la dirección actualizada del usuario no se reflejaba en su perfil ni autocompletaba el Checkout. Se debió a la falta de mapeo del campo en el DataReader (`UsuarioRepository.cs`) y la falta de inyección al `CheckoutDto` en `CartController.cs`.
 
 ### [24-07-2026] - Ajustes Visuales

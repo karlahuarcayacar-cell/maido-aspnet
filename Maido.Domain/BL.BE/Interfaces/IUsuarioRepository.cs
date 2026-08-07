@@ -6,4 +6,5 @@ public interface IUsuarioRepository
     Task<int> RegistrarUsuarioAsync(Usuario usuario);
     Task<IEnumerable<Usuario>> ListarUsuariosAsync();
     Task ActualizarEstadoUsuarioAsync(int idUsuario, bool activo);
+    Task ActualizarPerfilUsuarioAsync(Usuario usuario);
 }

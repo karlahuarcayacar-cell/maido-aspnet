@@ -82,6 +82,22 @@ public class UsuarioRepository : IUsuarioRepository
         await command.ExecuteNonQueryAsync();
     }
 
+    public async Task ActualizarPerfilUsuarioAsync(Usuario usuario)
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand("sp_ActualizarPerfilUsuario", connection);
+        command.CommandType = CommandType.StoredProcedure;
+        command.Parameters.AddWithValue("@IdUsuario", usuario.IdUsuario);
+        command.Parameters.AddWithValue("@Nombre", usuario.Nombre);
+        command.Parameters.AddWithValue("@Apellido", usuario.Apellido);
+        command.Parameters.AddWithValue("@Telefono", (object?)usuario.Telefono ?? DBNull.Value);
+        command.Parameters.AddWithValue("@Direccion", (object?)usuario.Direccion ?? DBNull.Value);
+
+        await connection.OpenAsync();
+        await command.ExecuteNonQueryAsync();
+    }
+
+
     private Usuario MapUsuario(SqlDataReader reader)
     {
         var usuario = new Usuario

@@ -55,6 +55,34 @@ public class UsuarioService : IUsuarioService
     public async Task ActualizarEstadoAsync(int idUsuario, bool activo)
         => await _repo.ActualizarEstadoUsuarioAsync(idUsuario, activo);
 
+    public async Task<PerfilDto?> ObtenerPerfilPorEmailAsync(string email)
+    {
+        var u = await _repo.ObtenerUsuarioPorEmailAsync(email);
+        if (u == null) return null;
+        return new PerfilDto
+        {
+            IdUsuario = u.IdUsuario,
+            Nombre = u.Nombre,
+            Apellido = u.Apellido,
+            Email = u.Email,
+            Telefono = u.Telefono,
+            Direccion = u.Direccion
+        };
+    }
+
+    public async Task ActualizarPerfilAsync(PerfilDto dto)
+    {
+        var u = new Usuario
+        {
+            IdUsuario = dto.IdUsuario,
+            Nombre = dto.Nombre,
+            Apellido = dto.Apellido,
+            Telefono = dto.Telefono,
+            Direccion = dto.Direccion
+        };
+        await _repo.ActualizarPerfilUsuarioAsync(u);
+    }
+
     private static string HashPassword(string password)
     {
         using var sha256 = SHA256.Create();

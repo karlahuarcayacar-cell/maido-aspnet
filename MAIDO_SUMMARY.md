@@ -46,6 +46,11 @@ El script completo de la base de datos se encuentra en la raíz del proyecto: `m
 - **Estilos de Tablas:** Se implementó una corrección global en el archivo `maido.css` y las vistas Razor para forzar que el fondo de las tablas Bootstrap respete el modo oscuro (dark theme) del diseño.
 - **Detalle de Pedidos (Fix):** Se ajustó el mapeo JSON en la base de datos y la función de repositorio en C# para sincronizar las columnas al procesar o ver resúmenes de pedidos, solucionando los errores de `IndexOutOfRangeException` y `NULL insertions`.
 
+### [07-08-2026] - Módulo "Mi Perfil"
+- **Gestión de Perfil:** Se implementó una nueva sección "Mi Perfil" que permite a los usuarios autenticados actualizar su Nombre, Apellido, Teléfono y Dirección de entrega predeterminada (su correo es de solo lectura).
+- **Backend:** Se creó el procedimiento almacenado `sp_ActualizarPerfilUsuario` y se expandió el ciclo de vida (Repository -> Service -> Controller) con el nuevo `PerfilDto`.
+- **UI/UX:** Se enriqueció el menú desplegable del usuario en el Navbar (`_Layout.cshtml`) separando visualmente las acciones de navegación (Mi Perfil, Mis Pedidos) de la acción destructiva (Cerrar Sesión). Se diseñó la vista con estilo `glassmorphism` alineada al tema Nikkei Noir.
+
 ### [24-07-2026] - Ajustes Visuales
 - **Home/Index (Stats):** Se ajustó el fondo de la sección de métricas ("15+ Años de excelencia") para que sea transparente, integrándose perfectamente con el fondo profundo oscuro del resto de la página.
 - **Home/Index (Hero Carousel):** Se reemplazó la imagen estática de fondo principal por un carrusel dinámico de 4 imágenes en alta resolución que cambia suavemente (Fade) cada 4 segundos, dándole mucha más vida a la página de inicio.

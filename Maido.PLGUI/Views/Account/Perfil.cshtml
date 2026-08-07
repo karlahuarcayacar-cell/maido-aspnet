@@ -1,0 +1,73 @@
+@using Maido.Application.BL.BC.DTOs
+@model PerfilDto
+
+@{
+    ViewData["Title"] = "Mi Perfil";
+}
+
+<div class="container page-transition" style="margin-top: 6rem; margin-bottom: 6rem; max-width: 800px;">
+    
+    <div class="glass-card p-4 p-md-5">
+        <div class="text-center mb-5">
+            <h1 class="display-font text-white mb-2" style="font-size: 2.5rem;">Mi <span class="text-accent">Perfil</span></h1>
+            <div class="accent-line mx-auto mb-3" style="width: 50px; height: 3px; background: linear-gradient(90deg, var(--accent-red) 0%, var(--accent-gold) 100%);"></div>
+            <p class="text-secondary">Actualiza tus datos personales y de entrega.</p>
+        </div>
+
+        @if (TempData["Exito"] != null)
+        {
+            <div class="alert alert-success bg-success text-white border-0 d-flex align-items-center gap-2 mb-4">
+                <i class="bi bi-check-circle-fill"></i>
+                @TempData["Exito"]
+            </div>
+        }
+
+        <form asp-action="Perfil" method="post">
+            <input type="hidden" asp-for="IdUsuario" />
+            <input type="hidden" asp-for="Email" />
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Nombre</label>
+                    <input asp-for="Nombre" class="form-control form-control-lg bg-dark text-white border-secondary" required />
+                    <span asp-validation-for="Nombre" class="text-danger small"></span>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Apellido</label>
+                    <input asp-for="Apellido" class="form-control form-control-lg bg-dark text-white border-secondary" required />
+                    <span asp-validation-for="Apellido" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Correo Electrónico</label>
+                    <input class="form-control form-control-lg bg-dark text-secondary border-secondary" value="@Model.Email" readonly disabled />
+                    <div class="form-text text-muted small"><i class="bi bi-info-circle me-1"></i>El correo no puede ser modificado.</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Teléfono</label>
+                    <input asp-for="Telefono" class="form-control form-control-lg bg-dark text-white border-secondary" />
+                    <span asp-validation-for="Telefono" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Dirección de Entrega Predeterminada</label>
+                    <textarea asp-for="Direccion" class="form-control bg-dark text-white border-secondary" rows="3" placeholder="Ej. Av. Javier Prado 1234, Dpto 501, San Isidro"></textarea>
+                    <span asp-validation-for="Direccion" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mt-5 d-flex justify-content-end gap-3">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary px-4 py-2 text-uppercase fw-bold" style="font-size: 0.85rem; letter-spacing: 1px;">Cancelar</a>
+                <button type="submit" class="btn btn-accent px-5 py-2 text-uppercase fw-bold shadow-glow" style="font-size: 0.85rem; letter-spacing: 1px;">
+                    <i class="bi bi-save me-2"></i>Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

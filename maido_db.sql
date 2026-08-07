@@ -632,3 +632,21 @@ GO
 
 PRINT 'Script maido_db ejecutado correctamente.';
 GO
+
+GO
+CREATE PROCEDURE sp_ActualizarPerfilUsuario
+    @IdUsuario INT,
+    @Nombre NVARCHAR(100),
+    @Apellido NVARCHAR(100),
+    @Telefono NVARCHAR(20),
+    @Direccion NVARCHAR(200)
+AS
+BEGIN
+    UPDATE Usuarios
+    SET Nombre = @Nombre,
+        Apellido = @Apellido,
+        Telefono = @Telefono,
+        Direccion = @Direccion
+    WHERE IdUsuario = @IdUsuario;
+END
+GO

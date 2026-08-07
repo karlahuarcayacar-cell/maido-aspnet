@@ -105,6 +105,53 @@ public class AccountController : Controller
     }
 
     // ─────────────────────────────────────────────────────
+    // GET: Perfil
+    // ─────────────────────────────────────────────────────
+    [HttpGet]
+    public async Task<IActionResult> Perfil()
+    {
+        if (!SesionHelper.EstaAutenticado(HttpContext.Session))
+            return RedirectToAction("Login");
+
+        var email = HttpContext.Session.GetString("Maido_Email");
+        if (string.IsNullOrEmpty(email))
+            return RedirectToAction("Login");
+
+        var perfil = await _usuarioService.ObtenerPerfilPorEmailAsync(email);
+        if (perfil == null)
+            return RedirectToAction("Login");
+
+        return View(perfil);
+    }
+
+    // ─────────────────────────────────────────────────────
+    // POST: Perfil
+    // ─────────────────────────────────────────────────────
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Perfil(PerfilDto dto)
+    {
+        if (!SesionHelper.EstaAutenticado(HttpContext.Session))
+            return RedirectToAction("Login");
+
+        if (!ModelState.IsValid)
+            return View(dto);
+
+        // Seguridad: Asegurar que el IdUsuario coincida con la sesión
+        var sessionId = HttpContext.Session.GetInt32("Maido_IdUsuario");
+        if (sessionId != dto.IdUsuario)
+            return RedirectToAction("Login");
+
+        await _usuarioService.ActualizarPerfilAsync(dto);
+
+        // Actualizar la sesión por si cambió su nombre
+        HttpContext.Session.SetString("Maido_Nombre", $"{dto.Nombre} {dto.Apellido}");
+
+        TempData["Exito"] = "Perfil actualizado correctamente.";
+        return RedirectToAction("Perfil");
+    }
+
+    // ─────────────────────────────────────────────────────
     // POST: Logout
     // ─────────────────────────────────────────────────────
     [HttpPost]

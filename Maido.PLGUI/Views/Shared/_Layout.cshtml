@@ -98,6 +98,12 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark maido-dropdown">
                             <li>
+                                <a class="dropdown-item" asp-controller="Account" asp-action="Perfil">
+                                    <i class="bi bi-person-vcard me-2"></i>Mi Perfil
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
                                 <form asp-controller="Account" asp-action="Logout" method="post">
                                     @Html.AntiForgeryToken()
                                     <button type="submit" class="dropdown-item text-danger">

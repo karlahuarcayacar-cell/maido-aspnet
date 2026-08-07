@@ -8,4 +8,6 @@ public interface IUsuarioService
     Task<(bool Exitoso, string Mensaje, int IdUsuario)> RegistrarAsync(RegistrarUsuarioDto dto);
     Task<IEnumerable<UsuarioDto>> ListarAsync();
     Task ActualizarEstadoAsync(int idUsuario, bool activo);
+    Task<PerfilDto?> ObtenerPerfilPorEmailAsync(string email);
+    Task ActualizarPerfilAsync(PerfilDto dto);
 }

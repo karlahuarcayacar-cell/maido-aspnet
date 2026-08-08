@@ -21,8 +21,10 @@
     
     /* Legacy variables for backwards compatibility */
     --bg-main: var(--bg-primary);
+    --bg-elevated: #22222A;
     --border-subtle: var(--border);
     --text-secondary: var(--text-muted);
+    --radius-sm: 6px;
     --shadow-glow: 0 6px 20px rgba(217,56,30,0.4);
     --font-main: 'Outfit', sans-serif;
     --font-display: 'Noto Serif JP', serif;

@@ -27,28 +27,34 @@
 
         <!-- Filtros (Dashboard Widget) -->
         <div class="glass-card p-3 mb-4 fade-in-up" style="animation-delay: 0.1s; border-radius: var(--radius-md);">
-            <form asp-action="Platillos" method="get" class="row g-3 align-items-center">
-                <div class="col-md-4">
-                    <select name="idCategoria" class="form-select text-white maido-input border-0" style="background-color: var(--bg-secondary); cursor: pointer;" onchange="this.form.submit()">
-                        <option value="">Todas las categorías</option>
-                        @foreach (var cat in categorias)
-                        {
-                            <option value="@cat.IdCategoria" selected="@(idCat == cat.IdCategoria)">@cat.Nombre</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <div class="search-wrapper position-relative">
+            <form asp-action="Platillos" method="get">
+                
+                <!-- Buscador -->
+                <div class="d-flex gap-2 align-items-center mb-3">
+                    <div class="search-wrapper position-relative flex-grow-1">
                         <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-accent"></i>
                         <input type="text" name="busqueda" class="form-control text-white maido-input border-0 ps-5" 
-                               style="background-color: var(--bg-secondary);" placeholder="Buscar platillo..." value="@busqueda" />
+                               style="background-color: var(--bg-secondary);" placeholder="Buscar platillo por nombre o descripción..." value="@busqueda" />
                     </div>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-outline-gold w-100 text-uppercase fw-bold" style="font-size: 0.85rem; padding: 0.6rem;">
-                        Filtrar
+                    <button type="submit" class="btn btn-outline-gold text-uppercase fw-bold px-4" style="font-size: 0.85rem; padding: 0.6rem;">
+                        Buscar
                     </button>
                 </div>
+
+                <!-- Chips de Categorías -->
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="text-muted small fw-semibold me-2 text-uppercase" style="letter-spacing: 0.5px;">Categorías:</span>
+                    
+                    <input type="radio" class="btn-check" name="idCategoria" id="cat_all" value="" checked="@(!idCat.HasValue)" onchange="this.form.submit()">
+                    <label class="btn btn-chip" for="cat_all">Todas</label>
+                    
+                    @foreach (var cat in categorias)
+                    {
+                        <input type="radio" class="btn-check" name="idCategoria" id="cat_@cat.IdCategoria" value="@cat.IdCategoria" checked="@(idCat == cat.IdCategoria)" onchange="this.form.submit()">
+                        <label class="btn btn-chip" for="cat_@cat.IdCategoria">@cat.Nombre</label>
+                    }
+                </div>
+
             </form>
         </div>
 
@@ -299,6 +305,29 @@
         border-color: var(--accent-red);
         color: white;
         box-shadow: var(--shadow-glow);
+    }
+
+    /* Chips Filter */
+    .btn-chip {
+        background-color: transparent;
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        border-radius: 50rem; /* pill shape */
+        padding: 0.35rem 1rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .btn-chip:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: var(--text-primary);
+    }
+    .btn-check:checked + .btn-chip {
+        background-color: rgba(217, 56, 30, 0.15); /* Soft red background */
+        color: var(--accent-red);
+        border-color: var(--accent-red);
+        box-shadow: 0 0 10px rgba(217, 56, 30, 0.3);
     }
 </style>
 }

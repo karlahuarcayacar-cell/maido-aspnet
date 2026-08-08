@@ -7,8 +7,8 @@
     <div class="login-bg-image"></div>
     <div class="login-bg-overlay"></div>
     
-    <div class="container d-flex align-items-center justify-content-center justify-content-lg-end" style="min-height: calc(100vh - 80px);">
-        <div class="auth-card glass-card fade-in-up" style="margin: 2rem 0; width: 100%; max-width: 480px; padding: 3rem 2.5rem;">
+    <div class="container d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 80px);">
+        <div class="auth-card glass-card fade-in-up" style="width: 100%; max-width: 480px; padding: 3rem 2.5rem; margin: auto;">
 
             <!-- Logo + Título -->
             <div class="text-center mb-4">
@@ -35,17 +35,17 @@
 
                 <div class="mb-4">
                     <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-envelope me-2"></i>Correo electrónico</label>
-                    <input type="email" name="Email" class="form-control form-control-lg bg-secondary border-secondary text-white maido-input" id="loginEmail"
+                    <input type="email" name="Email" class="form-control form-control-lg text-white maido-input" id="loginEmail"
                            placeholder="tu@email.com" autocomplete="email" required />
                 </div>
 
                 <div class="mb-5">
                     <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-lock me-2"></i>Contraseña</label>
                     <div class="input-group input-group-lg password-group">
-                        <input type="password" name="Password" class="form-control bg-secondary border-secondary text-white maido-input border-end-0" id="loginPassword"
+                        <input type="password" name="Password" class="form-control text-white maido-input border-end-0" id="loginPassword"
                                placeholder="••••••••" autocomplete="current-password" required />
-                        <button class="btn border-secondary border-start-0 text-muted px-3" type="button" 
-                                style="background: var(--bg-secondary);"
+                        <button class="btn border-start-0 text-muted px-3" type="button" 
+                                style="background: var(--bg-secondary); border: 1px solid var(--border);"
                                 onclick="togglePassword('loginPassword', this)">
                             <i class="bi bi-eye"></i>
                         </button>
@@ -74,10 +74,17 @@
 
 @section Scripts {
 <style>
+    /* Ocultar el footer global en la pantalla de login para evitar el gap negro */
+    footer.maido-footer {
+        display: none !important;
+    }
+
     .login-page-container {
         position: relative;
-        min-height: calc(100vh - 80px); /* Ajustar según altura de navbar */
-        margin: -2rem 0; /* Negate container padding if necessary */
+        min-height: calc(100vh - 80px);
+        margin: 0; 
+        display: flex;
+        align-items: center;
     }
     .login-bg-image {
         position: absolute;

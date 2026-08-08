@@ -2,76 +2,148 @@
     ViewData["Title"] = "Crear Cuenta - Maido";
 }
 
-<div class="auth-wrapper">
-    <div class="auth-card" style="max-width:500px;">
+<div class="login-page-container">
+    <div class="login-bg-image" style="background-image: url('https://images.unsplash.com/photo-1611143669185-af224c5e3252?q=80&w=2000&auto=format&fit=crop');"></div>
+    <div class="login-bg-overlay"></div>
+    
+    <div class="container d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 80px);">
+        <div class="auth-card glass-card fade-in-up" style="width: 100%; max-width: 520px; padding: 2.5rem 2rem; margin: auto;">
 
-        <div class="auth-logo">鮨</div>
-        <h1 class="auth-title">Crear Cuenta</h1>
-        <p class="text-center text-muted mb-4 small">Únete a la experiencia Nikkei de Maido</p>
+            <!-- Logo + Título -->
+            <div class="text-center mb-4">
+                <h2 class="display-font text-uppercase fw-bold mb-1" style="letter-spacing: 0.15em; font-size: 1.8rem;">
+                    <span class="text-white">MAI</span><span class="text-accent">DO</span>
+                </h2>
+                <div class="accent-line mx-auto mb-3" style="width: 40px; height: 2px; background: linear-gradient(90deg, var(--accent-red) 0%, var(--accent-gold) 100%);"></div>
+                <h1 class="auth-title text-white fs-4 mb-1">Crear Cuenta</h1>
+                <p class="text-muted small">Únete a la experiencia Nikkei de Maido</p>
+            </div>
 
-        <form asp-controller="Account" asp-action="Register" method="post">
-            @Html.AntiForgeryToken()
+            <form asp-controller="Account" asp-action="Register" method="post">
+                @Html.AntiForgeryToken()
 
-            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
-            <div class="row g-3 mb-3">
-                <div class="col-6">
-                    <label class="form-label">Nombre</label>
-                    <input type="text" name="Nombre" class="form-control" id="regNombre"
-                           placeholder="Juan" required />
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;">Nombre</label>
+                        <input type="text" name="Nombre" class="form-control text-white maido-input" id="regNombre"
+                               placeholder="Juan" required />
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;">Apellido</label>
+                        <input type="text" name="Apellido" class="form-control text-white maido-input" id="regApellido"
+                               placeholder="García" required />
+                    </div>
                 </div>
-                <div class="col-6">
-                    <label class="form-label">Apellido</label>
-                    <input type="text" name="Apellido" class="form-control" id="regApellido"
-                           placeholder="García" required />
+
+                <div class="mb-3">
+                    <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-envelope me-2"></i>Correo electrónico</label>
+                    <input type="email" name="Email" class="form-control text-white maido-input" id="regEmail"
+                           placeholder="tu@email.com" autocomplete="email" required />
                 </div>
-            </div>
 
-            <div class="mb-3">
-                <label class="form-label"><i class="bi bi-envelope me-1"></i>Correo electrónico</label>
-                <input type="email" name="Email" class="form-control" id="regEmail"
-                       placeholder="tu@email.com" autocomplete="email" required />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label"><i class="bi bi-phone me-1"></i>Teléfono <span class="text-muted">(opcional)</span></label>
-                <input type="tel" name="Telefono" class="form-control" id="regTelefono"
-                       placeholder="999 888 777" />
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label"><i class="bi bi-lock me-1"></i>Contraseña</label>
-                <div class="input-group">
-                    <input type="password" name="Password" class="form-control" id="regPass"
-                           placeholder="Mínimo 6 caracteres" required />
-                    <button class="btn" type="button" style="background:var(--bg-elevated);border:1.5px solid var(--border-subtle);color:var(--text-muted);"
-                            onclick="togglePassword('regPass', this)">
-                        <i class="bi bi-eye"></i>
-                    </button>
+                <div class="mb-3">
+                    <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-phone me-2"></i>Teléfono <span class="text-muted text-lowercase" style="font-size:0.7rem; font-weight:normal;">(opcional)</span></label>
+                    <input type="tel" name="Telefono" class="form-control text-white maido-input" id="regTelefono"
+                           placeholder="999 888 777" />
                 </div>
-            </div>
 
-            <div class="mb-4">
-                <label class="form-label"><i class="bi bi-lock-fill me-1"></i>Confirmar contraseña</label>
-                <input type="password" name="ConfirmarPassword" class="form-control" id="regPassConf"
-                       placeholder="Repetir contraseña" required />
-            </div>
+                <div class="mb-3">
+                    <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-lock me-2"></i>Contraseña</label>
+                    <div class="input-group password-group">
+                        <input type="password" name="Password" class="form-control text-white maido-input border-end-0" id="regPass"
+                               placeholder="Mínimo 6 caracteres" required />
+                        <button class="btn border-start-0 text-muted px-3" type="button" 
+                                style="background: var(--bg-secondary); border: 1px solid var(--border);"
+                                onclick="togglePassword('regPass', this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
 
-            <button type="submit" class="btn btn-accent w-100 py-2" id="btnRegistrar">
-                <i class="bi bi-person-plus me-2"></i>Crear Mi Cuenta
-            </button>
-        </form>
+                <div class="mb-4">
+                    <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-lock-fill me-2"></i>Confirmar contraseña</label>
+                    <div class="input-group password-group">
+                        <input type="password" name="ConfirmarPassword" class="form-control text-white maido-input border-end-0" id="regPassConf"
+                               placeholder="Repetir contraseña" required />
+                        <button class="btn border-start-0 text-muted px-3" type="button" 
+                                style="background: var(--bg-secondary); border: 1px solid var(--border);"
+                                onclick="togglePassword('regPassConf', this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
 
-        <hr class="my-4" style="border-color:var(--border-subtle);">
-        <p class="text-center text-muted small">
-            ¿Ya tienes cuenta?
-            <a asp-controller="Account" asp-action="Login" class="text-gold fw-semibold">Inicia sesión</a>
-        </p>
+                <button type="submit" class="btn btn-accent btn-lg w-100 py-3 mb-4 text-uppercase fw-bold shadow-glow" id="btnRegistrar" style="letter-spacing: 1px; font-size: 0.95rem;">
+                    Crear Mi Cuenta <i class="bi bi-person-plus ms-2"></i>
+                </button>
+            </form>
 
+            <p class="text-center text-muted small mb-0">
+                ¿Ya tienes cuenta?
+                <a asp-controller="Account" asp-action="Login" class="text-gold fw-bold ms-1" style="letter-spacing: 0.5px;">Inicia sesión</a>
+            </p>
+
+        </div>
     </div>
 </div>
 
 @section Scripts {
+<style>
+    /* Ocultar el footer global en la pantalla de registro para evitar el gap negro */
+    footer.maido-footer {
+        display: none !important;
+    }
+
+    .login-page-container {
+        position: relative;
+        min-height: calc(100vh - 80px);
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+    .login-bg-image {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        z-index: -2;
+    }
+    .login-bg-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(15,15,17,0.98) 0%, rgba(15,15,17,0.5) 100%);
+        z-index: -1;
+    }
+    
+    /* Input Group Seamless Focus */
+    .password-group:focus-within .form-control,
+    .password-group:focus-within .btn {
+        border-color: var(--accent-red) !important;
+    }
+    .password-group:focus-within {
+        box-shadow: 0 0 0 3px rgba(217, 56, 30, 0.15);
+        border-radius: var(--radius-sm);
+    }
+    .password-group:focus-within .form-control {
+        box-shadow: none;
+    }
+
+    .fade-in-up {
+        animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    
+    @@keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
 <script>
 function togglePassword(id, btn) {
     const input = document.getElementById(id);

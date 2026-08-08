@@ -5,29 +5,27 @@
 
 /* ─── CUSTOM PROPERTIES ─────────────────────────────── */
 :root {
-    --bg-main:       #0F0F11;
-    --bg-secondary:  #18181C;
-    --bg-card:       #1E1E24;
-    --accent-red:    #D9381E;
-    --accent-gold:   #E0A96D;
-    --text-primary:  #F4F4F6;
-    --text-secondary:#A0A0A8;
-    --text-muted:    #6B6B75;
-    --border-subtle: rgba(255,255,255,0.07);
-
-    --success:  #2E7D32;
-    --warning:  #ED6C02;
-    --danger:   #D32F2F;
-
+    --bg-primary: #0F0F11;
+    --bg-secondary: #18181C;
+    --bg-card: #1E1E24;
+    --accent-red: #D9381E;
+    --accent-red-hover: #f04020;
+    --accent-gold: #E0A96D;
+    --text-primary: #F4F4F6;
+    --text-muted: #A0A0A8;
+    --border: #2a2a32;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --shadow-card: 0 8px 32px rgba(0,0,0,0.4);
+    --transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+    
+    /* Legacy variables for backwards compatibility */
+    --bg-main: var(--bg-primary);
+    --border-subtle: var(--border);
+    --text-secondary: var(--text-muted);
+    --shadow-glow: 0 6px 20px rgba(217,56,30,0.4);
     --font-main: 'Outfit', sans-serif;
     --font-display: 'Noto Serif JP', serif;
-    --radius-sm: 8px;
-    --radius-md: 14px;
-    --radius-lg: 20px;
-    --shadow-card: 0 4px 24px rgba(0,0,0,0.45);
-    --shadow-glow: 0 0 20px rgba(217,56,30,0.25);
-
-    --transition: 0.22s ease;
 }
 
 /* ─── BASE ──────────────────────────────────────────── */
@@ -109,19 +107,18 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; color: var(--text-primary); }
 
 /* ─── BUTTONS ───────────────────────────────────────── */
 .btn-accent {
-    background: linear-gradient(135deg, var(--accent-red), #c42d16);
+    background: var(--accent-red);
     color: #fff;
     border: none;
     font-weight: 600;
-    border-radius: var(--radius-sm);
-    transition: all var(--transition);
-    box-shadow: 0 2px 12px rgba(217,56,30,0.35);
+    border-radius: 6px;
+    transition: var(--transition);
 }
 .btn-accent:hover {
-    background: linear-gradient(135deg, #e8411f, var(--accent-red));
+    background: var(--accent-red-hover);
     color: #fff;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(217,56,30,0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(217, 56, 30, 0.4);
 }
 
 .btn-outline-accent {
@@ -217,16 +214,14 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; color: var(--text-primary); }
 /* ─── CARDS ─────────────────────────────────────────── */
 .maido-card {
     background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    border-radius: 12px;
     overflow: hidden;
-    transition: all 0.3s ease;
-    box-shadow: var(--shadow-card);
+    transition: var(--transition);
 }
 .maido-card:hover {
     transform: translateY(-4px);
-    border-color: rgba(217,56,30,0.3);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5), var(--shadow-glow);
+    border-color: rgba(217, 56, 30, 0.3);
 }
 
 .maido-card .card-img-top {
@@ -357,26 +352,34 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; color: var(--text-primary); }
 
 /* ─── FORMS ─────────────────────────────────────────── */
 .form-control, .form-select {
-    background: var(--bg-elevated);
-    border: 1.5px solid var(--border-subtle);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
     color: var(--text-primary);
     border-radius: var(--radius-sm);
     font-family: var(--font-main);
-    transition: all var(--transition);
+    transition: var(--transition);
 }
 .form-control.maido-input,
 .form-select.maido-input {
     background-color: var(--bg-secondary);
 }
 .form-control:focus, .form-select:focus {
-    background: var(--bg-elevated);
+    background: var(--bg-secondary);
     border-color: var(--accent-red);
-    box-shadow: 0 0 0 3px rgba(217,56,30,0.15);
+    box-shadow: 0 0 0 3px rgba(217, 56, 30, 0.15);
     color: var(--text-primary);
 }
 .form-control::placeholder { color: var(--text-muted); }
 .form-label { font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; }
 .form-text { color: var(--text-muted); }
+
+.glass-card {
+    background: rgba(255,255,255,0.02);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
 
 .form-select option {
     background: var(--bg-card);

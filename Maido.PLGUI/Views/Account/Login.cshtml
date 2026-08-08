@@ -3,67 +3,128 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="auth-wrapper">
-    <div class="auth-card">
+<div class="login-page-container">
+    <div class="login-bg-image"></div>
+    <div class="login-bg-overlay"></div>
+    
+    <div class="container d-flex align-items-center justify-content-center justify-content-lg-end" style="min-height: calc(100vh - 80px);">
+        <div class="auth-card glass-card fade-in-up" style="margin: 2rem 0; width: 100%; max-width: 480px; padding: 3rem 2.5rem;">
 
-        <!-- Logo + Título -->
-        <div class="auth-logo">鮨</div>
-        <h1 class="auth-title">Bienvenido</h1>
-        <p class="text-center text-muted mb-4 small">Inicia sesión para continuar con tu pedido</p>
-
-        @if (TempData["Exito"] != null)
-        {
-            <div class="alert alert-success py-2 mb-3">
-                <i class="bi bi-check-circle me-2"></i>@TempData["Exito"]
-            </div>
-        }
-
-        <form asp-controller="Account" asp-action="Login" method="post">
-            @Html.AntiForgeryToken()
-            <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
-
-            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
-
-            <div class="mb-3">
-                <label class="form-label"><i class="bi bi-envelope me-1"></i>Correo electrónico</label>
-                <input type="email" name="Email" class="form-control" id="loginEmail"
-                       placeholder="tu@email.com" autocomplete="email" required />
+            <!-- Logo + Título -->
+            <div class="text-center mb-4">
+                <h2 class="display-font text-uppercase fw-bold mb-1" style="letter-spacing: 0.15em; font-size: 1.8rem;">
+                    <span class="text-white">MAI</span><span class="text-accent">DO</span>
+                </h2>
+                <div class="accent-line mx-auto mb-3" style="width: 40px; height: 2px; background: linear-gradient(90deg, var(--accent-red) 0%, var(--accent-gold) 100%);"></div>
+                <h1 class="auth-title text-white fs-4 mb-1">Bienvenido</h1>
+                <p class="text-muted small">Inicia sesión para continuar con tu experiencia Nikkei</p>
             </div>
 
-            <div class="mb-4">
-                <label class="form-label"><i class="bi bi-lock me-1"></i>Contraseña</label>
-                <div class="input-group">
-                    <input type="password" name="Password" class="form-control" id="loginPassword"
-                           placeholder="••••••••" autocomplete="current-password" required />
-                    <button class="btn" type="button" style="background:var(--bg-elevated);border:1.5px solid var(--border-subtle);color:var(--text-muted);"
-                            onclick="togglePassword('loginPassword', this)">
-                        <i class="bi bi-eye"></i>
-                    </button>
+            @if (TempData["Exito"] != null)
+            {
+                <div class="alert alert-success py-2 mb-3 bg-success text-white border-0" style="background-color: rgba(46, 125, 50, 0.2) !important;">
+                    <i class="bi bi-check-circle me-2"></i>@TempData["Exito"]
                 </div>
+            }
+
+            <form asp-controller="Account" asp-action="Login" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                <div class="mb-4">
+                    <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-envelope me-2"></i>Correo electrónico</label>
+                    <input type="email" name="Email" class="form-control form-control-lg bg-secondary border-secondary text-white maido-input" id="loginEmail"
+                           placeholder="tu@email.com" autocomplete="email" required />
+                </div>
+
+                <div class="mb-5">
+                    <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-lock me-2"></i>Contraseña</label>
+                    <div class="input-group input-group-lg password-group">
+                        <input type="password" name="Password" class="form-control bg-secondary border-secondary text-white maido-input border-end-0" id="loginPassword"
+                               placeholder="••••••••" autocomplete="current-password" required />
+                        <button class="btn border-secondary border-start-0 text-muted px-3" type="button" 
+                                style="background: var(--bg-secondary);"
+                                onclick="togglePassword('loginPassword', this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-accent btn-lg w-100 py-3 mb-4 text-uppercase fw-bold shadow-glow" id="btnLogin" style="letter-spacing: 1px; font-size: 0.95rem;">
+                    Ingresar <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+            </form>
+
+            <p class="text-center text-muted small mb-3">
+                ¿No tienes cuenta?
+                <a asp-controller="Account" asp-action="Register" class="text-gold fw-bold ms-1" style="letter-spacing: 0.5px;">Regístrate aquí</a>
+            </p>
+
+            <div class="text-center">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-link text-muted small text-decoration-none hover-white">
+                    <i class="bi bi-arrow-left me-1"></i>Volver al menú
+                </a>
             </div>
 
-            <button type="submit" class="btn btn-accent w-100 py-2" id="btnLogin">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
-            </button>
-        </form>
-
-        <hr class="my-4" style="border-color:var(--border-subtle);">
-
-        <p class="text-center text-muted small">
-            ¿No tienes cuenta?
-            <a asp-controller="Account" asp-action="Register" class="text-gold fw-semibold">Regístrate aquí</a>
-        </p>
-
-        <p class="text-center mt-2">
-            <a asp-controller="Home" asp-action="Index" class="text-muted small">
-                <i class="bi bi-arrow-left me-1"></i>Volver al menú
-            </a>
-        </p>
-
+        </div>
     </div>
 </div>
 
 @section Scripts {
+<style>
+    .login-page-container {
+        position: relative;
+        min-height: calc(100vh - 80px); /* Ajustar según altura de navbar */
+        margin: -2rem 0; /* Negate container padding if necessary */
+    }
+    .login-bg-image {
+        position: absolute;
+        inset: 0;
+        background-image: url('https://images.unsplash.com/photo-1553621042-f6e147245754?q=80&w=2000&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        z-index: -2;
+    }
+    .login-bg-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(15,15,17,0.95) 0%, rgba(15,15,17,0.4) 100%);
+        z-index: -1;
+    }
+    
+    /* Input Group Seamless Focus */
+    .password-group:focus-within .form-control,
+    .password-group:focus-within .btn {
+        border-color: var(--accent-red) !important;
+    }
+    .password-group:focus-within {
+        box-shadow: 0 0 0 3px rgba(217, 56, 30, 0.15);
+        border-radius: var(--radius-sm);
+    }
+    .password-group:focus-within .form-control {
+        box-shadow: none; /* Removed from input so it applies to group */
+    }
+
+    .fade-in-up {
+        animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .hover-white:hover {
+        color: #fff !important;
+    }
+</style>
+
 <script>
 function togglePassword(id, btn) {
     const input = document.getElementById(id);

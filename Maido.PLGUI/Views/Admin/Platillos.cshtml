@@ -13,116 +13,140 @@
 
     <div class="admin-content">
         <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
             <div>
-                <h2 class="mb-0">Gestión de Platillos</h2>
-                <p class="text-muted small mb-0">@Model.TotalRegistros registros en total</p>
+                <h2 class="mb-0 display-font text-white" style="font-size: 2rem;">Gestión de Platillos</h2>
+                <p class="text-muted small mb-0" style="letter-spacing: 0.5px;">
+                    <i class="bi bi-box-seam me-1 text-gold"></i> @Model.TotalRegistros registros en total
+                </p>
             </div>
-            <a asp-action="CrearPlatillo" class="btn btn-accent">
+            <a asp-action="CrearPlatillo" class="btn btn-accent px-4 py-2 text-uppercase fw-bold shadow-glow" style="font-size: 0.85rem; letter-spacing: 1px;">
                 <i class="bi bi-plus-lg me-2"></i>Nuevo Platillo
             </a>
         </div>
 
-        <!-- Filtros -->
-        <form asp-action="Platillos" method="get" class="row g-2 mb-4">
-            <div class="col-sm-4">
-                <select name="idCategoria" class="form-select" onchange="this.form.submit()">
-                    <option value="">Todas las categorías</option>
-                    @foreach (var cat in categorias)
-                    {
-                        <option value="@cat.IdCategoria" selected="@(idCat == cat.IdCategoria)">@cat.Nombre</option>
-                    }
-                </select>
-            </div>
-            <div class="col-sm-6">
-                <div class="search-wrapper">
-                    <i class="bi bi-search search-icon"></i>
-                    <input type="text" name="busqueda" class="form-control" placeholder="Buscar platillo..." value="@busqueda" />
+        <!-- Filtros (Dashboard Widget) -->
+        <div class="glass-card p-3 mb-4 fade-in-up" style="animation-delay: 0.1s; border-radius: var(--radius-md);">
+            <form asp-action="Platillos" method="get" class="row g-3 align-items-center">
+                <div class="col-md-4">
+                    <select name="idCategoria" class="form-select text-white maido-input border-0" style="background-color: var(--bg-secondary); cursor: pointer;" onchange="this.form.submit()">
+                        <option value="">Todas las categorías</option>
+                        @foreach (var cat in categorias)
+                        {
+                            <option value="@cat.IdCategoria" selected="@(idCat == cat.IdCategoria)">@cat.Nombre</option>
+                        }
+                    </select>
                 </div>
-            </div>
-            <div class="col-sm-2">
-                <button type="submit" class="btn btn-outline-accent w-100">Filtrar</button>
-            </div>
-        </form>
+                <div class="col-md-6">
+                    <div class="search-wrapper position-relative">
+                        <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-accent"></i>
+                        <input type="text" name="busqueda" class="form-control text-white maido-input border-0 ps-5" 
+                               style="background-color: var(--bg-secondary);" placeholder="Buscar platillo..." value="@busqueda" />
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-gold w-100 text-uppercase fw-bold" style="font-size: 0.85rem; padding: 0.6rem;">
+                        Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
 
         <!-- Tabla -->
-        <div class="maido-table">
-            <table class="table table-hover mb-0" style="color:var(--text-primary);">
-                <thead>
-                    <tr>
-                        <th>Platillo</th>
-                        <th>Categoría</th>
-                        <th>Precio</th>
-                        <th>Disponible</th>
-                        <th>Destacado</th>
-                        <th class="text-end">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var p in Model.Items)
-                    {
+        <div class="glass-card p-0 overflow-hidden fade-in-up" style="animation-delay: 0.2s;">
+            <div class="table-responsive">
+                <table class="table maido-table mb-0 align-middle">
+                    <thead>
                         <tr>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    @if (!string.IsNullOrEmpty(p.ImagenUrl))
+                            <th class="ps-4">Platillo</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th>Estado</th>
+                            <th>Destacado</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.Items)
+                        {
+                            <tr class="maido-tr">
+                                <td class="ps-4 py-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        @if (!string.IsNullOrEmpty(p.ImagenUrl))
+                                        {
+                                            <div class="avatar-container">
+                                                <img src="@p.ImagenUrl" alt="@p.Nombre" class="avatar-img" />
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="avatar-placeholder">🍽️</div>
+                                        }
+                                        <div>
+                                            <div class="fw-bold text-white mb-1" style="font-size: 1.05rem;">@p.Nombre</div>
+                                            <div class="text-muted description-truncate">
+                                                @p.Descripcion
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge" style="background: rgba(224, 169, 109, 0.1); color: var(--accent-gold); border: 1px solid rgba(224, 169, 109, 0.2);">
+                                        @p.NombreCategoria
+                                    </span>
+                                </td>
+                                <td class="fw-bold text-white display-font" style="font-size: 1.1rem;">S/ @p.Precio.ToString("F2")</td>
+                                <td>
+                                    @if (p.Disponible)
                                     {
-                                        <img src="@p.ImagenUrl" alt="@p.Nombre" width="44" height="44"
-                                             class="rounded" style="object-fit:cover;" />
+                                        <div class="d-flex align-items-center gap-2 text-white-50 small fw-semibold">
+                                            <span class="status-dot dot-active"></span> Activo
+                                        </div>
                                     }
                                     else
                                     {
-                                        <div style="width:44px;height:44px;background:var(--bg-elevated);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">🍽️</div>
-                                    }
-                                    <div>
-                                        <div class="fw-semibold">@p.Nombre</div>
-                                        <div class="text-muted" style="font-size:0.75rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                                            @p.Descripcion
+                                        <div class="d-flex align-items-center gap-2 text-white-50 small fw-semibold">
+                                            <span class="status-dot dot-inactive"></span> Oculto
                                         </div>
+                                    }
+                                </td>
+                                <td>
+                                    @if (p.Destacado) { 
+                                        <i class="bi bi-star-fill text-gold shadow-gold" style="font-size: 1.1rem;"></i> 
+                                    }
+                                    else { 
+                                        <i class="bi bi-star text-muted" style="opacity: 0.3;"></i> 
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a asp-action="EditarPlatillo" asp-route-id="@p.IdPlatillo"
+                                           class="btn-ghost ghost-edit" title="Editar">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <form asp-action="EliminarPlatillo" method="post" class="d-inline"
+                                              id="formElimP@(p.IdPlatillo)">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@p.IdPlatillo" />
+                                            <button type="button" class="btn-ghost ghost-delete" title="Eliminar"
+                                                    onclick="confirmarEliminacion('formElimP@(p.IdPlatillo)')">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </form>
                                     </div>
-                                </div>
-                            </td>
-                            <td><span class="text-gold">@p.NombreCategoria</span></td>
-                            <td class="fw-bold">S/ @p.Precio.ToString("F2")</td>
-                            <td>
-                                @if (p.Disponible)
-                                {
-                                    <span class="badge bg-success bg-opacity-25 text-success">Activo</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-danger bg-opacity-25 text-danger">Oculto</span>
-                                }
-                            </td>
-                            <td>
-                                @if (p.Destacado) { <i class="bi bi-star-fill text-warning"></i> }
-                                else { <i class="bi bi-star text-muted"></i> }
-                            </td>
-                            <td class="text-end">
-                                <a asp-action="EditarPlatillo" asp-route-id="@p.IdPlatillo"
-                                   class="btn btn-sm btn-outline-accent me-1">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form asp-action="EliminarPlatillo" method="post" class="d-inline"
-                                      id="formElimP@(p.IdPlatillo)">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@p.IdPlatillo" />
-                                    <button type="button" class="btn btn-sm btn-outline-danger"
-                                            onclick="confirmarEliminacion('formElimP@(p.IdPlatillo)')">
-                                        <i class="bi bi-trash3"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Paginación -->
         @if (Model.TotalPaginas > 1)
         {
-            <nav class="mt-4 d-flex justify-content-center">
-                <ul class="pagination">
+            <nav class="mt-5 d-flex justify-content-center fade-in-up" style="animation-delay: 0.3s;">
+                <ul class="pagination pagination-maido gap-2">
                     @for (int i = 1; i <= Model.TotalPaginas; i++)
                     {
                         <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
@@ -138,3 +162,143 @@
         }
     </div>
 </div>
+
+@section Scripts {
+<style>
+    .fade-in-up {
+        animation: fadeInUp 0.5s ease-out forwards;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    @@keyframes fadeInUp {
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Tabla Premium */
+    .maido-table {
+        color: var(--text-primary);
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .maido-table thead th {
+        background: rgba(24, 24, 28, 0.8);
+        border-bottom: 1px solid var(--border);
+        color: var(--text-secondary);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.75rem;
+        padding: 1.25rem 1rem;
+    }
+    .maido-tr {
+        transition: all 0.2s ease;
+    }
+    .maido-tr td {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        background-color: transparent;
+    }
+    .maido-tr:hover td {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+    .maido-tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Avatares Circulares */
+    .avatar-container {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 2px solid rgba(224, 169, 109, 0.3); /* Border Gold subtle */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .avatar-placeholder {
+        width: 48px;
+        height: 48px;
+        background: var(--bg-secondary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        border: 1px solid var(--border);
+    }
+    .description-truncate {
+        font-size: 0.8rem;
+        max-width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Indicadores Neón */
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .dot-active {
+        background-color: #00e676;
+        box-shadow: 0 0 8px #00e676;
+    }
+    .dot-inactive {
+        background-color: var(--accent-red);
+        box-shadow: 0 0 8px var(--accent-red);
+    }
+    .shadow-gold {
+        filter: drop-shadow(0 0 6px rgba(224, 169, 109, 0.6));
+    }
+
+    /* Botones Fantasma */
+    .btn-ghost {
+        background: transparent;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        transition: all 0.2s ease;
+        color: var(--text-muted);
+    }
+    .ghost-edit:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+    .ghost-delete:hover {
+        background: rgba(217, 56, 30, 0.15);
+        color: var(--accent-red);
+        box-shadow: 0 0 15px rgba(217, 56, 30, 0.3);
+    }
+
+    /* Custom Pagination */
+    .pagination-maido .page-link {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        border-radius: var(--radius-sm);
+        min-width: 36px;
+        text-align: center;
+        transition: all 0.2s;
+    }
+    .pagination-maido .page-item:not(.active) .page-link:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: var(--text-muted);
+    }
+    .pagination-maido .page-item.active .page-link {
+        background-color: var(--accent-red);
+        border-color: var(--accent-red);
+        color: white;
+        box-shadow: var(--shadow-glow);
+    }
+</style>
+}

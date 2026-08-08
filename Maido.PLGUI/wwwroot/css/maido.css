@@ -147,6 +147,20 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; color: var(--text-primary); }
 }
 .btn-gold:hover { transform: translateY(-1px); filter: brightness(1.1); color: #1a0a00; }
 
+.btn-outline-gold {
+    border: 1.5px solid var(--accent-gold);
+    color: var(--accent-gold);
+    background: transparent;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition);
+}
+.btn-outline-gold:hover {
+    background: rgba(224, 169, 109, 0.15); /* text-gold con opacidad */
+    color: var(--accent-gold);
+    box-shadow: 0 0 15px rgba(224, 169, 109, 0.3);
+}
+
 .btn-cart {
     background: var(--bg-elevated);
     border: 1.5px solid var(--border-subtle);

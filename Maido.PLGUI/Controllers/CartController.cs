@@ -74,11 +74,17 @@ public class CartController : Controller
     public IActionResult EliminarItem([FromBody] EliminarItemRequest req)
     {
         CarritoHelper.EliminarItem(HttpContext.Session, req.IdPlatillo);
+        var subtotal = CarritoHelper.Subtotal(HttpContext.Session);
+        var igv = Math.Round(subtotal * 0.18m, 2);
+        var total = subtotal + igv;
+        
         return Json(new
         {
             success = true,
             totalItems = CarritoHelper.TotalItems(HttpContext.Session),
-            subtotal = CarritoHelper.Subtotal(HttpContext.Session)
+            subtotal,
+            igv,
+            total
         });
     }
 

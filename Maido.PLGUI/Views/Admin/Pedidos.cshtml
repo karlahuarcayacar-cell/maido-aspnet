@@ -4,9 +4,7 @@
 @{
     ViewData["Title"] = "Monitor de Pedidos - Admin";
     var estadoActual = ViewBag.EstadoActual as string;
-    var fechaInicio  = ViewBag.FechaInicio as DateTime?;
-    var fechaFin     = ViewBag.FechaFin as DateTime?;
-
+    
     var estados = new[] { "Pendiente", "En Preparacion", "En Camino", "Entregado", "Cancelado" };
 }
 
@@ -14,99 +12,120 @@
     @await Html.PartialAsync("_AdminSidebar")
 
     <div class="admin-content">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
             <div>
-                <h2 class="mb-0">Monitor de Pedidos</h2>
-                <p class="text-muted small mb-0">@Model.TotalRegistros pedidos encontrados</p>
+                <h2 class="mb-0 display-font text-white" style="font-size: 2rem;">Monitor de Pedidos</h2>
+                <p class="text-muted small mb-0" style="letter-spacing: 0.5px;">
+                    <i class="bi bi-receipt me-1 text-gold"></i> @Model.TotalRegistros pedidos encontrados
+                </p>
             </div>
         </div>
 
-        <!-- Filtros -->
-        <form asp-action="Pedidos" method="get" class="row g-2 mb-4">
-            <div class="col-sm-3">
-                <select name="estado" class="form-select" onchange="this.form.submit()">
-                    <option value="">Todos los estados</option>
+        <!-- Filtros (Chips Bar) -->
+        <div class="glass-card p-3 mb-4 fade-in-up" style="animation-delay: 0.1s; border-radius: var(--radius-md);">
+            <form asp-action="Pedidos" method="get">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="text-muted small fw-semibold me-2 text-uppercase" style="letter-spacing: 0.5px;">Estado:</span>
+                    
+                    <input type="radio" class="btn-check" name="estado" id="estado_todos" value="" checked="@(string.IsNullOrEmpty(estadoActual))" onchange="this.form.submit()">
+                    <label class="btn btn-chip" for="estado_todos">Todos</label>
+                    
                     @foreach (var e in estados)
                     {
-                        <option value="@e" selected="@(estadoActual == e)">@e</option>
+                        var eId = e.Replace(" ", "").ToLower();
+                        <input type="radio" class="btn-check" name="estado" id="estado_@eId" value="@e" checked="@(estadoActual == e)" onchange="this.form.submit()">
+                        <label class="btn btn-chip" for="estado_@eId">@e</label>
                     }
-                </select>
-            </div>
-            <div class="col-sm-3">
-                <input type="date" name="fechaInicio" class="form-control"
-                       value="@fechaInicio?.ToString("yyyy-MM-dd")" placeholder="Desde" />
-            </div>
-            <div class="col-sm-3">
-                <input type="date" name="fechaFin" class="form-control"
-                       value="@fechaFin?.ToString("yyyy-MM-dd")" placeholder="Hasta" />
-            </div>
-            <div class="col-sm-3">
-                <button type="submit" class="btn btn-outline-accent w-100">
-                    <i class="bi bi-funnel me-1"></i>Filtrar
-                </button>
-            </div>
-        </form>
+                </div>
+            </form>
+        </div>
 
-        <!-- Tabla -->
-        <div class="maido-table">
-            <table class="table table-hover mb-0" style="color:var(--text-primary);">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Cliente</th>
-                        <th>Fecha</th>
-                        <th>Tipo</th>
-                        <th>Pago</th>
-                        <th>Total</th>
-                        <th>Estado</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var p in Model.Items)
-                    {
+        <!-- Tabla de Pedidos -->
+        <div class="glass-card p-0 overflow-hidden fade-in-up" style="animation-delay: 0.2s;">
+            <div class="table-responsive">
+                <table class="table maido-table mb-0 align-middle">
+                    <thead>
                         <tr>
-                            <td class="fw-bold text-gold">#@p.IdPedido</td>
-                            <td>@p.NombreCliente</td>
-                            <td class="text-muted small">@p.FechaPedido.ToString("dd/MM/yy HH:mm")</td>
-                            <td>@p.TipoPedido</td>
-                            <td class="text-muted">@p.MetodoPago</td>
-                            <td class="fw-bold">S/ @p.Total.ToString("F2")</td>
-                            <td><span class="badge-estado badge-@p.Estado.Replace(" ",".")">@p.Estado</span></td>
-                            <td>
-                                <a asp-action="DetallePedido" asp-route-id="@p.IdPedido"
-                                   class="btn btn-sm btn-outline-accent">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </td>
+                            <th class="ps-4">Orden</th>
+                            <th>Cliente</th>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Pago</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th class="text-end pe-4">Acciones</th>
                         </tr>
-                    }
-                    @if (!Model.Items.Any())
-                    {
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
-                                No hay pedidos con los filtros seleccionados.
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.Items)
+                        {
+                            var badgeClass = "badge-default";
+                            if (p.Estado == "Pendiente") badgeClass = "badge-pending";
+                            else if (p.Estado == "En Preparacion") badgeClass = "badge-prep";
+                            else if (p.Estado == "En Camino") badgeClass = "badge-way";
+                            else if (p.Estado == "Entregado") badgeClass = "badge-delivered";
+                            else if (p.Estado == "Cancelado") badgeClass = "badge-cancelled";
+
+                            <tr class="maido-tr">
+                                <td class="ps-4">
+                                    <span class="fw-bold text-gold display-font" style="font-size: 1.1rem; letter-spacing: 1px;">#@p.IdPedido</span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold text-white">@p.NombreCliente</div>
+                                </td>
+                                <td>
+                                    <div class="text-muted small">
+                                        <i class="bi bi-calendar3 me-1"></i> @p.FechaPedido.ToString("dd/MM/yy")<br/>
+                                        <i class="bi bi-clock me-1"></i> @p.FechaPedido.ToString("HH:mm")
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-white-50 small text-uppercase" style="letter-spacing: 0.5px;">@p.TipoPedido</span>
+                                </td>
+                                <td>
+                                    <span class="text-white-50 small">@p.MetodoPago</span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-white display-font" style="font-size: 1.1rem;">S/ @p.Total.ToString("F2")</span>
+                                </td>
+                                <td>
+                                    <span class="maido-badge @badgeClass">@p.Estado</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a asp-action="DetallePedido" asp-route-id="@p.IdPedido"
+                                       class="btn-ghost ghost-view d-inline-flex" title="Ver Detalles">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.Items.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-5">
+                                    <div class="fs-1 mb-2">📄</div>
+                                    No hay pedidos con los filtros seleccionados.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Paginación -->
         @if (Model.TotalPaginas > 1)
         {
-            <nav class="mt-4 d-flex justify-content-center">
-                <ul class="pagination">
+            <nav class="mt-5 d-flex justify-content-center fade-in-up" style="animation-delay: 0.3s;">
+                <ul class="pagination pagination-maido gap-2">
                     @for (int i = 1; i <= Model.TotalPaginas; i++)
                     {
                         <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
                             <a class="page-link"
                                asp-action="Pedidos"
                                asp-route-pagina="@i"
-                               asp-route-estado="@estadoActual"
-                               asp-route-fechaInicio="@fechaInicio?.ToString("yyyy-MM-dd")"
-                               asp-route-fechaFin="@fechaFin?.ToString("yyyy-MM-dd")">@i</a>
+                               asp-route-estado="@estadoActual">@i</a>
                         </li>
                     }
                 </ul>
@@ -114,3 +133,151 @@
         }
     </div>
 </div>
+
+@section Scripts {
+<style>
+    .fade-in-up {
+        animation: fadeInUp 0.5s ease-out forwards;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    @@keyframes fadeInUp {
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Tabla Premium */
+    .maido-table {
+        color: var(--text-primary);
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .maido-table thead th {
+        background: rgba(24, 24, 28, 0.8);
+        border-bottom: 1px solid var(--border);
+        color: var(--text-secondary);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.75rem;
+        padding: 1.25rem 1rem;
+    }
+    .maido-tr {
+        transition: all 0.2s ease;
+    }
+    .maido-tr td {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        background-color: transparent;
+        padding: 1rem;
+    }
+    .maido-tr:hover td {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+    .maido-tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Botones Fantasma */
+    .btn-ghost {
+        background: transparent;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        transition: all 0.2s ease;
+        color: var(--text-muted);
+    }
+    .ghost-view:hover {
+        background: rgba(224, 169, 109, 0.15);
+        color: var(--accent-gold);
+        box-shadow: 0 0 15px rgba(224, 169, 109, 0.3);
+    }
+
+    /* Custom Pagination */
+    .pagination-maido .page-link {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        border-radius: var(--radius-sm);
+        min-width: 36px;
+        text-align: center;
+        transition: all 0.2s;
+    }
+    .pagination-maido .page-item:not(.active) .page-link:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: var(--text-muted);
+    }
+    .pagination-maido .page-item.active .page-link {
+        background-color: var(--accent-red);
+        border-color: var(--accent-red);
+        color: white;
+        box-shadow: var(--shadow-glow);
+    }
+
+    /* Chips Filter */
+    .btn-chip {
+        background-color: transparent;
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        border-radius: 50rem;
+        padding: 0.35rem 1rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .btn-chip:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: var(--text-primary);
+    }
+    .btn-check:checked + .btn-chip {
+        background-color: rgba(217, 56, 30, 0.15);
+        color: var(--accent-red);
+        border-color: var(--accent-red);
+        box-shadow: 0 0 10px rgba(217, 56, 30, 0.3);
+    }
+
+    /* Badges Neón */
+    .maido-badge {
+        padding: 0.35rem 0.65rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+    .badge-pending {
+        background: rgba(224, 169, 109, 0.1);
+        color: var(--accent-gold);
+        border: 1px solid rgba(224, 169, 109, 0.3);
+    }
+    .badge-prep {
+        background: rgba(52, 152, 219, 0.1);
+        color: #5DADE2;
+        border: 1px solid rgba(52, 152, 219, 0.3);
+    }
+    .badge-way {
+        background: rgba(155, 89, 182, 0.1);
+        color: #AF7AC5;
+        border: 1px solid rgba(155, 89, 182, 0.3);
+    }
+    .badge-delivered {
+        background: rgba(46, 204, 113, 0.1);
+        color: #58D68D;
+        border: 1px solid rgba(46, 204, 113, 0.3);
+    }
+    .badge-cancelled {
+        background: rgba(217, 56, 30, 0.1);
+        color: var(--accent-red);
+        border: 1px solid rgba(217, 56, 30, 0.3);
+    }
+    .badge-default {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+    }
+</style>
+}

@@ -3,99 +3,262 @@
 
 @{
     ViewData["Title"] = "Gestión de Usuarios";
+    
+    // Función auxiliar para extraer iniciales
+    string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "U";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+        return (parts[0].Substring(0, 1) + parts[1].Substring(0, 1)).ToUpper();
+    }
 }
 
 <div class="admin-layout">
     @await Html.PartialAsync("_AdminSidebar")
+    
     <div class="admin-content">
-        <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="mb-0">Gestión de Usuarios</h2>
-            <p class="text-muted">Administra los accesos y estado de los clientes y administradores.</p>
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
+            <div>
+                <h2 class="mb-0 display-font text-white" style="font-size: 2rem;">Gestión de Usuarios</h2>
+                <p class="text-muted small mb-0" style="letter-spacing: 0.5px;">
+                    <i class="bi bi-people me-1 text-gold"></i> Administra los accesos y estado del personal y clientes.
+                </p>
+            </div>
         </div>
-    </div>
 
-    <div class="maido-table">
-        <table class="table table-dark table-hover mb-0" style="background-color: transparent;">
-            <thead>
-                <tr>
-                    <th>Nombre Completo</th>
-                    <th>Email</th>
-                    <th>Teléfono</th>
-                    <th>Rol</th>
-                    <th>Registro</th>
-                    <th>Estado</th>
-                    <th class="text-end">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var u in Model)
-                {
-                    <tr>
-                        <td class="fw-bold">@u.NombreCompleto</td>
-                        <td class="text-muted">@u.Email</td>
-                        <td>@(string.IsNullOrEmpty(u.Telefono) ? "-" : u.Telefono)</td>
-                        <td>
-                            @if (u.IdRol == 1)
-                            {
-                                <span class="badge bg-gold text-white border border-gold"><i class="bi bi-shield-lock me-1"></i>Admin</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary bg-opacity-25 border border-secondary border-opacity-25">Cliente</span>
-                            }
-                        </td>
-                        <td class="text-muted small">@u.FechaRegistro.ToString("dd/MM/yyyy")</td>
-                        <td>
-                            @if (u.Activo)
-                            {
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Activo</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">Inactivo</span>
-                            }
-                        </td>
-                        <td class="text-end">
-                            @if (u.IdRol != 1) @* No permitir cambiar estado de admins *@
-                            {
-                                <form asp-action="ToggleUsuario" method="post" class="d-inline" id="formToggle-@u.IdUsuario">
-                                    <input type="hidden" name="idUsuario" value="@u.IdUsuario" />
-                                    <input type="hidden" name="activo" value="@((!u.Activo).ToString().ToLower())" />
-                                    @if (u.Activo)
+        <!-- Tabla de Usuarios -->
+        <div class="glass-card p-0 overflow-hidden fade-in-up" style="animation-delay: 0.1s;">
+            <div class="table-responsive">
+                <table class="table maido-table mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Usuario</th>
+                            <th>Contacto</th>
+                            <th>Rol</th>
+                            <th>Registro</th>
+                            <th>Estado</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var u in Model)
+                        {
+                            var initials = GetInitials(u.NombreCompleto);
+                            
+                            <tr class="maido-tr">
+                                <td class="ps-4 py-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="user-avatar">
+                                            @initials
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-white mb-1" style="font-size: 1.05rem;">@u.NombreCompleto</div>
+                                            <div class="text-muted small">ID: #@u.IdUsuario</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-white-50 small mb-1"><i class="bi bi-envelope me-1"></i> @u.Email</div>
+                                    <div class="text-muted small"><i class="bi bi-telephone me-1"></i> @(string.IsNullOrEmpty(u.Telefono) ? "Sin teléfono" : u.Telefono)</div>
+                                </td>
+                                <td>
+                                    @if (u.IdRol == 1)
                                     {
-                                        <button type="button" class="btn btn-sm btn-outline-danger" title="Desactivar"
-                                                onclick="confirmarToggleUsuario('formToggle-@u.IdUsuario', '@u.NombreCompleto', false)">
-                                            <i class="bi bi-person-x"></i>
-                                        </button>
+                                        <span class="maido-badge badge-admin"><i class="bi bi-shield-lock-fill me-1"></i>Admin</span>
                                     }
                                     else
                                     {
-                                        <button type="button" class="btn btn-sm btn-outline-success" title="Activar"
-                                                onclick="confirmarToggleUsuario('formToggle-@u.IdUsuario', '@u.NombreCompleto', true)">
-                                            <i class="bi bi-person-check"></i>
+                                        <span class="maido-badge badge-client">Cliente</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="text-white-50 small">@u.FechaRegistro.ToString("dd/MM/yyyy")</span>
+                                </td>
+                                <td>
+                                    @if (u.Activo)
+                                    {
+                                        <div class="d-flex align-items-center gap-2 text-white-50 small fw-semibold">
+                                            <span class="status-dot dot-active"></span> Activo
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="d-flex align-items-center gap-2 text-white-50 small fw-semibold">
+                                            <span class="status-dot dot-inactive"></span> Inactivo
+                                        </div>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    @if (u.IdRol != 1)
+                                    {
+                                        <form asp-action="ToggleUsuario" method="post" class="d-inline" id="formToggle-@u.IdUsuario">
+                                            <input type="hidden" name="idUsuario" value="@u.IdUsuario" />
+                                            <input type="hidden" name="activo" value="@((!u.Activo).ToString().ToLower())" />
+                                            @if (u.Activo)
+                                            {
+                                                <button type="button" class="btn-ghost ghost-danger" title="Desactivar"
+                                                        onclick="confirmarToggleUsuario('formToggle-@u.IdUsuario', '@u.NombreCompleto', false)">
+                                                    <i class="bi bi-person-x"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="btn-ghost ghost-success" title="Activar"
+                                                        onclick="confirmarToggleUsuario('formToggle-@u.IdUsuario', '@u.NombreCompleto', true)">
+                                                    <i class="bi bi-person-check"></i>
+                                                </button>
+                                            }
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn-ghost ghost-disabled" title="Rol protegido" disabled>
+                                            <i class="bi bi-shield-fill-check"></i>
                                         </button>
                                     }
-                                </form>
-                            }
-                            else
-                            {
-                                <button class="btn btn-sm btn-outline-secondary disabled" title="Rol protegido"><i class="bi bi-shield-fill-check"></i></button>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        @@keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tabla Premium */
+        .maido-table {
+            color: var(--text-primary);
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        .maido-table thead th {
+            background: rgba(24, 24, 28, 0.8);
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.75rem;
+            padding: 1.25rem 1rem;
+        }
+        .maido-tr {
+            transition: all 0.2s ease;
+        }
+        .maido-tr td {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            background-color: transparent;
+            padding: 1rem;
+        }
+        .maido-tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+        .maido-tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Avatares Dinámicos */
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(224, 169, 109, 0.2) 100%);
+            border: 1px solid rgba(224, 169, 109, 0.3);
+            color: var(--accent-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        /* Indicadores Neón */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .dot-active {
+            background-color: #00e676;
+            box-shadow: 0 0 8px #00e676;
+        }
+        .dot-inactive {
+            background-color: var(--accent-red);
+            box-shadow: 0 0 8px var(--accent-red);
+        }
+
+        /* Badges de Roles */
+        .maido-badge {
+            padding: 0.35rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        .badge-admin {
+            background: rgba(224, 169, 109, 0.1);
+            color: var(--accent-gold);
+            border: 1px solid rgba(224, 169, 109, 0.3);
+            box-shadow: 0 0 10px rgba(224, 169, 109, 0.1);
+        }
+        .badge-client {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        /* Botones Fantasma */
+        .btn-ghost {
+            background: transparent;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+            color: var(--text-muted);
+        }
+        .ghost-danger:hover {
+            background: rgba(217, 56, 30, 0.15);
+            color: var(--accent-red);
+            box-shadow: 0 0 15px rgba(217, 56, 30, 0.3);
+        }
+        .ghost-success:hover {
+            background: rgba(46, 204, 113, 0.15);
+            color: #2ECC71;
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
+        }
+        .ghost-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .ghost-disabled:hover {
+            color: var(--text-muted);
+        }
+
+        /* SweetAlert2 Premium Dark override */
         .swal2-popup.maido-swal-popup {
             background: var(--bg-card);
             color: var(--text-primary);
@@ -107,6 +270,7 @@
             color: var(--text-primary);
         }
     </style>
+    
     <script>
         function confirmarToggleUsuario(formId, nombreUsuario, activando) {
             Swal.fire({
@@ -118,8 +282,10 @@
                 showCancelButton: true,
                 confirmButtonText: activando ? 'Sí, activar' : 'Sí, desactivar',
                 cancelButtonText: 'Cancelar',
-                confirmButtonColor: activando ? '#2E7D32' : '#dc3545',
-                cancelButtonColor: '#6c757d',
+                confirmButtonColor: activando ? '#2ECC71' : '#D9381E',
+                cancelButtonColor: '#2a2a32',
+                background: '#1E1E24',
+                color: '#F4F4F6',
                 customClass: { popup: 'maido-swal-popup' }
             }).then((result) => {
                 if (result.isConfirmed) {

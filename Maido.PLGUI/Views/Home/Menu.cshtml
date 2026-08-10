@@ -10,51 +10,41 @@
     var busqueda = ViewBag.Busqueda as string;
 }
 
-<!-- Hero Section -->
-<section class="section-hero">
-    <div class="container">
-        <p class="text-gold fw-semibold mb-1" style="letter-spacing:0.12em;">COCINA NIKKEI</p>
-        <h1>Descubre el Sabor <span class="text-accent">Maido</span></h1>
-        <div class="divider"></div>
-        <p class="lead">La fusión perfecta entre la tradición japonesa y la riqueza peruana</p>
-
-        <!-- Buscador -->
-        <form id="formBusqueda" asp-controller="Home" asp-action="Menu" method="get" class="mt-4 mx-auto position-relative" style="max-width:540px">
-            <input type="hidden" name="idCategoria" value="@idCatActual" />
-            <div class="search-wrapper glass-card p-1 rounded-pill d-flex align-items-center shadow-lg transition-all" style="background: rgba(30, 30, 36, 0.6);">
-                <i class="bi bi-search text-accent ms-3 me-2 fs-5"></i>
-                <input type="text" name="busqueda" class="form-control form-control-lg bg-transparent border-0 shadow-none text-white px-2"
-                       placeholder="¿Qué se te antoja hoy?" value="@busqueda" id="inputBusqueda" oninput="filtrarInstantaneo()" style="font-size: 1.1rem; height: 3.5rem;" />
-            </div>
-        </form>
-    </div>
-</section>
-
-<!-- Categorías -->
-<section class="py-3 sticky-top" style="top:70px; background: rgba(15,15,17,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index:100; border-bottom:1px solid var(--border);">
-    <div class="container">
-        <div class="d-flex categoria-pills align-items-center">
-            <a href="javascript:void(0)" onclick="cambiarCategoria(null, this)"
-               class="btn btn-categoria @(idCatActual == null && string.IsNullOrEmpty(busqueda) ? "active" : "")">
-                <i class="bi bi-grid-fill me-1"></i>Todos
-            </a>
-            @foreach (var cat in categorias)
-            {
-                <a href="javascript:void(0)" onclick="cambiarCategoria(@cat.IdCategoria, this)"
-                   class="btn btn-categoria @(idCatActual == cat.IdCategoria ? "active" : "")">
-                    <i class="bi @cat.Icono me-1"></i>@cat.Nombre
-                </a>
-            }
+<div class="catalogo-page">
+    <!-- Header -->
+    <div class="cat-header">
+        <div class="container">
+            <h1>Nuestro <span class="text-accent">Menú</span></h1>
+            <p class="text-muted">Descubre toda la experiencia Nikkei de Maido</p>
         </div>
     </div>
-</section>
 
-<!-- Grilla de Platillos -->
-<section class="py-5">
-    <div class="container" id="contenedor-grilla">
-        @await Html.PartialAsync("_PlatillosGrid", Model)
+    <div class="container" style="padding-top:2rem; padding-bottom:4rem">
+        <!-- Filtros -->
+        <div class="filters-bar">
+            <form id="formBusqueda" asp-controller="Home" asp-action="Menu" method="get" class="search-wrap">
+                <input type="hidden" name="idCategoria" value="@idCatActual" />
+                <span class="search-icon">🔍</span>
+                <input type="text" name="busqueda" class="form-input search-input" placeholder="Buscar platillo..."
+                       value="@busqueda" id="inputBusqueda" oninput="filtrarInstantaneo()">
+            </form>
+            <div class="cats-scroll">
+                <button class="cat-chip @(idCatActual == null && string.IsNullOrEmpty(busqueda) ? "active" : "")" onclick="cambiarCategoria(null, this)">Todos</button>
+                @foreach (var cat in categorias)
+                {
+                    <button class="cat-chip @(idCatActual == cat.IdCategoria ? "active" : "")" onclick="cambiarCategoria(@cat.IdCategoria, this)">
+                        @cat.Nombre
+                    </button>
+                }
+            </div>
+        </div>
+
+        <!-- Grilla de Platillos -->
+        <div id="contenedor-grilla">
+            @await Html.PartialAsync("_PlatillosGrid", Model)
+        </div>
     </div>
-</section>
+</div>
 
 @section Scripts {
     <script>
@@ -63,13 +53,14 @@
 
         function cambiarCategoria(idCat, elemento) {
             currentIdCategoria = idCat;
-            // Actualizar UI de active pills
-            document.querySelectorAll('.btn-categoria').forEach(btn => btn.classList.remove('active'));
-            elemento.classList.add('active');
+            document.querySelectorAll('.button-categoria').forEach(button => {
+                button.classList.remove('button-primary');
+                button.classList.add('button-ghost');
+            });
+            elemento.classList.remove('button-ghost');
+            elemento.classList.add('button-primary');
             
-            // Vaciar input de búsqueda al cambiar categoría
             document.getElementById('inputBusqueda').value = '';
-            
             ejecutarFiltro();
         }
 
@@ -77,46 +68,17 @@
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 ejecutarFiltro();
-            }, 350); // 350ms debounce
-        }
-
-        function limpiarFiltros() {
-            document.getElementById('inputBusqueda').value = '';
-            currentIdCategoria = null;
-            document.querySelectorAll('.btn-categoria').forEach(btn => btn.classList.remove('active'));
-            document.querySelector('.btn-categoria').classList.add('active');
-            ejecutarFiltro();
+            }, 350);
         }
 
         function ejecutarFiltro() {
             const busqueda = document.getElementById('inputBusqueda').value;
             const contenedor = document.getElementById('contenedor-grilla');
             
-            // Mostrar Skeleton Loader
-            let skeletonHtml = '<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-4">';
-            for(let i=0; i<8; i++) {
-                skeletonHtml += `
-                    <div class="col">
-                        <div class="skeleton-card">
-                            <div class="skeleton-img"></div>
-                            <div class="p-3">
-                                <div class="skeleton-text" style="width: 70%;"></div>
-                                <div class="skeleton-text" style="width: 40%; margin-bottom: 20px;"></div>
-                                <div class="skeleton-text" style="width: 100%;"></div>
-                                <div class="skeleton-text" style="width: 90%;"></div>
-                            </div>
-                        </div>
-                    </div>`;
-            }
-            skeletonHtml += '</div>';
-            contenedor.innerHTML = skeletonHtml;
-
-            // Hacer fetch
             let url = '/Home/FiltrarMenu?';
             if (currentIdCategoria) url += 'idCategoria=' + currentIdCategoria + '&';
             if (busqueda) url += 'busqueda=' + encodeURIComponent(busqueda);
 
-            // Cambiar la URL en el navegador sin recargar usando History API
             window.history.replaceState({}, '', '/Home/Menu?' + (url.split('?')[1] || ''));
 
             fetch(url)
@@ -126,14 +88,14 @@
                 })
                 .catch(err => {
                     console.error('Error fetching menu:', err);
-                    contenedor.innerHTML = '<div class="alert alert-danger">Ocurrió un error cargando el menú.</div>';
+                    contenedor.innerHTML = '<div style="color: var(--danger);">Ocurrió un error cargando el menú.</div>';
                 });
         }
         
-        // Evitar submit del form
         document.getElementById('formBusqueda').addEventListener('submit', function(e) {
             e.preventDefault();
             filtrarInstantaneo();
         });
     </script>
 }
+

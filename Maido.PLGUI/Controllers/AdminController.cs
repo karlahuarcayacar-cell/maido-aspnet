@@ -270,11 +270,23 @@ public class AdminController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ActualizarEstadoPedido(int idPedido, string estado)
+    public async Task<IActionResult> ActualizarEstadoPedido(int idPedido, string estado, string? returnUrl = null)
     {
         if (!EsAdmin()) return AccesoDenegado();
         await _pedidoService.ActualizarEstadoAsync(idPedido, estado);
-        TempData["Exito"] = "Estado del pedido actualizado.";
+        TempData["Exito"] = $"Estado del pedido #{idPedido} actualizado a '{estado}'.";
+
+        if (!string.IsNullOrEmpty(returnUrl))
+        {
+            return Redirect(returnUrl);
+        }
+
+        var referer = Request.Headers["Referer"].ToString();
+        if (!string.IsNullOrEmpty(referer))
+        {
+            return Redirect(referer);
+        }
+
         return RedirectToAction("DetallePedido", new { id = idPedido });
     }
 

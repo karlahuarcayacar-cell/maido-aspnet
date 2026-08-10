@@ -8,326 +8,224 @@
     var busqueda = ViewBag.Busqueda as string;
 }
 
+<style>
+    /* --- Filter bar --- */
+    .filter-bar {
+      display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+    }
+    .filter-chip {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.45rem 1rem; border-radius: 999px;
+      border: 1px solid var(--border, #333); background: transparent;
+      color: var(--text-muted, #aaa); cursor: pointer; font-family: inherit;
+      font-size: 0.85rem; transition: all 0.2s; text-decoration: none;
+    }
+    .filter-chip:hover { border-color: var(--accent-gold, #e0a96d); color: var(--text-primary, #fff); }
+    .filter-chip.active {
+      background: rgba(224,169,109,0.12); border-color: var(--accent-gold, #e0a96d);
+      color: var(--accent-gold, #e0a96d); font-weight: 600;
+    }
+    .chip-count {
+      background: rgba(255,255,255,0.08); padding: 1px 7px;
+      border-radius: 999px; font-size: 0.75rem; font-weight: 600;
+    }
+    .filter-chip.active .chip-count {
+      background: rgba(224,169,109,0.2);
+    }
+
+    /* --- Toggle switch --- */
+    .toggle-switch {
+      position: relative; display: inline-block; width: 40px; height: 22px; cursor: pointer;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: #444; border-radius: 22px; transition: 0.25s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute; height: 16px; width: 16px;
+      left: 3px; bottom: 3px; background: #fff; border-radius: 50%;
+      transition: 0.25s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: #4caf50; }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+    /* --- Row states --- */
+    .row-inactive td:not(:last-child) { opacity: 0.4; }
+    .row-agotado td:not(:last-child):not(:nth-child(5)) { opacity: 0.55; }
+
+    /* --- Status badges --- */
+    .status-badge {
+      display: inline-block; margin-left: 0.5rem; font-size: 0.7rem;
+      padding: 2px 8px; border-radius: 4px; font-weight: 600;
+    }
+    .badge-deleted { background: rgba(244,67,54,0.15); color: #f44336; }
+    .badge-agotado { background: rgba(255,152,0,0.15); color: #ff9800; }
+
+    /* --- Buttons --- */
+    .btn-restore { color: #4caf50 !important; border-color: #4caf50 !important; }
+    .btn-restore:hover { background: rgba(76,175,80,0.1); }
+    .btn-danger {
+      background: #D9381E; color: #fff; border: none; padding: 0.6rem 1.5rem;
+      border-radius: var(--radius-sm, 4px); cursor: pointer; font-weight: 600;
+      font-family: inherit; font-size: 0.9rem; transition: background 0.2s;
+    }
+    .btn-danger:hover { background: #b52d17; }
+
+    /* --- Confirm modal --- */
+    .confirm-box {
+      background: var(--bg-card, #1e1e24); border: 1px solid var(--border, #333); border-radius: var(--radius-lg, 8px);
+      padding: 2.5rem; width: 100%; max-width: 400px; box-shadow: var(--shadow-card);
+      text-align: center; animation: confirmIn 0.2s ease-out;
+    }
+    .confirm-icon {
+      font-size: 2.5rem; margin-bottom: 1rem;
+      animation: confirmShake 0.4s ease-in-out;
+    }
+    @@keyframes confirmIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @@keyframes confirmShake {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-8deg); }
+      75% { transform: rotate(8deg); }
+    }
+</style>
+
 <div class="admin-layout">
     @await Html.PartialAsync("_AdminSidebar")
 
     <div class="admin-content">
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
-            <div>
-                <h2 class="mb-0 display-font text-white" style="font-size: 2rem;">Gestión de Platillos</h2>
-                <p class="text-muted small mb-0" style="letter-spacing: 0.5px;">
-                    <i class="bi bi-box-seam me-1 text-gold"></i> @Model.TotalRegistros registros en total
-                </p>
+        <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+                <div>
+                    <h1 style="margin-bottom:0.25rem">Gestión de <span class="text-accent">Platillos</span></h1>
+                    <p class="text-muted">@Model.TotalRegistros platillos en total</p>
+                </div>
+                <a asp-action="CrearPlatillo" class="btn btn-primary">+ Nuevo Platillo</a>
             </div>
-            <a asp-action="CrearPlatillo" class="btn btn-accent px-4 py-2 text-uppercase fw-bold shadow-glow" style="font-size: 0.85rem; letter-spacing: 1px;">
-                <i class="bi bi-plus-lg me-2"></i>Nuevo Platillo
-            </a>
-        </div>
 
-        <!-- Filtros (Dashboard Widget) -->
-        <div class="glass-card p-3 mb-4 fade-in-up" style="animation-delay: 0.1s; border-radius: var(--radius-md);">
-            <form asp-action="Platillos" method="get">
-                
-                <!-- Buscador -->
-                <div class="d-flex gap-2 align-items-center mb-3">
-                    <div class="search-wrapper position-relative flex-grow-1">
-                        <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-accent"></i>
-                        <input type="text" name="busqueda" class="form-control text-white maido-input border-0 ps-5" 
-                               style="background-color: var(--bg-secondary);" placeholder="Buscar platillo por nombre o descripción..." value="@busqueda" />
-                    </div>
-                    <button type="submit" class="btn btn-outline-gold text-uppercase fw-bold px-4" style="font-size: 0.85rem; padding: 0.6rem;">
-                        Buscar
-                    </button>
-                </div>
+            <!-- Filtros -->
+            <div class="filter-bar">
+                <a asp-action="Platillos" asp-route-idCategoria="" asp-route-busqueda="@busqueda" class="filter-chip @(!idCat.HasValue ? "active" : "")">
+                    📋 Todos <span class="chip-count">@Model.TotalRegistros</span>
+                </a>
+                @foreach (var cat in categorias)
+                {
+                    <a asp-action="Platillos" asp-route-idCategoria="@cat.IdCategoria" asp-route-busqueda="@busqueda" class="filter-chip @(idCat == cat.IdCategoria ? "active" : "")">
+                        @cat.Nombre
+                    </a>
+                }
+            </div>
 
-                <!-- Chips de Categorías -->
-                <div class="d-flex flex-wrap gap-2 align-items-center">
-                    <span class="text-muted small fw-semibold me-2 text-uppercase" style="letter-spacing: 0.5px;">Categorías:</span>
-                    
-                    <input type="radio" class="btn-check" name="idCategoria" id="cat_all" value="" checked="@(!idCat.HasValue)" onchange="this.form.submit()">
-                    <label class="btn btn-chip" for="cat_all">Todas</label>
-                    
-                    @foreach (var cat in categorias)
-                    {
-                        <input type="radio" class="btn-check" name="idCategoria" id="cat_@cat.IdCategoria" value="@cat.IdCategoria" checked="@(idCat == cat.IdCategoria)" onchange="this.form.submit()">
-                        <label class="btn btn-chip" for="cat_@cat.IdCategoria">@cat.Nombre</label>
-                    }
-                </div>
-
-            </form>
-        </div>
-
-        <!-- Tabla -->
-        <div class="maido-table fade-in-up" style="animation-delay: 0.2s;">
-            <div class="table-responsive">
-                <table class="table mb-0 align-middle">
+            <!-- Table -->
+            <div class="table-wrapper card">
+                <table>
                     <thead>
-                        <tr>
-                            <th class="ps-4">Platillo</th>
-                            <th>Categoría</th>
-                            <th>Precio</th>
-                            <th>Estado</th>
-                            <th>Destacado</th>
-                            <th class="text-end pe-4">Acciones</th>
-                        </tr>
+                        <tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>En Stock</th><th>Acciones</th></tr>
                     </thead>
                     <tbody>
                         @foreach (var p in Model.Items)
                         {
-                            <tr class="maido-tr">
-                                <td class="ps-4 py-3">
-                                    <div class="d-flex align-items-center gap-3">
-                                        @if (!string.IsNullOrEmpty(p.ImagenUrl))
-                                        {
-                                            <div class="avatar-container">
-                                                <img src="@p.ImagenUrl" alt="@p.Nombre" class="avatar-img" />
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <div class="avatar-placeholder">🍽️</div>
-                                        }
-                                        <div>
-                                            <div class="fw-bold text-white mb-1" style="font-size: 1.05rem;">@p.Nombre</div>
-                                            <div class="text-muted description-truncate">
-                                                @p.Descripcion
-                                            </div>
-                                        </div>
-                                    </div>
+                            <tr class="@(!p.Disponible ? "row-agotado" : "")">
+                                <td>
+                                    <img src="@(string.IsNullOrEmpty(p.ImagenUrl) ? "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=60" : p.ImagenUrl)"
+                                         alt="@p.Nombre"
+                                         style="width:52px;height:40px;object-fit:cover;border-radius:6px"
+                                         onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=60'" />
                                 </td>
                                 <td>
-                                    <span class="badge" style="background: rgba(224, 169, 109, 0.1); color: var(--accent-gold); border: 1px solid rgba(224, 169, 109, 0.2);">
-                                        @p.NombreCategoria
-                                    </span>
-                                </td>
-                                <td class="fw-bold text-white display-font" style="font-size: 1.1rem;">S/ @p.Precio.ToString("F2")</td>
-                                <td>
-                                    @if (p.Disponible)
+                                    <b>@p.Nombre</b>
+                                    @if (!p.Disponible)
                                     {
-                                        <div class="d-flex align-items-center gap-2 text-white-50 small fw-semibold">
-                                            <span class="status-dot dot-active"></span> Activo
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="d-flex align-items-center gap-2 text-white-50 small fw-semibold">
-                                            <span class="status-dot dot-inactive"></span> Oculto
-                                        </div>
+                                        <span class="status-badge badge-agotado">Agotado</span>
                                     }
                                 </td>
+                                <td><span class="badge badge-gold">@p.NombreCategoria</span></td>
+                                <td class="price">S/ @p.Precio.ToString("F2")</td>
                                 <td>
-                                    @if (p.Destacado) { 
-                                        <i class="bi bi-star-fill text-gold shadow-gold" style="font-size: 1.1rem;"></i> 
-                                    }
-                                    else { 
-                                        <i class="bi bi-star text-muted" style="opacity: 0.3;"></i> 
-                                    }
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" @(p.Disponible ? "checked" : "") disabled />
+                                        <span class="toggle-slider"></span>
+                                    </label>
                                 </td>
-                                <td class="text-end pe-4">
-                                    <div class="d-flex justify-content-end gap-2">
-                                        <a asp-action="EditarPlatillo" asp-route-id="@p.IdPlatillo"
-                                           class="btn-ghost ghost-edit" title="Editar">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
-                                        <form asp-action="EliminarPlatillo" method="post" class="d-inline"
-                                              id="formElimP@(p.IdPlatillo)">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@p.IdPlatillo" />
-                                            <button type="button" class="btn-ghost ghost-delete" title="Eliminar"
-                                                    onclick="confirmarEliminacion('formElimP@(p.IdPlatillo)')">
-                                                <i class="bi bi-trash3"></i>
-                                            </button>
-                                        </form>
-                                    </div>
+                                <td style="display:flex;gap:0.5rem">
+                                    <a asp-action="EditarPlatillo" asp-route-id="@p.IdPlatillo" class="btn btn-ghost btn-sm" title="Editar">✏️</a>
+                                    <form asp-action="EliminarPlatillo" method="post" style="margin:0;" id="formElimP@(p.IdPlatillo)">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@p.IdPlatillo" />
+                                        <button type="button" class="btn btn-ghost btn-sm" style="color:#f44336;border-color:#f44336" title="Eliminar" onclick="confirmarEliminacion('formElimP@(p.IdPlatillo)', '@p.Nombre')">🗑</button>
+                                    </form>
                                 </td>
+                            </tr>
+                        }
+                        @if (!Model.Items.Any())
+                        {
+                            <tr>
+                                <td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted)">No hay platillos en esta categoría</td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
-        </div>
 
-        <!-- Paginación -->
-        @if (Model.TotalPaginas > 1)
-        {
-            <nav class="mt-5 d-flex justify-content-center fade-in-up" style="animation-delay: 0.3s;">
-                <ul class="pagination pagination-maido gap-2">
-                    @for (int i = 1; i <= Model.TotalPaginas; i++)
+            <!-- Paginación -->
+            @if (Model.TotalPaginas > 1)
+            {
+                <div style="display:flex;justify-content:center;align-items:center;gap:1rem;margin-top:1.5rem">
+                    @if (Model.PaginaActual > 1)
                     {
-                        <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
-                            <a class="page-link"
-                               asp-action="Platillos"
-                               asp-route-pagina="@i"
-                               asp-route-idCategoria="@idCat"
-                               asp-route-busqueda="@busqueda">@i</a>
-                        </li>
+                        <a asp-action="Platillos" asp-route-pagina="@(Model.PaginaActual - 1)" asp-route-idCategoria="@idCat" asp-route-busqueda="@busqueda" class="btn btn-secondary">Anterior</a>
                     }
-                </ul>
-            </nav>
-        }
+                    else
+                    {
+                        <button class="btn btn-secondary" disabled>Anterior</button>
+                    }
+
+                    <span class="text-muted">Página @Model.PaginaActual de @Model.TotalPaginas</span>
+
+                    @if (Model.PaginaActual < Model.TotalPaginas)
+                    {
+                        <a asp-action="Platillos" asp-route-pagina="@(Model.PaginaActual + 1)" asp-route-idCategoria="@idCat" asp-route-busqueda="@busqueda" class="btn btn-secondary">Siguiente</a>
+                    }
+                    else
+                    {
+                        <button class="btn btn-secondary" disabled>Siguiente</button>
+                    }
+                </div>
+            }
+        </div>
     </div>
 </div>
 
 @section Scripts {
-<style>
-    .fade-in-up {
-        animation: fadeInUp 0.5s ease-out forwards;
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    @@keyframes fadeInUp {
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Tabla Premium */
-    .maido-table {
-        color: var(--text-primary);
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-    .maido-table thead th {
-        background: rgba(24, 24, 28, 0.8);
-        border-bottom: 1px solid var(--border);
-        color: var(--text-secondary);
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-size: 0.75rem;
-        padding: 1.25rem 1rem;
-    }
-    .maido-tr {
-        transition: all 0.2s ease;
-    }
-    .maido-tr td {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        background-color: transparent;
-    }
-    .maido-tr:hover td {
-        background-color: rgba(255, 255, 255, 0.02);
-    }
-    .maido-tr:last-child td {
-        border-bottom: none;
-    }
-
-    /* Avatares Circulares */
-    .avatar-container {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        overflow: hidden;
-        border: 2px solid rgba(224, 169, 109, 0.3); /* Border Gold subtle */
-        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    }
-    .avatar-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .avatar-placeholder {
-        width: 48px;
-        height: 48px;
-        background: var(--bg-secondary);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.3rem;
-        border: 1px solid var(--border);
-    }
-    .description-truncate {
-        font-size: 0.8rem;
-        max-width: 250px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    /* Indicadores Neón */
-    .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        display: inline-block;
-    }
-    .dot-active {
-        background-color: #00e676;
-        box-shadow: 0 0 8px #00e676;
-    }
-    .dot-inactive {
-        background-color: var(--accent-red);
-        box-shadow: 0 0 8px var(--accent-red);
-    }
-    .shadow-gold {
-        filter: drop-shadow(0 0 6px rgba(224, 169, 109, 0.6));
-    }
-
-    /* Botones Fantasma */
-    .btn-ghost {
-        background: transparent;
-        border: none;
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-        transition: all 0.2s ease;
-        color: var(--text-muted);
-    }
-    .ghost-edit:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: #fff;
-    }
-    .ghost-delete:hover {
-        background: rgba(217, 56, 30, 0.15);
-        color: var(--accent-red);
-        box-shadow: 0 0 15px rgba(217, 56, 30, 0.3);
-    }
-
-    /* Custom Pagination */
-    .pagination-maido .page-link {
-        background-color: var(--bg-secondary);
-        border: 1px solid var(--border);
-        color: var(--text-primary);
-        border-radius: var(--radius-sm);
-        min-width: 36px;
-        text-align: center;
-        transition: all 0.2s;
-    }
-    .pagination-maido .page-item:not(.active) .page-link:hover {
-        background-color: rgba(255, 255, 255, 0.05);
-        border-color: var(--text-muted);
-    }
-    .pagination-maido .page-item.active .page-link {
-        background-color: var(--accent-red);
-        border-color: var(--accent-red);
-        color: white;
-        box-shadow: var(--shadow-glow);
-    }
-
-    /* Chips Filter */
-    .btn-chip {
-        background-color: transparent;
-        color: var(--text-muted);
-        border: 1px solid var(--border);
-        border-radius: 50rem; /* pill shape */
-        padding: 0.35rem 1rem;
-        font-size: 0.85rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        cursor: pointer;
-    }
-    .btn-chip:hover {
-        background-color: rgba(255, 255, 255, 0.05);
-        color: var(--text-primary);
-    }
-    .btn-check:checked + .btn-chip {
-        background-color: rgba(217, 56, 30, 0.15); /* Soft red background */
-        color: var(--accent-red);
-        border-color: var(--accent-red);
-        box-shadow: 0 0 10px rgba(217, 56, 30, 0.3);
-    }
-</style>
+    <script>
+        function confirmarEliminacion(formId, nombre) {
+            Swal.fire({
+                title: 'Eliminar platillo',
+                html: `<p class="text-muted" style="margin-bottom:0.25rem">¿Estás seguro de que deseas eliminar</p>
+                       <p style="font-weight:700;color:var(--accent-gold);margin-bottom:0.75rem;font-size:1.1rem">"${nombre || 'este platillo'}"?</p>
+                       <p class="text-muted" style="font-size:0.82rem;margin-bottom:0">Podrás restaurarlo en cualquier momento desde esta misma tabla.</p>`,
+                iconHtml: '<span style="font-size:2.5rem;display:block;">🗑</span>',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#D9381E',
+                cancelButtonColor: 'rgba(255,255,255,0.05)',
+                background: '#1E1E24',
+                color: '#F4F4F6',
+                customClass: {
+                    popup: 'maido-swal-popup',
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-ghost'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(formId).submit();
+                }
+            });
+        }
+    </script>
 }

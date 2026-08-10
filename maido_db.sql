@@ -127,11 +127,11 @@ GO
 
 -- Categorias
 INSERT INTO Categorias (Nombre, Descripcion, Icono, Orden) VALUES
-('Entradas',        'Aperitivos y ensaladas nikkei',             'bi-egg-fried',   1),
-('Nikkei Rolls',    'Rolls fusion peruano-japonesa',             'bi-circle',      2),
-('Platos de Fondo', 'Platos principales de la cocina nikkei',    'bi-bowl-hot',    3),
-('Postres',         'Dulces y postres de inspiracion japonesa',  'bi-cake',        4),
-('Bebidas',         'Pisco Sour, cocteles y bebidas orientales', 'bi-cup-straw',   5);
+    ('Entradas y Piqueos', 'Pequeños platillos para iniciar la experiencia', 'bi-cup-hot', 1),
+    ('Makis y Sushi', 'Rollos y cortes frescos con el toque nikkei',         'bi-record-circle',   2),
+    ('Platos de Fondo', 'Platos principales de la cocina nikkei',    'bi-egg-fried',    3),
+    ('Postres', 'El final perfecto y dulce para tu comida',            'bi-cake',          4),
+    ('Bebidas y Cocteles', 'Bebidas refrescantes y coctelería de autor',     'bi-cup-straw',     5);
 GO
 
 -- Platillos

@@ -1,7 +1,7 @@
 @using Maido.Application.BL.BC.DTOs
 @using Maido.PLGUI.Models
 @{
-    ViewData["Title"] = "Tu Pedido - Maido";
+    ViewData["Title"] = "Mi Carrito - Maido";
     var carrito = ViewBag.Carrito as List<CarritoItem> ?? new List<CarritoItem>();
     var subtotal = (decimal)(ViewBag.Subtotal ?? 0m);
     var igv = (decimal)(ViewBag.IGV ?? 0m);
@@ -9,146 +9,119 @@
     var sugerencias = ViewBag.Sugerencias as IEnumerable<PlatilloDto> ?? new List<PlatilloDto>();
 }
 
-<div class="container page-transition" style="margin-top: 5rem; margin-bottom: 5rem;">
-    <!-- Title Section -->
-    <header class="mb-5">
-        <h1 class="display-font fs-1 text-white mb-2 fw-bold">Tu Pedido</h1>
-        <div class="accent-line"></div>
-    </header>
+<div class="carrito-page">
+    <div class="container">
+        <h1 style="margin-bottom:0.5rem">🛒 Mi <span class="text-accent">Carrito</span></h1>
+        <p class="text-muted" style="margin-bottom:2.5rem" id="items-count-text">@carrito.Count @(carrito.Count == 1 ? "platillo" : "platillos") seleccionados</p>
 
-    <div class="row g-5">
-        <!-- Product List -->
-        <section class="col-lg-8">
-            <div class="d-flex flex-column gap-4" id="cart-items-container">
-                @if (!carrito.Any())
-                {
-                    <div class="glass-card p-5 text-center text-muted" id="empty-cart-msg">
-                        <i class="bi bi-bag-x mb-4 d-block text-accent shadow-glow" style="font-size: 4rem;"></i>
-                        <h4 class="display-font text-white mb-3">Tu carrito está vacío</h4>
-                        <p class="mb-4">Parece que aún no has decidido qué probar. Descubre nuestros exquisitos platos y dale un gusto a tu paladar.</p>
-                        <a href="/Home/Menu" class="btn btn-accent px-4 py-2 fw-bold shadow-glow text-uppercase" style="letter-spacing: 1px;">Explorar Menú</a>
-                    </div>
-                }
-                else
-                {
-                    foreach (var item in carrito)
+        @if (!carrito.Any())
+        {
+            <div class="empty-cart" id="empty-cart-msg">
+                <p style="font-size:4rem">🍱</p>
+                <h3>Tu carrito está vacío</h3>
+                <p class="text-muted">Explora nuestro menú y agrega platillos</p>
+                <a asp-controller="Home" asp-action="Menu" class="btn btn-primary" style="margin-top:1.5rem">Ver Menú</a>
+            </div>
+        }
+        else
+        {
+            <div class="cart-layout" id="cart-content-layout">
+                <!-- Items -->
+                <div class="cart-items" id="cart-items-container">
+                    @foreach (var item in carrito)
                     {
-                        <div class="glass-card p-4 d-flex flex-column flex-md-row gap-4 align-items-center transition-all item-row" id="row-@item.IdPlatillo">
-                            <div class="item-img shadow">
-                                <img src="@item.ImagenUrl" alt="@item.Nombre" class="w-100 h-100 opacity-75" style="object-fit: cover;" />
+                        <div class="cart-item card" id="grid-layout-@item.IdPlatillo">
+                            <img src="@(string.IsNullOrEmpty(item.ImagenUrl) ? "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200" : item.ImagenUrl)"
+                                 alt="@item.Nombre" class="item-img" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200'">
+                            <div class="item-info">
+                                <h4>@item.Nombre</h4>
+                                <p class="price">S/ @item.Precio.ToString("F2")</p>
                             </div>
-                            <div class="flex-grow-1 text-center text-md-start">
-                                <h3 class="fs-5 text-white mb-1 fw-semibold display-font">@item.Nombre</h3>
-                                <p class="text-muted small mb-0">Deliciosa preparación estilo Nikkei Noir.</p>
+                            <div class="item-qty">
+                                <button type="button" class="qty-btn" onclick="actualizarQtyLocal(@item.IdPlatillo, @(item.Cantidad - 1), @item.Precio)" id="button-minus-@item.IdPlatillo" aria-label="Disminuir">&minus;</button>
+                                <span class="qty-num" id="qty-val-@item.IdPlatillo">@item.Cantidad</span>
+                                <button type="button" class="qty-btn" onclick="actualizarQtyLocal(@item.IdPlatillo, @(item.Cantidad + 1), @item.Precio)" id="button-plus-@item.IdPlatillo" aria-label="Aumentar">+</button>
                             </div>
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="qty-control-box">
-                                    <button class="btn-qty btn-minus" onclick="actualizarQtyLocal(@item.IdPlatillo, @(item.Cantidad - 1), @item.Precio)" id="btn-minus-@item.IdPlatillo">
-                                        <i class="bi bi-dash"></i>
-                                    </button>
-                                    <span class="px-3 fw-bold display-font text-white" id="qty-val-@item.IdPlatillo">@item.Cantidad</span>
-                                    <button class="btn-qty btn-plus" onclick="actualizarQtyLocal(@item.IdPlatillo, @(item.Cantidad + 1), @item.Precio)">
-                                        <i class="bi bi-plus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="text-end" style="min-width: 100px;">
-                                <span class="d-block text-gold fw-bold display-font fs-5" id="subt-val-@item.IdPlatillo">S/ @item.Subtotal.ToString("F2")</span>
-                                <button class="btn btn-link text-muted hover-accent text-decoration-none p-0 mt-2 d-flex align-items-center gap-1 ms-auto" onclick="removerItemLocal(@item.IdPlatillo)">
-                                    <i class="bi bi-trash3"></i> <span style="font-size: 0.75rem; letter-spacing:1px;" class="text-uppercase fw-bold">Quitar</span>
-                                </button>
+                            <div class="item-total">
+                                <p class="price" id="subt-val-@item.IdPlatillo">S/ @item.Subtotal.ToString("F2")</p>
+                                <button class="btn btn-ghost btn-sm" onclick="removerItemLocal(@item.IdPlatillo)" style="color:#f44336;border-color:#f44336">🗑</button>
                             </div>
                         </div>
                     }
-                }
-            </div>
+                </div>
 
-            <!-- Suggestions Section -->
-            @if (sugerencias.Any())
-            {
-                <div class="mt-5 pt-4 border-top border-secondary">
-                    <h2 class="fs-5 text-white mb-4 d-flex align-items-center gap-2 display-font">
-                        <i class="bi bi-stars text-accent"></i>
-                        También podría gustarte
-                    </h2>
-                    <div class="row g-4">
-                        @foreach (var sug in sugerencias)
+                <!-- Resumen -->
+                <div class="cart-summary card card-body">
+                    <h3 style="margin-bottom:1.5rem">Resumen del Pedido</h3>
+                    <div id="summary-rows-container">
+                        @foreach (var item in carrito)
                         {
-                            <div class="col-md-6">
-                                <div class="glass-card p-3 d-flex gap-3 align-items-center suggestion-card">
-                                    <div class="sug-img shadow">
-                                        <img src="@sug.ImagenUrl" alt="@sug.Nombre" class="w-100 h-100 opacity-75" style="object-fit:cover;" />
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h4 class="mb-0 fs-6 text-white text-uppercase" style="font-size:0.85rem; letter-spacing:1px;">@sug.Nombre</h4>
-                                        <span class="text-gold display-font fw-bold">S/ @sug.Precio.ToString("F2")</span>
-                                    </div>
-                                    <button class="btn btn-outline-accent rounded-circle shadow-glow" style="width:40px; height:40px; padding:0;" onclick="agregarAlCarrito(@sug.IdPlatillo, 1)">
-                                        <i class="bi bi-plus fs-5"></i>
-                                    </button>
-                                </div>
+                            <div class="summary-row" id="summary-row-@item.IdPlatillo">
+                                <span class="text-muted">@item.Nombre x<span id="summary-qty-@item.IdPlatillo">@item.Cantidad</span></span>
+                                <span id="summary-subt-@item.IdPlatillo">S/ @item.Subtotal.ToString("F2")</span>
                             </div>
                         }
                     </div>
-                </div>
-            }
-        </section>
-
-        <!-- Order Summary Sidebar -->
-        <aside class="col-lg-4">
-            <div class="glass-card p-4 position-sticky" style="top: 100px; z-index: 1010;">
-                <h2 class="fs-4 text-white mb-4 display-font fw-bold">Resumen</h2>
-                
-                <div class="d-flex flex-column gap-3 mb-4 border-bottom border-secondary pb-4">
-                    <div class="d-flex justify-content-between text-muted">
+                    <hr class="divider" style="margin: 1rem 0;">
+                    <div class="summary-row text-muted" style="font-size:0.9rem">
                         <span>Subtotal</span>
-                        <span class="display-font fw-bold text-white" id="resumen-subtotal">S/ @subtotal.ToString("F2")</span>
+                        <span id="resumen-subtotal">S/ @subtotal.ToString("F2")</span>
                     </div>
-                    <div class="d-flex justify-content-between text-muted">
+                    <div class="summary-row text-muted" style="font-size:0.9rem">
                         <span>IGV (18%)</span>
-                        <span class="display-font fw-bold text-white" id="resumen-igv">S/ @igv.ToString("F2")</span>
+                        <span id="resumen-igv">S/ @igv.ToString("F2")</span>
                     </div>
-                    <div class="d-flex justify-content-between pt-2">
-                        <span class="fs-5 fw-bold text-white display-font">Total</span>
-                        <span class="text-accent display-font fs-4 fw-bold" id="resumen-total">S/ @total.ToString("F2")</span>
+                    <hr class="divider divider-gold">
+                    <div class="summary-row summary-total">
+                        <span>Total</span>
+                        <span class="price" style="font-size:1.3rem" id="resumen-total">S/ @total.ToString("F2")</span>
                     </div>
-                </div>
-
-                <a href="@(carrito.Any() ? "/Cart/Checkout" : "#")" id="btn-proceder-pago" class="btn btn-accent w-100 py-3 text-uppercase fw-bold nikkei-glow-red d-flex align-items-center justify-content-center gap-2 @(!carrito.Any() ? "disabled" : "")">
-                    Proceder al Pago
-                    <i class="bi bi-arrow-right"></i>
-                </a>
-
-                <div class="mt-4 d-flex justify-content-center align-items-center gap-2 text-muted">
-                    <i class="bi bi-lock-fill"></i>
-                    <span style="font-size: 10px; letter-spacing:1px;" class="fw-bold">PAGO 100% SEGURO Y CIFRADO</span>
+                    <a asp-controller="Cart" asp-action="Checkout" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1.5rem" id="button-proceder-pago">
+                        Completar mi pedido →
+                    </a>
+                    <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:0.75rem" onclick="vaciarCarritoLocal()">
+                        Vaciar carrito
+                    </button>
                 </div>
             </div>
-        </aside>
+        }
     </div>
 </div>
 
 @section Scripts {
     <script>
-        // Update DOM function
-        function setDOMResumen(subtotal, igv, total) {
-            document.getElementById('resumen-subtotal').textContent = `S/ ${subtotal.toFixed(2)}`;
-            document.getElementById('resumen-igv').textContent = `S/ ${igv.toFixed(2)}`;
-            document.getElementById('resumen-total').textContent = `S/ ${total.toFixed(2)}`;
+        function updateCartCountText(totalItems) {
+            const countElem = document.getElementById('items-count-text');
+            if (countElem) {
+                countElem.textContent = `${totalItems} ${totalItems === 1 ? 'platillo' : 'platillos'} seleccionados`;
+            }
+        }
 
-            const btn = document.getElementById('btn-proceder-pago');
-            if (total <= 0) {
-                btn.classList.add('disabled');
-                btn.href = "#";
-            } else {
-                btn.classList.remove('disabled');
-                btn.href = "/Cart/Checkout";
+        function setDOMResumen(subtotal, igv, total) {
+            const subtotalElem = document.getElementById('resumen-subtotal');
+            if (subtotalElem) subtotalElem.textContent = `S/ ${subtotal.toFixed(2)}`;
+
+            const igvElem = document.getElementById('resumen-igv');
+            if (igvElem) igvElem.textContent = `S/ ${igv.toFixed(2)}`;
+
+            const totalElem = document.getElementById('resumen-total');
+            if (totalElem) totalElem.textContent = `S/ ${total.toFixed(2)}`;
+
+            const button = document.getElementById('button-proceder-pago');
+            if (button) {
+                if (total <= 0) {
+                    button.classList.add('disabled');
+                    button.removeAttribute('href');
+                } else {
+                    button.classList.remove('disabled');
+                    button.setAttribute('href', '/Cart/Checkout');
+                }
             }
         }
 
         async function actualizarQtyLocal(idPlatillo, nuevaCantidad, precio) {
             if (nuevaCantidad <= 0) {
-                removerItemLocal(idPlatillo);
+                await removerItemLocal(idPlatillo);
                 return;
             }
             
@@ -160,35 +133,32 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    actualizarBadge(data.totalItems);
-                    
-                    // Update DOM element directly without reload
-                    document.getElementById('qty-val-' + idPlatillo).textContent = nuevaCantidad;
-                    
-                    // Style the minus button red if quantity is 1
-                    const btnMinus = document.getElementById('btn-minus-' + idPlatillo);
-                    if (btnMinus) {
-                        if (nuevaCantidad === 1) {
-                            btnMinus.style.color = 'var(--accent-red)';
-                        } else {
-                            btnMinus.style.color = '';
-                        }
+                    if (typeof actualizarBadge === 'function') {
+                        actualizarBadge(data.totalItems);
                     }
+                    updateCartCountText(data.totalItems);
+                    
+                    const qtyVal = document.getElementById('qty-val-' + idPlatillo);
+                    if (qtyVal) qtyVal.textContent = nuevaCantidad;
 
-                    // Update subtotal
                     const itemSubtotal = nuevaCantidad * precio;
-                    document.getElementById('subt-val-' + idPlatillo).textContent = `S/ ${itemSubtotal.toFixed(2)}`;
+                    const subtVal = document.getElementById('subt-val-' + idPlatillo);
+                    if (subtVal) subtVal.textContent = `S/ ${itemSubtotal.toFixed(2)}`;
 
-                    // Update global summary
+                    const summaryQty = document.getElementById('summary-qty-' + idPlatillo);
+                    if (summaryQty) summaryQty.textContent = nuevaCantidad;
+
+                    const summarySubt = document.getElementById('summary-subt-' + idPlatillo);
+                    if (summarySubt) summarySubt.textContent = `S/ ${itemSubtotal.toFixed(2)}`;
+
                     setDOMResumen(data.subtotal, data.igv, data.total);
 
-                    // Re-bind onclick functions with new quantity
-                    const controls = document.querySelector(`#row-${idPlatillo} .qty-control-box`);
-                    if(controls) {
-                        const minus = controls.querySelector('.btn-minus');
-                        const plus = controls.querySelector('.btn-plus');
-                        minus.setAttribute('onclick', `actualizarQtyLocal(${idPlatillo}, ${nuevaCantidad - 1}, ${precio})`);
-                        plus.setAttribute('onclick', `actualizarQtyLocal(${idPlatillo}, ${nuevaCantidad + 1}, ${precio})`);
+                    const itemElem = document.getElementById('grid-layout-' + idPlatillo);
+                    if (itemElem) {
+                        const minusBtn = itemElem.querySelector('.item-qty .qty-btn:first-child');
+                        const plusBtn = itemElem.querySelector('.item-qty .qty-btn:last-child');
+                        if (minusBtn) minusBtn.setAttribute('onclick', `actualizarQtyLocal(${idPlatillo}, ${nuevaCantidad - 1}, ${precio})`);
+                        if (plusBtn) plusBtn.setAttribute('onclick', `actualizarQtyLocal(${idPlatillo}, ${nuevaCantidad + 1}, ${precio})`);
                     }
                 }
             } catch (e) {
@@ -197,12 +167,13 @@
         }
 
         async function removerItemLocal(idPlatillo) {
-            const row = document.getElementById('row-' + idPlatillo);
-            if(row) {
-                // Fade out animation
-                row.style.opacity = '0';
-                row.style.transform = 'scale(0.95)';
-                row.style.transition = 'all 0.4s ease';
+            const itemElem = document.getElementById('grid-layout-' + idPlatillo);
+            const summaryRow = document.getElementById('summary-row-' + idPlatillo);
+            
+            if (itemElem) {
+                itemElem.style.opacity = '0';
+                itemElem.style.transform = 'scale(0.95)';
+                itemElem.style.transition = 'all 0.3s ease';
             }
 
             try {
@@ -214,38 +185,62 @@
                 const data = await res.json();
                 if (data.success) {
                     setTimeout(() => {
-                        if(row) row.remove();
-                        actualizarBadge(data.totalItems);
+                        if (itemElem) itemElem.remove();
+                        if (summaryRow) summaryRow.remove();
+                        if (typeof actualizarBadge === 'function') {
+                            actualizarBadge(data.totalItems);
+                        }
+                        updateCartCountText(data.totalItems);
                         setDOMResumen(data.subtotal || 0, data.igv || 0, data.total || 0);
 
-                        // Show empty state if cart is completely empty
-                        if(data.totalItems === 0) {
-                            document.getElementById('cart-items-container').innerHTML = `
-                                <div class="glass-card p-5 text-center text-muted fade-in" id="empty-cart-msg">
-                                    <i class="bi bi-bag-x mb-4 d-block text-accent shadow-glow" style="font-size: 4rem;"></i>
-                                    <h4 class="display-font text-white mb-3">Tu carrito está vacío</h4>
-                                    <p class="mb-4">Parece que aún no has decidido qué probar. Descubre nuestros exquisitos platos y dale un gusto a tu paladar.</p>
-                                    <a href="/Home/Menu" class="btn btn-accent px-4 py-2 fw-bold shadow-glow text-uppercase" style="letter-spacing: 1px;">Explorar Menú</a>
-                                </div>
-                            `;
+                        if (data.totalItems === 0) {
+                            const container = document.querySelector('.carrito-page .container');
+                            if (container) {
+                                container.innerHTML = `
+                                    <h1 style="margin-bottom:0.5rem">🛒 Mi <span class="text-accent">Carrito</span></h1>
+                                    <p class="text-muted" style="margin-bottom:2.5rem">0 platillos seleccionados</p>
+                                    <div class="empty-cart" id="empty-cart-msg">
+                                        <p style="font-size:4rem">🍱</p>
+                                        <h3>Tu carrito está vacío</h3>
+                                        <p class="text-muted">Explora nuestro menú y agrega platillos</p>
+                                        <a href="/Home/Menu" class="btn btn-primary" style="margin-top:1.5rem">Ver Menú</a>
+                                    </div>
+                                `;
+                            }
                         }
-                    }, 400); // Wait for fade out
+                    }, 300);
                 }
             } catch (e) {
                 console.error(e);
             }
         }
-        
-        // Ensure color hint on load for items with quantity = 1
-        document.addEventListener("DOMContentLoaded", () => {
-            const qtys = document.querySelectorAll('[id^="qty-val-"]');
-            qtys.forEach(q => {
-                if (q.textContent.trim() === "1") {
-                    const id = q.id.replace('qty-val-', '');
-                    const btnMinus = document.getElementById('btn-minus-' + id);
-                    if(btnMinus) btnMinus.style.color = 'var(--accent-red)';
-                }
-            });
-        });
+
+        async function vaciarCarritoLocal() {
+            const itemElems = document.querySelectorAll('[id^="grid-layout-"]');
+            for (const item of itemElems) {
+                const id = parseInt(item.id.replace('grid-layout-', ''));
+                await fetch('/Cart/EliminarItem', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idPlatillo: id })
+                });
+            }
+            if (typeof actualizarBadge === 'function') {
+                actualizarBadge(0);
+            }
+            const container = document.querySelector('.carrito-page .container');
+            if (container) {
+                container.innerHTML = `
+                    <h1 style="margin-bottom:0.5rem">🛒 Mi <span class="text-accent">Carrito</span></h1>
+                    <p class="text-muted" style="margin-bottom:2.5rem">0 platillos seleccionados</p>
+                    <div class="empty-cart" id="empty-cart-msg">
+                        <p style="font-size:4rem">🍱</p>
+                        <h3>Tu carrito está vacío</h3>
+                        <p class="text-muted">Explora nuestro menú y agrega platillos</p>
+                        <a href="/Home/Menu" class="btn btn-primary" style="margin-top:1.5rem">Ver Menú</a>
+                    </div>
+                `;
+            }
+        }
     </script>
 }

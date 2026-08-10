@@ -2,251 +2,187 @@
 @model PedidosPaginadoDto
 
 @{
-    ViewData["Title"] = "Monitor de Pedidos - Admin";
+    ViewData["Title"] = "Gestión de Pedidos - Admin";
     var estadoActual = ViewBag.EstadoActual as string;
-    
-    var estados = new[] { "Pendiente", "En Preparacion", "En Camino", "Entregado", "Cancelado" };
 }
 
 <div class="admin-layout">
     @await Html.PartialAsync("_AdminSidebar")
 
     <div class="admin-content">
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
-            <div>
-                <h2 class="mb-0 display-font text-white" style="font-size: 2rem;">Monitor de Pedidos</h2>
-                <p class="text-muted small mb-0" style="letter-spacing: 0.5px;">
-                    <i class="bi bi-receipt me-1 text-gold"></i> @Model.TotalRegistros pedidos encontrados
-                </p>
-            </div>
-        </div>
-
-        <!-- Filtros (Chips Bar) -->
-        <div class="glass-card p-3 mb-4 fade-in-up" style="animation-delay: 0.1s; border-radius: var(--radius-md);">
-            <form asp-action="Pedidos" method="get">
-                <div class="d-flex flex-wrap gap-2 align-items-center">
-                    <span class="text-muted small fw-semibold me-2 text-uppercase" style="letter-spacing: 0.5px;">Estado:</span>
-                    
-                    <input type="radio" class="btn-check" name="estado" id="estado_todos" value="" checked="@(string.IsNullOrEmpty(estadoActual))" onchange="this.form.submit()">
-                    <label class="btn btn-chip" for="estado_todos">Todos</label>
-                    
-                    @foreach (var e in estados)
-                    {
-                        var eId = e.Replace(" ", "").ToLower();
-                        <input type="radio" class="btn-check" name="estado" id="estado_@eId" value="@e" checked="@(estadoActual == e)" onchange="this.form.submit()">
-                        <label class="btn btn-chip" for="estado_@eId">@e</label>
-                    }
+        <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+                <div>
+                    <h1 style="margin-bottom:0.25rem">Gestión de <span class="text-accent">Pedidos</span></h1>
+                    <p class="text-muted">Administra el flujo y estado de las órdenes</p>
                 </div>
-            </form>
-        </div>
+            </div>
 
-        <!-- Tabla de Pedidos -->
-        <div class="maido-table fade-in-up" style="animation-delay: 0.2s;">
-            <div class="table-responsive">
-                <table class="table mb-0 align-middle">
+            <!-- Filtros (Chips) -->
+            <div class="filter-bar">
+                <a asp-action="Pedidos" asp-route-estado="" class="filter-chip @(string.IsNullOrEmpty(estadoActual) ? "active" : "")">
+                    📋 Todos <span class="chip-count">@Model.TotalRegistros</span>
+                </a>
+                <a asp-action="Pedidos" asp-route-estado="Pendiente" class="filter-chip @(estadoActual == "Pendiente" || estadoActual == "PENDIENTE" ? "active" : "")">
+                    🔔 Pendientes
+                </a>
+                <a asp-action="Pedidos" asp-route-estado="En Preparacion" class="filter-chip @(estadoActual == "En Preparacion" || estadoActual == "EN_PREPARACION" ? "active" : "")">
+                    🍳 En Preparación
+                </a>
+                <a asp-action="Pedidos" asp-route-estado="En Camino" class="filter-chip @(estadoActual == "En Camino" || estadoActual == "EN_CAMINO" ? "active" : "")">
+                    🛵 En Camino
+                </a>
+                <a asp-action="Pedidos" asp-route-estado="Entregado" class="filter-chip @(estadoActual == "Entregado" || estadoActual == "ENTREGADO" ? "active" : "")">
+                    ✅ Entregados
+                </a>
+                <a asp-action="Pedidos" asp-route-estado="Cancelado" class="filter-chip @(estadoActual == "Cancelado" || estadoActual == "CANCELADO" ? "active" : "")">
+                    ❌ Cancelados
+                </a>
+            </div>
+
+            <div class="table-wrapper card">
+                <table>
                     <thead>
-                        <tr>
-                            <th class="ps-4">Orden</th>
-                            <th>Cliente</th>
-                            <th>Fecha</th>
-                            <th>Tipo</th>
-                            <th>Pago</th>
-                            <th>Total</th>
-                            <th>Estado</th>
-                            <th class="text-end pe-4">Acciones</th>
-                        </tr>
+                        <tr><th>#</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Acciones</th></tr>
                     </thead>
                     <tbody>
                         @foreach (var p in Model.Items)
                         {
-                            var badgeClass = "badge-default";
-                            if (p.Estado == "Pendiente") badgeClass = "badge-pending";
-                            else if (p.Estado == "En Preparacion") badgeClass = "badge-prep";
-                            else if (p.Estado == "En Camino") badgeClass = "badge-way";
-                            else if (p.Estado == "Entregado") badgeClass = "badge-delivered";
-                            else if (p.Estado == "Cancelado") badgeClass = "badge-cancelled";
+                            var isInactive = p.Estado.Equals("Entregado", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("Cancelado", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("ENTREGADO", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("CANCELADO", StringComparison.OrdinalIgnoreCase);
+                            var badgeClass = "badge-gold";
+                            if (p.Estado.Equals("Pendiente", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("PENDIENTE", StringComparison.OrdinalIgnoreCase)) badgeClass = "badge-warning";
+                            else if (p.Estado.Equals("En Preparacion", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("EN_PREPARACION", StringComparison.OrdinalIgnoreCase)) badgeClass = "badge-warning";
+                            else if (p.Estado.Equals("En Camino", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("EN_CAMINO", StringComparison.OrdinalIgnoreCase)) badgeClass = "badge-gold";
+                            else if (p.Estado.Equals("Entregado", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("ENTREGADO", StringComparison.OrdinalIgnoreCase)) badgeClass = "badge-success";
+                            else if (p.Estado.Equals("Cancelado", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("CANCELADO", StringComparison.OrdinalIgnoreCase)) badgeClass = "badge-danger";
 
-                            <tr class="maido-tr">
-                                <td class="ps-4">
-                                    <span class="fw-bold text-gold display-font" style="font-size: 1.1rem; letter-spacing: 1px;">#@p.IdPedido</span>
-                                </td>
+                            <tr class="@(isInactive ? "row-inactive" : "")">
+                                <td><b>#@p.IdPedido</b></td>
                                 <td>
-                                    <div class="fw-semibold text-white">@p.NombreCliente</div>
+                                    <div style="font-weight:600">@p.NombreCliente</div>
                                 </td>
+                                <td class="text-muted" style="font-size:0.85rem">@p.FechaPedido.ToString("dd/MM/yy HH:mm")</td>
+                                <td class="price">S/ @p.Total.ToString("N2")</td>
+                                <td><span class="badge @badgeClass">@p.Estado</span></td>
                                 <td>
-                                    <div class="text-muted small">
-                                        <i class="bi bi-calendar3 me-1"></i> @p.FechaPedido.ToString("dd/MM/yy")<br/>
-                                        <i class="bi bi-clock me-1"></i> @p.FechaPedido.ToString("HH:mm")
+                                    <div style="display:flex;gap:0.5rem;align-items:center">
+                                        <!-- Botón Ver Detalles -->
+                                        <a asp-action="DetallePedido" asp-route-id="@p.IdPedido" class="btn btn-ghost btn-sm">👁️ Ver</a>
+
+                                        <!-- Acciones de Flujo -->
+                                        @if (p.Estado.Equals("Pendiente", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("PENDIENTE", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <form asp-action="ActualizarEstadoPedido" method="post" style="display:inline;">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="idPedido" value="@p.IdPedido" />
+                                                <input type="hidden" name="estado" value="En Preparacion" />
+                                                <button type="submit" class="btn btn-primary btn-sm">Aceptar (Cocinar)</button>
+                                            </form>
+                                            <form asp-action="ActualizarEstadoPedido" method="post" style="display:inline;">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="idPedido" value="@p.IdPedido" />
+                                                <input type="hidden" name="estado" value="Cancelado" />
+                                                <button type="submit" class="btn btn-ghost btn-sm" style="color:#f44336;border-color:#f44336">Cancelar</button>
+                                            </form>
+                                        }
+                                        else if (p.Estado.Equals("En Preparacion", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("EN_PREPARACION", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <form asp-action="ActualizarEstadoPedido" method="post" style="display:inline;">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="idPedido" value="@p.IdPedido" />
+                                                <input type="hidden" name="estado" value="En Camino" />
+                                                <button type="submit" class="btn btn-primary btn-sm" style="background:#f59e0b;color:#1a1a1a">🛵 Enviar Moto</button>
+                                            </form>
+                                        }
+                                        else if (p.Estado.Equals("En Camino", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("EN_CAMINO", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <form asp-action="ActualizarEstadoPedido" method="post" style="display:inline;">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="idPedido" value="@p.IdPedido" />
+                                                <input type="hidden" name="estado" value="Entregado" />
+                                                <button type="submit" class="btn btn-primary btn-sm" style="background:#10b981;color:#fff">✅ Entregado</button>
+                                            </form>
+                                        }
                                     </div>
-                                </td>
-                                <td>
-                                    <span class="text-white-50 small text-uppercase" style="letter-spacing: 0.5px;">@p.TipoPedido</span>
-                                </td>
-                                <td>
-                                    <span class="text-white-50 small">@p.MetodoPago</span>
-                                </td>
-                                <td>
-                                    <span class="fw-bold text-white display-font" style="font-size: 1.1rem;">S/ @p.Total.ToString("F2")</span>
-                                </td>
-                                <td>
-                                    <span class="maido-badge @badgeClass">@p.Estado</span>
-                                </td>
-                                <td class="text-end pe-4">
-                                    <a asp-action="DetallePedido" asp-route-id="@p.IdPedido"
-                                       class="btn-ghost ghost-view d-inline-flex" title="Ver Detalles">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
                                 </td>
                             </tr>
                         }
                         @if (!Model.Items.Any())
                         {
                             <tr>
-                                <td colspan="8" class="text-center text-muted py-5">
-                                    <div class="fs-1 mb-2">📄</div>
-                                    No hay pedidos con los filtros seleccionados.
-                                </td>
+                                <td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted)">No hay pedidos en este estado</td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
-        </div>
 
-        <!-- Paginación -->
-        @if (Model.TotalPaginas > 1)
-        {
-            <nav class="mt-5 d-flex justify-content-center fade-in-up" style="animation-delay: 0.3s;">
-                <ul class="pagination pagination-maido gap-2">
-                    @for (int i = 1; i <= Model.TotalPaginas; i++)
+            <!-- Paginación -->
+            @if (Model.TotalPaginas > 0)
+            {
+                <div style="display:flex;justify-content:center;align-items:center;gap:1rem;margin-top:1.5rem">
+                    @if (Model.PaginaActual > 1)
                     {
-                        <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
-                            <a class="page-link"
-                               asp-action="Pedidos"
-                               asp-route-pagina="@i"
-                               asp-route-estado="@estadoActual">@i</a>
-                        </li>
+                        <a asp-action="Pedidos" asp-route-pagina="@(Model.PaginaActual - 1)" asp-route-estado="@estadoActual" class="btn btn-secondary">Anterior</a>
                     }
-                </ul>
-            </nav>
-        }
+                    else
+                    {
+                        <button class="btn btn-secondary" disabled>Anterior</button>
+                    }
+                    <span class="text-muted">Página @Model.PaginaActual de @Model.TotalPaginas</span>
+                    @if (Model.PaginaActual < Model.TotalPaginas)
+                    {
+                        <a asp-action="Pedidos" asp-route-pagina="@(Model.PaginaActual + 1)" asp-route-estado="@estadoActual" class="btn btn-secondary">Siguiente</a>
+                    }
+                    else
+                    {
+                        <button class="btn btn-secondary" disabled>Siguiente</button>
+                    }
+                </div>
+            }
+        </div>
     </div>
 </div>
 
-@section Scripts {
 <style>
-    .fade-in-up {
-        animation: fadeInUp 0.5s ease-out forwards;
-        opacity: 0;
-        transform: translateY(20px);
+    /* --- Filter bar --- */
+    .filter-bar {
+      display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;
     }
-    @@keyframes fadeInUp {
-        to { opacity: 1; transform: translateY(0); }
+    .filter-chip {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.45rem 1rem; border-radius: 999px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text-muted); cursor: pointer; font-family: inherit;
+      font-size: 0.85rem; transition: all 0.2s; text-decoration: none;
     }
-
-    /* Botones Fantasma */
-    .btn-ghost {
-        background: transparent;
-        border: none;
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-        transition: all 0.2s ease;
-        color: var(--text-muted);
+    .filter-chip:hover { border-color: var(--accent-gold); color: var(--text-primary); }
+    .filter-chip.active {
+      background: rgba(224,169,109,0.12); border-color: var(--accent-gold);
+      color: var(--accent-gold); font-weight: 600;
     }
-    .ghost-view:hover {
-        background: rgba(224, 169, 109, 0.15);
-        color: var(--accent-gold);
-        box-shadow: 0 0 15px rgba(224, 169, 109, 0.3);
+    .chip-count {
+      background: rgba(255,255,255,0.08); padding: 1px 7px;
+      border-radius: 999px; font-size: 0.75rem; font-weight: 600;
+    }
+    .filter-chip.active .chip-count {
+      background: rgba(224,169,109,0.2);
     }
 
-    /* Custom Pagination */
-    .pagination-maido .page-link {
-        background-color: var(--bg-secondary);
-        border: 1px solid var(--border);
-        color: var(--text-primary);
-        border-radius: var(--radius-sm);
-        min-width: 36px;
-        text-align: center;
-        transition: all 0.2s;
-    }
-    .pagination-maido .page-item:not(.active) .page-link:hover {
-        background-color: rgba(255, 255, 255, 0.05);
-        border-color: var(--text-muted);
-    }
-    .pagination-maido .page-item.active .page-link {
-        background-color: var(--accent-red);
-        border-color: var(--accent-red);
-        color: white;
-        box-shadow: var(--shadow-glow);
-    }
+    /* --- Status badges --- */
+    .badge-warning { background: rgba(255,152,0,0.15); color: #ff9800; border: 1px solid rgba(255,152,0,0.3); }
+    .badge-gold { background: rgba(224,169,109,0.15); color: var(--accent-gold); border: 1px solid rgba(224,169,109,0.3); }
+    .badge-success { background: rgba(76,175,80,0.15); color: #4caf50; border: 1px solid rgba(76,175,80,0.3); }
+    .badge-danger { background: rgba(244,67,54,0.15); color: #f44336; border: 1px solid rgba(244,67,54,0.3); }
 
-    /* Chips Filter */
-    .btn-chip {
-        background-color: transparent;
-        color: var(--text-muted);
-        border: 1px solid var(--border);
-        border-radius: 50rem;
-        padding: 0.35rem 1rem;
-        font-size: 0.85rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        cursor: pointer;
-    }
-    .btn-chip:hover {
-        background-color: rgba(255, 255, 255, 0.05);
-        color: var(--text-primary);
-    }
-    .btn-check:checked + .btn-chip {
-        background-color: rgba(217, 56, 30, 0.15);
-        color: var(--accent-red);
-        border-color: var(--accent-red);
-        box-shadow: 0 0 10px rgba(217, 56, 30, 0.3);
-    }
+    .row-inactive td:not(:last-child) { opacity: 0.5; }
 
-    /* Badges Neón */
-    .maido-badge {
-        padding: 0.35rem 0.65rem;
-        border-radius: 6px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        display: inline-block;
-    }
-    .badge-pending {
-        background: rgba(224, 169, 109, 0.1);
-        color: var(--accent-gold);
-        border: 1px solid rgba(224, 169, 109, 0.3);
-    }
-    .badge-prep {
-        background: rgba(52, 152, 219, 0.1);
-        color: #5DADE2;
-        border: 1px solid rgba(52, 152, 219, 0.3);
-    }
-    .badge-way {
-        background: rgba(155, 89, 182, 0.1);
-        color: #AF7AC5;
-        border: 1px solid rgba(155, 89, 182, 0.3);
-    }
-    .badge-delivered {
-        background: rgba(46, 204, 113, 0.1);
-        color: #58D68D;
-        border: 1px solid rgba(46, 204, 113, 0.3);
-    }
-    .badge-cancelled {
-        background: rgba(217, 56, 30, 0.1);
-        color: var(--accent-red);
-        border: 1px solid rgba(217, 56, 30, 0.3);
-    }
-    .badge-default {
-        background: rgba(255, 255, 255, 0.1);
-        color: var(--text-muted);
-        border: 1px solid var(--border);
-    }
+    /* --- Modal Details --- */
+    .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; font-size: 0.85rem; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px; border: 1px solid var(--border); }
+    .items-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
+    .item-row { display: flex; align-items: center; font-size: 0.9rem; padding-bottom: 0.75rem; border-bottom: 1px dashed var(--border); }
+    .item-qty { font-weight: 700; color: var(--accent-gold); width: 30px; }
+    .item-name { flex: 1; }
+    .item-price { font-weight: 600; }
+    .total-row { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800; padding-top: 0.5rem; }
 </style>
-}

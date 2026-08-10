@@ -1,31 +1,50 @@
-<nav class="admin-sidebar d-none d-lg-flex flex-column">
-    <p class="sidebar-title">Principal</p>
-    <a asp-controller="Admin" asp-action="Dashboard"
-       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active" : "")">
-        <i class="bi bi-speedometer2"></i> Dashboard
-    </a>
+@{
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var nombre = Context.Session.GetString("Maido_Nombre") ?? "Admin";
+    var inicial = nombre.Length > 0 ? nombre.Substring(0, 1).ToUpper() : "A";
+}
 
-    <p class="sidebar-title mt-3">Mantenimiento</p>
-    <a asp-controller="Admin" asp-action="Platillos"
-       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString()?.StartsWith("Platillo") == true ? "active" : "")">
-        <i class="bi bi-egg-fried"></i> Platillos
-    </a>
-    <a asp-controller="Admin" asp-action="Categorias"
-       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString()?.StartsWith("Categor") == true ? "active" : "")">
-        <i class="bi bi-tags"></i> Categorías
-    </a>
-    <a asp-controller="Admin" asp-action="Usuarios"
-       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Usuarios" ? "active" : "")">
-        <i class="bi bi-people"></i> Usuarios
-    </a>
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <span class="logo-jp display-font" style="font-size:1.6rem;color:var(--accent-gold)">間道</span>
+        <span class="logo-text" style="font-size:0.9rem;font-weight:800;letter-spacing:0.15em;margin-left:0.4rem">ADMIN</span>
+    </div>
+    <nav class="sidebar-nav">
+        <a asp-controller="Admin" asp-action="Dashboard" class="@(action == "Dashboard" ? "active" : "")">
+            <span class="icon">📊</span> Dashboard
+        </a>
+        <a asp-controller="Admin" asp-action="Platillos" class="@(action.StartsWith("Platillo") ? "active" : "")">
+            <span class="icon">🍣</span> Platillos
+        </a>
+        <a asp-controller="Admin" asp-action="Categorias" class="@(action.StartsWith("Categor") ? "active" : "")">
+            <span class="icon">🏷️</span> Categorías
+        </a>
+        <a asp-controller="Admin" asp-action="Pedidos" class="@(action.StartsWith("Pedido") ? "active" : "")">
+            <span class="icon">📋</span> Pedidos
+        </a>
+        <a asp-controller="Admin" asp-action="Usuarios" class="@(action == "Usuarios" ? "active" : "")">
+            <span class="icon">👥</span> Usuarios
+        </a>
+        <a asp-controller="Admin" asp-action="Reportes" class="@(action == "Reportes" ? "active" : "")">
+            <span class="icon">📈</span> Reportes
+        </a>
+        <hr class="divider">
+        <a asp-controller="Home" asp-action="Index" style="color:var(--text-dim)">
+            <span class="icon">🏠</span> Ver Sitio
+        </a>
+        <form asp-controller="Account" asp-action="Logout" method="post" style="margin:0;">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="sidebar-logout">
+                <span class="icon">🚪</span> Cerrar Sesión
+            </button>
+        </form>
+    </nav>
+    <div class="sidebar-user">
+        <div class="user-avatar-sm">@inicial</div>
+        <div>
+            <p style="font-size:0.85rem;font-weight:600;margin:0;">@nombre</p>
+            <p class="text-muted" style="font-size:0.75rem;margin:0;">Administrador</p>
+        </div>
+    </div>
+</aside>
 
-    <p class="sidebar-title mt-3">Operaciones</p>
-    <a asp-controller="Admin" asp-action="Pedidos"
-       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString()?.StartsWith("Pedido") == true ? "active" : "")">
-        <i class="bi bi-receipt"></i> Pedidos
-    </a>
-    <a asp-controller="Admin" asp-action="Reportes"
-       class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Reportes" ? "active" : "")">
-        <i class="bi bi-bar-chart-line"></i> Reportes
-    </a>
-</nav>

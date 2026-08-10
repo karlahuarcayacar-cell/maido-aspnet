@@ -2,144 +2,216 @@
 @model FiltroReporteDto
 
 @{
-    ViewData["Title"] = "Reportes - Admin Maido";
-    var ventas = ViewBag.Ventas as IEnumerable<VentaPorFechaDto> ?? [];
-    var platillos = ViewBag.Platillos as IEnumerable<PlatilloMasVendidoDto> ?? [];
+    ViewData["Title"] = "Reportes de Ventas - Admin Maido";
+    var ventas = ViewBag.Ventas as IEnumerable<VentaPorFechaDto> ?? Enumerable.Empty<VentaPorFechaDto>();
+    var platillos = ViewBag.Platillos as IEnumerable<PlatilloMasVendidoDto> ?? Enumerable.Empty<PlatilloMasVendidoDto>();
+
+    var ingresosPeriodo = ventas.Sum(v => v.MontoTotal);
+    var totalPedidosPeriodo = ventas.Sum(v => v.TotalPedidos);
 }
 
 <div class="admin-layout">
     @await Html.PartialAsync("_AdminSidebar")
 
     <div class="admin-content">
-        <h2 class="mb-1">Reportes</h2>
-        <p class="text-muted mb-4">Análisis de ventas y platillos más vendidos</p>
-
-        <!-- Filtros -->
-        <form asp-action="ReportePdf" method="get" class="checkout-card mb-5" target="_blank">
-            <div class="row g-3 align-items-end">
-                <div class="col-sm-4">
-                    <label class="form-label">Fecha Inicio</label>
-                    <input type="date" name="FechaInicio" class="form-control"
-                           value="@Model.FechaInicio.ToString("yyyy-MM-dd")" />
-                </div>
-                <div class="col-sm-4">
-                    <label class="form-label">Fecha Fin</label>
-                    <input type="date" name="FechaFin" class="form-control"
-                           value="@Model.FechaFin.ToString("yyyy-MM-dd")" />
-                </div>
-                <div class="col-sm-2">
-                    <label class="form-label">Top N</label>
-                    <input type="number" name="Top" class="form-control" value="@Model.Top" min="5" max="50" />
-                </div>
-                <div class="col-sm-2">
-                    <button type="submit" class="btn btn-accent w-100">
-                        <i class="bi bi-file-earmark-pdf me-1"></i>Generar
-                    </button>
-                </div>
-            </div>
-        </form>
-
-        <div class="row g-5">
-            <!-- Ventas por fecha -->
-            <div class="col-lg-6">
-                <h5 class="fw-bold mb-3">
-                    <i class="bi bi-calendar-range text-accent me-2"></i>Ventas por Fecha
-                </h5>
-                <div class="maido-table">
-                    <table class="table mb-0" style="color:var(--text-primary);">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th class="text-center">Pedidos</th>
-                                <th class="text-end">Monto Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var v in ventas)
-                            {
-                                <tr style="border-color:var(--border-subtle);">
-                                    <td>@v.Fecha.ToString("dd/MM/yyyy")</td>
-                                    <td class="text-center">@v.TotalPedidos</td>
-                                    <td class="text-end text-gold fw-bold">S/ @v.MontoTotal.ToString("F2")</td>
-                                </tr>
-                            }
-                            @if (!ventas.Any())
-                            {
-                                <tr><td colspan="3" class="text-center text-muted py-4">Sin datos en el periodo.</td></tr>
-                            }
-                        </tbody>
-                        @if (ventas.Any())
-                        {
-                            <tfoot>
-                                <tr style="border-top:2px solid var(--accent-red);">
-                                    <td class="fw-bold">TOTAL</td>
-                                    <td class="text-center fw-bold">@ventas.Sum(v => v.TotalPedidos)</td>
-                                    <td class="text-end fw-bold text-accent">
-                                        S/ @ventas.Sum(v => v.MontoTotal).ToString("F2")
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        }
-                    </table>
+        <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+                <div>
+                    <h1 style="margin-bottom:0.25rem">Reportes de <span class="text-accent">Ventas</span></h1>
+                    <p class="text-muted">Analiza tus ingresos y pedidos por fecha</p>
                 </div>
             </div>
 
-            <!-- Platillos más vendidos -->
-            <div class="col-lg-6">
-                <h5 class="fw-bold mb-3">
-                    <i class="bi bi-trophy text-gold me-2"></i>Platillos Más Vendidos
-                </h5>
-                <div class="maido-table">
-                    <table class="table mb-0" style="color:var(--text-primary);">
-                        <thead>
-                            <tr>
-                                <th>Platillo</th>
-                                <th class="text-center">Unidades</th>
-                                <th class="text-end">Ingresos</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @{
-                                int rank = 1;
-                            }
-                            @foreach (var p in platillos)
-                            {
-                                <tr style="border-color:var(--border-subtle);">
-                                    <td>
-                                        @if (rank == 1)
-                                        {
-                                            <span class="me-1">🥇</span>
-                                        }
-                                        else if (rank == 2)
-                                        {
-
-                                            <span class="me-1">🥈</span>
-                                        }
-                                        else if (rank == 3)
-                                        {
-
-                                            <span class="me-1">🥉</span>
-                                        }
-                                        else
-                                        {
-
-                                            <span class="me-1 text-muted">@rank.</span>
-                                        }
-                                        @p.NombrePlatillo
-                                    </td>
-                                    <td class="text-center fw-bold">@p.TotalUnidades</td>
-                                    <td class="text-end text-gold fw-bold">S/ @p.TotalIngresos.ToString("F2")</td>
-                                </tr>
-                                rank++;
-                            }
-                            @if (!platillos.Any())
-                            {
-                                <tr><td colspan="3" class="text-center text-muted py-4">Sin datos en el periodo.</td></tr>
-                            }
-                        </tbody>
-                    </table>
+            <!-- Filtro Fechas -->
+            <form id="filtroForm" method="get" asp-action="Reportes" class="filter-card card card-body" style="margin-bottom:2rem">
+                <div style="display:flex;gap:0.5rem;margin-bottom:1rem">
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="setRangoRapido('HOY')">Hoy</button>
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="setRangoRapido('SEMANA')">Esta Semana</button>
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="setRangoRapido('MES')">Este Mes</button>
                 </div>
+
+                <div style="display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap">
+                    <div class="form-group" style="flex:1;min-width:200px;margin:0">
+                        <label class="form-label">Desde</label>
+                        <input type="date" id="fechaInicioInput" name="FechaInicio" class="form-input" value="@Model.FechaInicio.ToString("yyyy-MM-dd")">
+                    </div>
+                    <div class="form-group" style="flex:1;min-width:200px;margin:0">
+                        <label class="form-label">Hasta</label>
+                        <input type="date" id="fechaFinInput" name="FechaFin" class="form-input" value="@Model.FechaFin.ToString("yyyy-MM-dd")">
+                    </div>
+                    <div style="display:flex;gap:0.5rem">
+                        <button type="submit" class="btn btn-primary">
+                            🔍 Buscar
+                        </button>
+                        <button type="submit" asp-action="ReportePdf" formtarget="_blank" class="btn" style="background:#dc2626;color:#fff">
+                            📄 Exportar PDF
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Resultados -->
+            <div>
+                <div class="stats-grid">
+                    <div class="stat-card card card-body">
+                        <div class="stat-icon" style="color:var(--accent-gold)">💰</div>
+                        <div>
+                            <p class="stat-label text-muted">Ingresos del Periodo</p>
+                            <p class="stat-value text-gold">S/ @ingresosPeriodo.ToString("N2")</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card card card-body">
+                        <div class="stat-icon" style="color:#60a5fa">📦</div>
+                        <div>
+                            <p class="stat-label text-muted">Total Pedidos</p>
+                            <p class="stat-value">@totalPedidosPeriodo</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card card card-body">
+                        <div class="stat-icon" style="color:#10b981">✅</div>
+                        <div>
+                            <p class="stat-label text-muted">Ventas Registradas</p>
+                            <p class="stat-value" style="color:#10b981">@ventas.Count()</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card card card-body">
+                        <div class="stat-icon" style="color:#f44336">🏆</div>
+                        <div>
+                            <p class="stat-label text-muted">Platillos Destacados</p>
+                            <p class="stat-value" style="color:#f44336">@platillos.Count()</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin:2rem 0 1rem">Desglose de Pedidos</h3>
+                @if (ventas.Any())
+                {
+                    <div class="table-wrapper card">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Fecha</th>
+                                    <th style="text-align:center">Pedidos</th>
+                                    <th style="text-align:right">Monto Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ var index = 1; }
+                                @foreach (var v in ventas)
+                                {
+                                    <tr>
+                                        <td><b>#@index</b></td>
+                                        <td class="text-muted">@v.Fecha.ToString("dd/MM/yy HH:mm")</td>
+                                        <td style="text-align:center">@v.TotalPedidos</td>
+                                        <td class="price" style="text-align:right">S/ @v.MontoTotal.ToString("N2")</td>
+                                    </tr>
+                                    index++;
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div style="text-align:center;padding:3rem;color:var(--text-muted);background:rgba(255,255,255,0.02);border-radius:8px;border:1px dashed var(--border)">
+                        No se encontraron ventas en este rango de fechas.
+                    </div>
+                }
+
+                @if (platillos.Any())
+                {
+                    <h3 style="margin:2rem 0 1rem">Platillos Más Vendidos</h3>
+                    <div class="table-wrapper card">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Platillo</th>
+                                    <th style="text-align:center">Unidades</th>
+                                    <th style="text-align:right">Ingresos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ var rank = 1; }
+                                @foreach (var p in platillos)
+                                {
+                                    <tr>
+                                        <td><b>#@rank</b></td>
+                                        <td>@p.NombrePlatillo</td>
+                                        <td style="text-align:center">@p.TotalUnidades</td>
+                                        <td class="price" style="text-align:right">S/ @p.TotalIngresos.ToString("N2")</td>
+                                    </tr>
+                                    rank++;
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    function setRangoRapido(rango) {
+        const hoy = new Date();
+        const formatDate = (d) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        let inicio = new Date();
+        let fin = new Date();
+
+        if (rango === 'HOY') {
+            inicio = hoy;
+            fin = hoy;
+        } else if (rango === 'SEMANA') {
+            const primeroSemana = new Date(hoy);
+            const dayOfWeek = hoy.getDay();
+            const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
+            primeroSemana.setDate(hoy.getDate() + diffToMonday);
+            inicio = primeroSemana;
+            fin = new Date();
+        } else if (rango === 'MES') {
+            inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            fin = new Date();
+        }
+
+        document.getElementById('fechaInicioInput').value = formatDate(inicio);
+        document.getElementById('fechaFinInput').value = formatDate(fin);
+        document.getElementById('filtroForm').submit();
+    }
+</script>
+
+<style>
+    /* --- Layouts --- */
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1.25rem; margin-bottom:2rem; }
+    .stat-card { display:flex; align-items:flex-start; gap:1rem; border-left: 4px solid transparent; transition:transform 0.2s; }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-icon { font-size:2.2rem; line-height:1; }
+    .stat-label { font-size:0.8rem; margin-bottom:0.25rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+    .stat-value { font-size:1.6rem; font-weight:800; line-height:1; }
+
+    /* --- Status indicators --- */
+    .badge-warning { background: rgba(255,152,0,0.15); color: #ff9800; border: 1px solid rgba(255,152,0,0.3); }
+    .badge-gold { background: rgba(224,169,109,0.15); color: var(--accent-gold); border: 1px solid rgba(224,169,109,0.3); }
+    .badge-success { background: rgba(76,175,80,0.15); color: #4caf50; border: 1px solid rgba(76,175,80,0.3); }
+    .badge-danger { background: rgba(244,67,54,0.15); color: #f44336; border: 1px solid rgba(244,67,54,0.3); }
+
+    .row-inactive td { opacity: 0.5; }
+
+    /* --- Skeleton Loaders --- */
+    .skeleton-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1.25rem; }
+    .skeleton-card { height: 90px; background: rgba(255,255,255,0.05); border-radius: var(--radius-lg); animation: pulse 1.5s infinite; }
+    @@keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+</style>

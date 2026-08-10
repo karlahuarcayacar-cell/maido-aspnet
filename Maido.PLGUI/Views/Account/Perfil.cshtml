@@ -1,71 +1,99 @@
 @using Maido.Application.BL.BC.DTOs
+@using Maido.PLGUI.Helpers
 @model PerfilDto
 
 @{
     ViewData["Title"] = "Mi Perfil";
+    var initials = (!string.IsNullOrEmpty(Model?.Nombre) ? Model.Nombre.Substring(0, 1) : "") +
+                   (!string.IsNullOrEmpty(Model?.Apellido) ? Model.Apellido.Substring(0, 1) : "");
+    var rolNombre = SesionHelper.EsAdministrador(Context.Session) ? "Admin" : "Cliente";
 }
 
-<div class="container page-transition" style="margin-top: 6rem; margin-bottom: 6rem; max-width: 800px;">
+<div class="perfil-page">
+  <div class="container">
     
-    <div class="glass-card p-4 p-md-5">
-        <div class="text-center mb-5">
-            <h1 class="display-font text-white mb-2" style="font-size: 2.5rem;">Mi <span class="text-accent">Perfil</span></h1>
-            <div class="accent-line mx-auto mb-3" style="width: 50px; height: 3px; background: linear-gradient(90deg, var(--accent-red) 0%, var(--accent-gold) 100%);"></div>
-            <p class="text-secondary">Actualiza tus datos personales y de entrega.</p>
-        </div>
-
-        @if (TempData["Exito"] != null)
-        {
-            <div class="alert alert-success border-0 d-flex align-items-center gap-2 mb-4">
-                <i class="bi bi-check-circle-fill"></i>
-                @TempData["Exito"]
+    <div class="perfil-layout">
+      <!-- Sidebar -->
+      <div class="perfil-sidebar">
+        <div class="user-card card">
+          <div class="user-avatar-lg">@initials</div>
+          <h2 class="user-name">@Model?.Nombre @Model?.Apellido</h2>
+          <p class="user-email text-muted">@Model?.Email</p>
+          
+          <div class="user-stats">
+            <div class="stat">
+              <span class="stat-value text-gold">@rolNombre</span>
+              <span class="stat-label">Rol</span>
             </div>
-        }
+          </div>
+        </div>
+      </div>
 
-        <form asp-action="Perfil" method="post">
+      <!-- Formulario Principal -->
+      <div class="perfil-content">
+        <div class="card glass-card">
+          <div class="card-header">
+            <h2>Mis Datos Personales</h2>
+            <p class="text-muted">Actualiza tu información para agilizar tus futuros pedidos.</p>
+          </div>
+
+          @if (TempData["Exito"] != null)
+          {
+              <div class="alert alert-success" style="margin-bottom: 1.5rem;">
+                  @TempData["Exito"]
+              </div>
+          }
+
+          <form asp-action="Perfil" method="post" class="perfil-form">
             <input type="hidden" asp-for="IdUsuario" />
             <input type="hidden" asp-for="Email" />
-
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Nombre</label>
-                    <input asp-for="Nombre" class="form-control form-control-lg maido-input" required />
-                    <span asp-validation-for="Nombre" class="text-danger small"></span>
-                </div>
-                
-                <div class="col-md-6">
-                    <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Apellido</label>
-                    <input asp-for="Apellido" class="form-control form-control-lg maido-input" required />
-                    <span asp-validation-for="Apellido" class="text-danger small"></span>
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Correo Electrónico</label>
-                    <input class="form-control form-control-lg maido-input text-secondary" value="@Model.Email" readonly disabled />
-                    <div class="form-text text-muted small"><i class="bi bi-info-circle me-1"></i>El correo no puede ser modificado.</div>
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Teléfono</label>
-                    <input asp-for="Telefono" class="form-control form-control-lg maido-input" />
-                    <span asp-validation-for="Telefono" class="text-danger small"></span>
-                </div>
-
-                <div class="col-12">
-                    <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Dirección de Entrega Predeterminada</label>
-                    <textarea asp-for="Direccion" class="form-control maido-input" rows="3" placeholder="Ej. Av. Javier Prado 1234, Dpto 501, San Isidro"></textarea>
-                    <span asp-validation-for="Direccion" class="text-danger small"></span>
-                </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Nombre *</label>
+                <input asp-for="Nombre" type="text" class="form-input" />
+                <span asp-validation-for="Nombre" class="form-error"></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Apellido *</label>
+                <input asp-for="Apellido" type="text" class="form-input" />
+                <span asp-validation-for="Apellido" class="form-error"></span>
+              </div>
             </div>
 
-            <div class="mt-5 d-flex justify-content-end gap-3">
-                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary px-4 py-2 text-uppercase fw-bold" style="font-size: 0.85rem; letter-spacing: 1px;">Cancelar</a>
-                <button type="submit" class="btn btn-accent px-5 py-2 text-uppercase fw-bold shadow-glow" style="font-size: 0.85rem; letter-spacing: 1px;">
-                    <i class="bi bi-save me-2"></i>Guardar Cambios
-                </button>
+            <div class="form-group">
+              <label class="form-label">Correo Electrónico</label>
+              <input type="email" class="form-input" value="@Model?.Email" readonly style="opacity:0.6;cursor:not-allowed">
+              <small class="text-muted" style="display:block;margin-top:0.25rem">El correo no se puede cambiar.</small>
             </div>
-        </form>
+
+            <h3 style="margin:2rem 0 1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem">Datos de Entrega por Defecto</h3>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Teléfono</label>
+                <input asp-for="Telefono" type="tel" class="form-input" placeholder="Ej. 987654321">
+                <span asp-validation-for="Telefono" class="form-error"></span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Dirección Principal</label>
+              <input asp-for="Direccion" type="text" class="form-input" placeholder="Ej. Av. La Paz 123, Miraflores">
+              <small class="text-muted" style="display:block;margin-top:0.25rem">Esta dirección se autocompletará al hacer Checkout.</small>
+              <span asp-validation-for="Direccion" class="form-error"></span>
+            </div>
+
+            <div class="form-actions">
+              <a asp-controller="Home" asp-action="Index" class="btn btn-ghost">Deshacer cambios</a>
+              <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
+
+  </div>
 </div>
 
 @section Scripts {

@@ -8,62 +8,63 @@
 <div class="admin-layout">
     @await Html.PartialAsync("_AdminSidebar")
     <div class="admin-content">
-        <div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="d-flex align-items-center mb-4">
-                <a asp-action="Categorias" class="btn btn-outline-secondary me-3">
-                    <i class="bi bi-arrow-left"></i>
-                </a>
-                <h2 class="mb-0">Editar Categoría</h2>
-            </div>
+        <div class="flex items-center gap-2" style="margin-bottom: 1.5rem;">
+            <a asp-action="Categorias" class="btn btn-ghost btn-icon">
+                ←
+            </a>
+            <h1 style="margin: 0;">Editar <span class="text-accent">Categoría</span></h1>
+        </div>
 
-            <div class="card maido-card">
-                <div class="card-body p-4">
-                    <form asp-action="EditarCategoria" method="post">
-                        <input type="hidden" asp-for="IdCategoria" />
+        <div class="card" style="max-width: 600px;">
+            <div class="card-body">
+                <form asp-action="EditarCategoria" method="post" class="flex flex-col gap-2">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="IdCategoria" />
 
-                        <div class="mb-3">
-                            <label asp-for="Nombre" class="form-label text-muted small text-uppercase fw-bold">Nombre</label>
-                            <input asp-for="Nombre" class="form-control form-control-lg maido-input" required />
-                            <span asp-validation-for="Nombre" class="text-danger small"></span>
+                    <div class="form-group">
+                        <label asp-for="Nombre" class="form-label">Nombre *</label>
+                        <input asp-for="Nombre" class="form-input" required />
+                        <span asp-validation-for="Nombre" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Descripcion" class="form-label">Descripción</label>
+                        <textarea asp-for="Descripcion" class="form-input" rows="3"></textarea>
+                        <span asp-validation-for="Descripcion" class="text-danger small"></span>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label asp-for="Icono" class="form-label">Icono (Clase Bootstrap)</label>
+                            <input asp-for="Icono" class="form-input" />
                         </div>
-
-                        <div class="mb-3">
-                            <label asp-for="Descripcion" class="form-label text-muted small text-uppercase fw-bold">Descripción</label>
-                            <textarea asp-for="Descripcion" class="form-control maido-input" rows="3"></textarea>
-                            <span asp-validation-for="Descripcion" class="text-danger small"></span>
+                        <div class="form-group">
+                            <label asp-for="Orden" class="form-label">Orden</label>
+                            <input asp-for="Orden" type="number" class="form-input" />
+                            <span asp-validation-for="Orden" class="text-danger small"></span>
                         </div>
+                    </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Icono" class="form-label text-muted small text-uppercase fw-bold">Icono (Clase Bootstrap)</label>
-                                <input asp-for="Icono" class="form-control maido-input" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Orden" class="form-label text-muted small text-uppercase fw-bold">Orden</label>
-                                <input asp-for="Orden" type="number" class="form-control maido-input" />
-                                <span asp-validation-for="Orden" class="text-danger small"></span>
-                            </div>
-                        </div>
+                    <div class="flex items-center gap-1" style="margin-top: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" asp-for="Activo" id="chkCatActiva">
+                        <label class="form-label" style="margin:0; cursor:pointer;" for="chkCatActiva">Activo (Visible en el catálogo)</label>
+                    </div>
 
-                        <div class="mb-4 form-check form-switch mt-2">
-                            <input class="form-check-input" type="checkbox" asp-for="Activo">
-                            <label class="form-check-label ms-2 fw-medium" asp-for="Activo">Activo (Visible en el catálogo)</label>
-                        </div>
+                    <div class="divider"></div>
 
-                        <button type="submit" class="btn btn-gold btn-lg w-100">
-                            <i class="bi bi-save me-2"></i>Actualizar Categoría
+                    <div class="flex gap-2 justify-between items-center">
+                        <a asp-action="Categorias" class="btn btn-ghost">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            Actualizar Categoría
                         </button>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         </div>
-    </div>
-</div>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+

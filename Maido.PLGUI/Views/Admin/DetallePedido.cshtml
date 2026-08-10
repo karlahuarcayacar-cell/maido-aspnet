@@ -10,124 +10,187 @@
     @await Html.PartialAsync("_AdminSidebar")
 
     <div class="admin-content">
-        <div class="d-flex align-items-center gap-3 mb-4">
-            <a asp-action="Pedidos" class="btn btn-sm btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i>
+        @{
+            var badgeClass = "badge-gold";
+            if (Model.Estado.Equals("Pendiente", StringComparison.OrdinalIgnoreCase)) badgeClass = "badge-warning";
+            else if (Model.Estado.Equals("En Preparacion", StringComparison.OrdinalIgnoreCase)) badgeClass = "badge-warning";
+            else if (Model.Estado.Equals("En Camino", StringComparison.OrdinalIgnoreCase)) badgeClass = "badge-gold";
+            else if (Model.Estado.Equals("Entregado", StringComparison.OrdinalIgnoreCase)) badgeClass = "badge-success";
+            else if (Model.Estado.Equals("Cancelado", StringComparison.OrdinalIgnoreCase)) badgeClass = "badge-danger";
+        }
+
+        <div class="flex items-center gap-2" style="margin-bottom: 1.5rem;">
+            <a asp-action="Pedidos" class="btn btn-ghost btn-icon" title="Volver a lista">
+                ←
             </a>
             <div>
-                <h2 class="mb-0">Pedido <span class="text-gold">#@Model.IdPedido</span></h2>
-                <p class="text-muted small mb-0">@Model.FechaPedido.ToString("dddd, dd MMMM yyyy HH:mm")</p>
+                <h1 style="margin-bottom: 0.2rem;">Pedido <span class="text-gold">#@Model.IdPedido</span></h1>
+                <p class="text-muted" style="font-size: 0.85rem; margin: 0;">@Model.FechaPedido.ToString("dddd, dd MMMM yyyy HH:mm")</p>
             </div>
-            <span class="badge-estado badge-@Model.Estado.Replace(" ", ".")">@Model.Estado</span>
+            <span class="badge @badgeClass" style="margin-left: auto; font-size: 0.95rem; padding: 0.4rem 1rem;">@Model.Estado</span>
         </div>
 
-        <div class="row g-4">
-            <!-- Info del pedido -->
-            <div class="col-lg-8">
-                <div class="checkout-card mb-4">
-                    <h6 class="text-muted text-uppercase mb-3" style="letter-spacing:.06em;">Cliente</h6>
-                    <div class="row g-3">
-                        <div class="col-sm-6">
-                            <p class="text-muted small mb-1">Nombre</p>
-                            <p class="fw-semibold">@Model.NombreCliente</p>
-                        </div>
-                        <div class="col-sm-6">
-                            <p class="text-muted small mb-1">Email</p>
-                            <p>@Model.Email</p>
-                        </div>
-                        <div class="col-sm-6">
-                            <p class="text-muted small mb-1">Teléfono</p>
-                            <p>@(Model.Telefono ?? "—")</p>
-                        </div>
-                        <div class="col-sm-6">
-                            <p class="text-muted small mb-1">Tipo de entrega</p>
-                            <p class="fw-semibold">@Model.TipoPedido</p>
-                        </div>
-                        @if (!string.IsNullOrEmpty(Model.DireccionEntrega))
-                        {
-                            <div class="col-12">
-                                <p class="text-muted small mb-1">Dirección</p>
-                                <p>@Model.DireccionEntrega</p>
+        <div class="grid-2" style="align-items: start;">
+            <!-- Izquierda: Información y Tabla de Items -->
+            <div class="flex flex-col gap-3">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="text-muted" style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;">👤 Información del Cliente</p>
+                        <div class="grid-2" style="font-size: 0.9rem;">
+                            <div>
+                                <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Nombre</p>
+                                <p style="font-weight: 600; margin-bottom: 0.75rem;">@Model.NombreCliente</p>
                             </div>
-                        }
-                        <div class="col-sm-6">
-                            <p class="text-muted small mb-1">Método de pago</p>
-                            <p>@Model.MetodoPago</p>
-                        </div>
-                        @if (!string.IsNullOrEmpty(Model.Observaciones))
-                        {
-                            <div class="col-12">
-                                <p class="text-muted small mb-1">Observaciones</p>
-                                <p class="text-secondary">@Model.Observaciones</p>
+                            <div>
+                                <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Email</p>
+                                <p style="margin-bottom: 0.75rem;">✉️ @Model.Email</p>
                             </div>
-                        }
+                            <div>
+                                <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Teléfono</p>
+                                <p style="margin-bottom: 0.75rem;">📞 @(string.IsNullOrEmpty(Model.Telefono) ? "Sin teléfono" : Model.Telefono)</p>
+                            </div>
+                            <div>
+                                <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Tipo de entrega</p>
+                                <p style="font-weight: 600; margin-bottom: 0.75rem;">
+                                    @(Model.TipoPedido == "Delivery" ? "🚴 Delivery" : "🏪 Recojo en local")
+                                </p>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.DireccionEntrega))
+                            {
+                                <div style="grid-column: span 2;">
+                                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Dirección de Entrega</p>
+                                    <p style="margin-bottom: 0.75rem; font-weight: 500;">📍 @Model.DireccionEntrega</p>
+                                </div>
+                            }
+                            <div>
+                                <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Método de pago</p>
+                                <p style="margin-bottom: 0.75rem;">💳 @Model.MetodoPago</p>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.Observaciones))
+                            {
+                                <div style="grid-column: span 2;">
+                                    <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Observaciones</p>
+                                    <p style="color: var(--accent-gold); background: rgba(224,169,109,0.08); padding: 0.75rem; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-gold); margin: 0;">📝 @Model.Observaciones</p>
+                                </div>
+                            }
+                        </div>
                     </div>
                 </div>
 
-                <!-- Items -->
-                <div class="checkout-card">
-                    <h6 class="text-muted text-uppercase mb-3" style="letter-spacing:.06em;">Detalle del Pedido</h6>
-                    <div class="maido-table">
-                        <table class="table mb-0 align-middle">
-                            <thead>
+                <!-- Tabla de Platillos -->
+                <div class="table-wrapper card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Platillo</th>
+                                <th style="text-align: center;">Cant.</th>
+                                <th style="text-align: right;">P. Unit.</th>
+                                <th style="text-align: right;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
                                 <tr>
-                                    <th>Platillo</th>
-                                    <th class="text-center">Cant.</th>
-                                    <th class="text-end">P. Unit.</th>
-                                    <th class="text-end">Subtotal</th>
+                                    <td><b>🍣 @item.Nombre</b></td>
+                                    <td style="text-align: center;"><span class="badge badge-gold">x@item.Cantidad</span></td>
+                                    <td style="text-align: right;" class="text-muted">S/ @item.Precio.ToString("F2")</td>
+                                    <td style="text-align: right;" class="price">S/ @item.Subtotal.ToString("F2")</td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model.Items)
-                                {
-                                    <tr>
-                                        <td>@item.Nombre</td>
-                                        <td class="text-center">@item.Cantidad</td>
-                                        <td class="text-end text-muted">S/ @item.Precio.ToString("F2")</td>
-                                        <td class="text-end fw-bold">S/ @item.Subtotal.ToString("F2")</td>
-                                    </tr>
-                                }
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="3" class="text-end text-muted">Subtotal</td>
-                                    <td class="text-end">S/ @Model.Subtotal.ToString("F2")</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="3" class="text-end text-muted">IGV (18%)</td>
-                                    <td class="text-end">S/ @Model.IGV.ToString("F2")</td>
-                                </tr>
-                                <tr>
-                                    <td colspan="3" class="text-end fw-bold fs-5">Total</td>
-                                    <td class="text-end fw-bold fs-5 text-accent">S/ @Model.Total.ToString("F2")</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" style="text-align: right;" class="text-muted">Subtotal</td>
+                                <td style="text-align: right;">S/ @Model.Subtotal.ToString("F2")</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="text-align: right;" class="text-muted">IGV (18%)</td>
+                                <td style="text-align: right;">S/ @Model.IGV.ToString("F2")</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="text-align: right; font-weight: 700; font-size: 1.1rem;">Total</td>
+                                <td style="text-align: right; font-weight: 800; font-size: 1.3rem;" class="text-accent">S/ @Model.Total.ToString("F2")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
 
-            <!-- Panel de estado -->
-            <div class="col-lg-4">
-                <div class="checkout-card">
-                    <h6 class="text-muted text-uppercase mb-3" style="letter-spacing:.06em;">Cambiar Estado</h6>
-                    <form asp-action="ActualizarEstadoPedido" method="post">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="idPedido" value="@Model.IdPedido" />
-                        <div class="mb-3">
-                            <select name="estado" class="form-select" id="selectEstado">
-                                @foreach (var e in estados)
-                                {
-                                    <option value="@e" selected="@(Model.Estado == e)">@e</option>
-                                }
-                            </select>
+            <!-- Derecha: Acciones rápidas de cambio de estado -->
+            <div class="flex flex-col gap-3">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="text-muted" style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.25rem;">⚡ Acciones Rápidas</p>
+                        
+                        <div class="flex flex-col gap-2" style="margin-bottom: 1.5rem;">
+                            @if (Model.Estado.Equals("Pendiente", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <form asp-action="ActualizarEstadoPedido" method="post" style="width:100%;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="idPedido" value="@Model.IdPedido" />
+                                    <input type="hidden" name="estado" value="En Preparacion" />
+                                    <button type="submit" class="btn btn-primary" style="width:100%;">🍳 Aceptar (Cocinar)</button>
+                                </form>
+                                <form asp-action="ActualizarEstadoPedido" method="post" style="width:100%;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="idPedido" value="@Model.IdPedido" />
+                                    <input type="hidden" name="estado" value="Cancelado" />
+                                    <button type="submit" class="btn btn-ghost" style="width:100%; color:#f44336; border-color:#f44336;">❌ Cancelar Pedido</button>
+                                </form>
+                            }
+                            else if (Model.Estado.Equals("En Preparacion", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <form asp-action="ActualizarEstadoPedido" method="post" style="width:100%;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="idPedido" value="@Model.IdPedido" />
+                                    <input type="hidden" name="estado" value="En Camino" />
+                                    <button type="submit" class="btn btn-primary" style="width:100%; background:#f59e0b; border-color:#f59e0b; color:#1a1a1a;">🛵 Enviar Moto (En Camino)</button>
+                                </form>
+                                <form asp-action="ActualizarEstadoPedido" method="post" style="width:100%;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="idPedido" value="@Model.IdPedido" />
+                                    <input type="hidden" name="estado" value="Cancelado" />
+                                    <button type="submit" class="btn btn-ghost" style="width:100%; color:#f44336; border-color:#f44336;">❌ Cancelar Pedido</button>
+                                </form>
+                            }
+                            else if (Model.Estado.Equals("En Camino", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <form asp-action="ActualizarEstadoPedido" method="post" style="width:100%;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="idPedido" value="@Model.IdPedido" />
+                                    <input type="hidden" name="estado" value="Entregado" />
+                                    <button type="submit" class="btn btn-primary" style="width:100%; background:#10b981; border-color:#10b981; color:#fff;">✅ Marcar Entregado</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <p class="text-muted" style="font-size:0.85rem; text-align:center;">Este pedido ya se encuentra en estado <b>@Model.Estado</b>.</p>
+                            }
                         </div>
-                        <button type="submit" class="btn btn-accent w-100">
-                            <i class="bi bi-arrow-repeat me-2"></i>Actualizar Estado
-                        </button>
-                    </form>
+
+                        <div class="divider"></div>
+
+                        <p class="text-muted" style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Cambiar estado manualmente</p>
+                        <form asp-action="ActualizarEstadoPedido" method="post" class="flex flex-col gap-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="idPedido" value="@Model.IdPedido" />
+                            <div class="form-group">
+                                <select name="estado" class="form-input" id="selectEstado">
+                                    @foreach (var e in estados)
+                                    {
+                                        <option value="@e" selected="@(Model.Estado.Equals(e, StringComparison.OrdinalIgnoreCase))">@e</option>
+                                    }
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-ghost" style="width: 100%;">
+                                Cambiar Estado
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+

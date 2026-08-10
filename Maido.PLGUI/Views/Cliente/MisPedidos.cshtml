@@ -4,91 +4,388 @@
 @{
     ViewData["Title"] = "Mis Pedidos - Maido";
     var nombreUsuario = ViewBag.NombreUsuario as string ?? "Cliente";
+    var pedidos = Model?.ToList() ?? new List<PedidoResumenDto>();
+
+    string NormalizeEstado(string? estado)
+    {
+        if (string.IsNullOrWhiteSpace(estado)) return "PENDIENTE";
+        var norm = estado.Trim().ToUpper().Replace(" ", "_");
+        if (norm == "EN_PREPARACIÓN" || norm == "PREPARANDO") return "EN_PREPARACION";
+        return norm;
+    }
+
+    string BadgeClass(string estado)
+    {
+        var norm = NormalizeEstado(estado);
+        return norm switch
+        {
+            "PENDIENTE" => "badge-warning",
+            "EN_PREPARACION" => "badge-warning",
+            "EN_CAMINO" => "badge-gold",
+            "ENTREGADO" => "badge-success",
+            "CANCELADO" => "badge-danger",
+            _ => "badge-gold"
+        };
+    }
+
+    string EstadoLabel(string estado)
+    {
+        var norm = NormalizeEstado(estado);
+        return norm switch
+        {
+            "PENDIENTE" => "Pendiente",
+            "EN_PREPARACION" => "En preparación",
+            "EN_CAMINO" => "En camino",
+            "ENTREGADO" => "Entregado",
+            "CANCELADO" => "Cancelado",
+            _ => estado
+        };
+    }
+
+    int StateIndex(string estado)
+    {
+        var norm = NormalizeEstado(estado);
+        return norm switch
+        {
+            "PENDIENTE" => 0,
+            "EN_PREPARACION" => 1,
+            "EN_CAMINO" => 2,
+            "ENTREGADO" => 3,
+            _ => -1
+        };
+    }
+
+    string TimelinePercent(string estado)
+    {
+        int idx = StateIndex(estado);
+        if (idx <= 0) return "0%";
+        return ((idx / 3.0) * 100).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "%";
+    }
+
+    int getCount(string filterVal)
+    {
+        if (filterVal == "TODOS") return pedidos.Count;
+        return pedidos.Count(p => NormalizeEstado(p.Estado) == filterVal);
+    }
+
+    var filters = new[]
+    {
+        new { value = "TODOS", label = "Todos", icon = "📋" },
+        new { value = "PENDIENTE", label = "Pendientes", icon = "⏳" },
+        new { value = "EN_PREPARACION", label = "Preparando", icon = "👨‍🍳" },
+        new { value = "EN_CAMINO", label = "En camino", icon = "🛵" },
+        new { value = "ENTREGADO", label = "Entregados", icon = "✅" },
+        new { value = "CANCELADO", label = "Cancelados", icon = "❌" }
+    };
+
+    var timelineSteps = new[]
+    {
+        new { key = "PENDIENTE", label = "Recibido" },
+        new { key = "EN_PREPARACION", label = "Preparando" },
+        new { key = "EN_CAMINO", label = "En camino" },
+        new { key = "ENTREGADO", label = "Entregado" }
+    };
 }
 
-<div class="container page-transition" style="margin-top: 5rem; margin-bottom: 5rem;">
-    <!-- Title Section -->
-    <header class="mb-5 d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
-        <div>
-            <h1 class="display-font fs-1 text-white mb-2 fw-bold">Hola, <span class="text-accent">@nombreUsuario</span></h1>
-            <div class="accent-line mb-3" style="width: 60px; height: 3px; background: linear-gradient(90deg, var(--accent-red) 0%, var(--accent-gold) 100%);"></div>
-            <p class="text-secondary mb-0">Aquí está el historial de tus experiencias Nikkei.</p>
-        </div>
-        <a asp-controller="Home" asp-action="Menu" class="btn btn-outline-accent d-flex align-items-center gap-2 px-4 shadow-glow">
-            <i class="bi bi-plus-lg"></i>Nuevo Pedido
-        </a>
-    </header>
+<style>
+    .pedidos-page { padding-top:6rem; padding-bottom:4rem; min-height:100vh; }
 
-    @if (Model != null && Model.Any())
+    /* Filtros */
+    .filter-chips { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:2rem; }
+    .chip {
+      display:inline-flex; align-items:center; gap:0.4rem;
+      padding:0.5rem 1.25rem; border-radius:100px;
+      background:rgba(255,255,255,0.02); border:1px solid var(--border);
+      color:var(--text-muted); font-size:0.9rem; font-weight:500; cursor:pointer;
+      transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .chip:hover { border-color:rgba(224,169,109,0.4); color:var(--text-primary); transform:translateY(-1px); }
+    .chip.active { background:rgba(224,169,109,0.12); border-color:var(--accent-gold); color:var(--accent-gold); font-weight:600; box-shadow:0 4px 12px rgba(224,169,109,0.15); }
+    .chip-count {
+      background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:100px;
+      font-size:0.75rem; min-width:20px; text-align:center;
+    }
+    .chip.active .chip-count { background:rgba(224,169,109,0.2); }
+
+    /* Skeleton Loader */
+    .skeleton-card { height:120px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); margin-bottom:1rem; animation:pulse 1.5s infinite; }
+    
+    /* Empty State */
+    .empty-state { text-align:center; padding:4rem 2rem; background:rgba(255,255,255,0.01); border-style:dashed; }
+    .empty-icon { font-size:4.5rem; margin-bottom:1rem; opacity:0.8; }
+
+    /* Lista */
+    .pedidos-list { display:flex; flex-direction:column; gap:1rem; max-width:850px; }
+
+    /* Card */
+    .pedido-card { overflow:hidden; transition:all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border:1px solid var(--border); background:var(--bg-card); }
+    .pedido-card:hover { border-color:rgba(255,255,255,0.15); }
+    .pedido-card.expanded { border-color:var(--accent-gold); box-shadow:0 10px 25px -5px rgba(0,0,0,0.5); }
+
+    /* Header */
+    .pedido-header {
+      display:flex; align-items:center; padding:1.25rem 1.5rem;
+      cursor:pointer; user-select:none; gap:1rem; transition:background 0.2s;
+    }
+    .pedido-header:hover { background:rgba(255,255,255,0.02); }
+    .header-left { flex:1; }
+    .pedido-num { font-size:1.1rem; font-weight:800; margin-bottom:0.25rem; letter-spacing:0.05em; }
+    .pedido-date { font-size:0.85rem; color:var(--text-muted); }
+    .header-right { display:flex; flex-direction:column; align-items:flex-end; gap:0.5rem; }
+    .pedido-total { font-size:1.1rem; font-weight:800; color:var(--text-primary); }
+    
+    .expand-icon { font-size:1.2rem; color:var(--text-muted); transition:transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); margin-left:0.5rem; }
+    .expand-icon.rotated { transform:rotate(180deg); color:var(--accent-gold); }
+
+    /* Timeline */
+    .timeline-bar {
+      display:flex; justify-content:space-between; align-items:flex-start;
+      padding:0.5rem 2rem 1.5rem; position:relative;
+    }
+    .tl-step { display:flex; flex-direction:column; align-items:center; z-index:1; flex:1; }
+    .tl-dot {
+      width:16px; height:16px; border-radius:50%;
+      background:var(--bg-secondary); border:3px solid var(--border);
+      margin-bottom:0.5rem; transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tl-step.done .tl-dot { background:var(--accent-gold); border-color:var(--accent-gold); }
+    .tl-step.current .tl-dot { background:var(--accent-gold); border-color:#fff; box-shadow:0 0 15px rgba(224,169,109,0.8); animation:pulseGlow 2s infinite; }
+    .tl-label { font-size:0.75rem; color:var(--text-muted); text-align:center; font-weight:500; transition:color 0.3s; }
+    .tl-step.done .tl-label, .tl-step.current .tl-label { color:var(--accent-gold); font-weight:700; }
+    .tl-track {
+      position:absolute; top:calc(0.5rem + 7px); left:calc(2rem + 16px); right:calc(2rem + 16px);
+      height:4px; background:var(--border); border-radius:2px; z-index:0;
+    }
+    .tl-fill {
+      height:100%; background:var(--accent-gold); border-radius:2px;
+      transition:width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @@keyframes pulseGlow { 0%,100% { box-shadow:0 0 10px rgba(224,169,109,0.5); transform:scale(1); } 50% { box-shadow:0 0 20px rgba(224,169,109,0.9); transform:scale(1.2); } }
+    @@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    
+    .timeline-cancelled { padding:0.5rem 1.5rem 1.5rem; font-size:0.9rem; color:#ef4444; font-weight:600; }
+
+    /* Body expandible */
+    .pedido-body { animation:slideDown 0.3s ease forwards; background:rgba(0,0,0,0.1); border-top:1px solid var(--border); }
+    @@keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+    
+    .pedido-items { padding:1rem 1.5rem; }
+    .detalle-row {
+      display:flex; justify-content:space-between; align-items:center; padding:0.75rem 0;
+      border-bottom:1px solid rgba(255,255,255,0.05);
+    }
+    .detalle-row:last-child { border:none; }
+    
+    .item-img { width: 45px; height: 45px; border-radius: 50%; background-size: cover; background-position: center; border:2px solid rgba(255,255,255,0.1); }
+    
+    .pedido-footer { padding:1.25rem 1.5rem; background:rgba(0,0,0,0.2); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; border-top:1px solid var(--border); }
+    .footer-details { display:flex; flex-direction:column; gap:0.4rem; flex:1; min-width:250px; }
+    .footer-row { font-size:0.85rem; color:var(--text-muted); }
+    .footer-row b { color:var(--text-primary); }
+    .footer-row.obs { font-style:italic; opacity:0.8; margin-top:0.25rem; }
+
+    @@media(max-width:600px) {
+      .pedido-header { flex-wrap:wrap; }
+      .tl-label { font-size:0.65rem; }
+      .filter-chips { gap:0.4rem; }
+      .chip { padding:0.4rem 0.8rem; font-size:0.8rem; }
+      .pedido-footer { flex-direction:column; align-items:flex-start; }
+      .footer-actions { width:100%; }
+      .footer-actions .btn { width:100%; justify-content:center; }
+    }
+</style>
+
+<div class="pedidos-page">
+  <div class="container">
+    <h1 style="margin-bottom:0.5rem">📋 Mis <span class="text-accent">Pedidos</span></h1>
+    <p class="text-muted" style="margin-bottom:2rem">Historial de tus pedidos en Maido</p>
+
+    <!-- Filtros -->
+    <div class="filter-chips">
+      @foreach (var f in filters)
+      {
+        var count = getCount(f.value);
+        <button type="button"
+                class="chip @(f.value == "TODOS" ? "active" : "")"
+                data-filter="@f.value"
+                onclick="setFilter('@f.value')">
+          @f.icon @f.label
+          @if (count > 0)
+          {
+            <span class="chip-count">@count</span>
+          }
+        </button>
+      }
+    </div>
+
+    <!-- Empty State (No orders at all) -->
+    @if (pedidos.Count == 0)
     {
-        <div class="row g-4">
-            @foreach (var p in Model)
-            {
-                <!-- Badge Color Logic -->
-                string badgeColor = p.Estado.ToLower() switch
-                {
-                    "entregado" => "success",
-                    "pendiente" => "warning text-dark",
-                    "en camino" => "info text-dark",
-                    "cancelado" => "danger",
-                    _ => "secondary"
-                };
-                string iconDelivery = p.TipoPedido == "Delivery" ? "bi-bicycle text-accent" : "bi-shop text-gold";
-
-                <div class="col-12 col-md-6 col-xl-4">
-                    <div class="glass-card p-4 h-100 d-flex flex-column position-relative overflow-hidden maido-card">
-                        <!-- Header Card -->
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <span class="badge bg-@badgeColor rounded-pill text-uppercase" style="letter-spacing: 0.5px; font-size: 0.7rem;">
-                                    @p.Estado
-                                </span>
-                                <h4 class="text-white mt-2 mb-0 display-font fw-bold">#@p.IdPedido</h4>
-                            </div>
-                            <span class="text-gold display-font fs-4 fw-bold">S/ @p.Total.ToString("F2")</span>
-                        </div>
-
-                        <!-- Details -->
-                        <div class="mt-2 mb-4 flex-grow-1">
-                            <ul class="list-unstyled mb-0 d-flex flex-column gap-2 text-muted small">
-                                <li class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-calendar-event opacity-75"></i>
-                                    @p.FechaPedido.ToString("dd MMM yyyy, HH:mm")
-                                </li>
-                                <li class="d-flex align-items-center gap-2">
-                                    <i class="bi @iconDelivery opacity-75"></i>
-                                    @p.TipoPedido
-                                </li>
-                                <li class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-credit-card opacity-75"></i>
-                                    Pagado con @p.MetodoPago
-                                </li>
-                            </ul>
-                        </div>
-
-                        <!-- Action Button -->
-                        <a asp-controller="Cart" asp-action="Confirmacion" asp-route-id="@p.IdPedido" 
-                           class="btn btn-outline-secondary w-100 text-uppercase fw-bold text-white" 
-                           style="letter-spacing: 1px; font-size: 0.85rem; border-color: rgba(255,255,255,0.1);">
-                            Ver Recibo <i class="bi bi-arrow-right ms-2"></i>
-                        </a>
-                    </div>
-                </div>
-            }
-        </div>
+      <div class="empty-state card">
+        <div class="empty-icon">🍱</div>
+        <h3>Aún no tienes pedidos</h3>
+        <p class="text-muted">¡Haz tu primer pedido y disfruta la experiencia Nikkei!</p>
+        <a asp-controller="Home" asp-action="Menu" class="btn btn-primary" style="margin-top:1.5rem">
+          Explorar el menú →
+        </a>
+      </div>
     }
     else
     {
-        <!-- Empty State -->
-        <div class="glass-card p-5 text-center my-5 fade-in">
-            <i class="bi bi-receipt-cutoff mb-4 d-block text-accent shadow-glow" style="font-size: 4rem;"></i>
-            <h3 class="display-font text-white mb-3 fw-bold">Aún no tienes pedidos</h3>
-            <p class="text-muted mb-4 mx-auto" style="max-width: 500px;">
-                Parece que tu historial está tan limpio como un plato recién lavado. Explora nuestro menú y haz tu primer pedido Nikkei Noir hoy mismo.
-            </p>
-            <a asp-controller="Home" asp-action="Menu" class="btn btn-accent px-5 py-3 fw-bold shadow-glow text-uppercase" style="letter-spacing: 1px;">
-                <i class="bi bi-grid-fill me-2"></i>Descubrir Menú
-            </a>
-        </div>
+      <!-- Empty State for Filter -->
+      <div id="emptyFilterState" class="empty-state card" style="display: none;">
+        <div class="empty-icon">🍱</div>
+        <h3>Sin pedidos en este filtro</h3>
+        <button type="button" class="btn btn-ghost" style="margin-top:1rem" onclick="setFilter('TODOS')">
+          Ver todos los pedidos
+        </button>
+      </div>
+
+      <!-- Lista de Pedidos -->
+      <div class="pedidos-list">
+        @foreach (var p in pedidos)
+        {
+          var normEstado = NormalizeEstado(p.Estado);
+          var bClass = BadgeClass(p.Estado);
+          var eLabel = EstadoLabel(p.Estado);
+          int stateIdx = StateIndex(p.Estado);
+          var percent = TimelinePercent(p.Estado);
+
+          <div class="pedido-card card" data-estado="@normEstado" id="pedido-card-@p.IdPedido">
+
+            <!-- Header (clickeable) -->
+            <div class="pedido-header" onclick="togglePedido(@p.IdPedido)">
+              <div class="header-left">
+                <h3 class="pedido-num">Pedido #@p.IdPedido</h3>
+                <span class="pedido-date">@p.FechaPedido.ToString("dd MMM yyyy, HH:mm")</span>
+              </div>
+              <div class="header-right">
+                <span class="badge @bClass">@eLabel</span>
+                <span class="pedido-total">S/ @p.Total.ToString("F2")</span>
+              </div>
+              <div class="expand-icon" id="expand-icon-@p.IdPedido">▾</div>
+            </div>
+
+            <!-- Timeline -->
+            @if (normEstado != "CANCELADO")
+            {
+              <div class="timeline-bar">
+                @for (int si = 0; si < timelineSteps.Length; si++)
+                {
+                  var step = timelineSteps[si];
+                  bool isDone = si < stateIdx;
+                  bool isCurrent = si == stateIdx;
+                  <div class="tl-step @(isDone ? "done" : "") @(isCurrent ? "current" : "")">
+                    <div class="tl-dot"></div>
+                    <span class="tl-label">@step.label</span>
+                  </div>
+                }
+                <div class="tl-track">
+                  <div class="tl-fill" style="width: @percent;"></div>
+                </div>
+              </div>
+            }
+            else
+            {
+              <div class="timeline-cancelled">
+                ❌ Pedido cancelado
+              </div>
+            }
+
+            <!-- Detalle expandible -->
+            <div class="pedido-body" id="pedido-body-@p.IdPedido" style="display: none;">
+              <div class="pedido-footer">
+                <div class="footer-details">
+                  @if (!string.IsNullOrEmpty(p.MetodoPago))
+                  {
+                    <div class="footer-row">
+                      <span>💳 Pago: <b>@p.MetodoPago</b></span>
+                    </div>
+                  }
+                  @if (!string.IsNullOrEmpty(p.TipoPedido))
+                  {
+                    <div class="footer-row">
+                      <span>📍 Tipo: <b>@p.TipoPedido</b></span>
+                    </div>
+                  }
+                </div>
+                
+                <div class="footer-actions">
+                  <a asp-controller="Cart" asp-action="Confirmacion" asp-route-id="@p.IdPedido" class="btn btn-primary">
+                    <span>🔁 Ver Recibo / Repetir</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        }
+      </div>
     }
+  </div>
 </div>
+
+<script>
+  let activeFilter = 'TODOS';
+
+  function setFilter(val) {
+    activeFilter = val;
+    
+    // Update chip active states
+    document.querySelectorAll('.filter-chips .chip').forEach(chip => {
+      if (chip.getAttribute('data-filter') === val) {
+        chip.classList.add('active');
+      } else {
+        chip.classList.remove('active');
+      }
+    });
+
+    // Filter cards
+    const cards = document.querySelectorAll('.pedidos-list .pedido-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const estado = card.getAttribute('data-estado');
+      if (val === 'TODOS' || estado === val) {
+        card.style.display = 'block';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    // Show empty state for filter if needed
+    const emptyState = document.getElementById('emptyFilterState');
+    if (emptyState) {
+      emptyState.style.display = (visibleCount === 0) ? 'block' : 'none';
+    }
+  }
+
+  function togglePedido(id) {
+    const body = document.getElementById('pedido-body-' + id);
+    const icon = document.getElementById('expand-icon-' + id);
+    const card = document.getElementById('pedido-card-' + id);
+
+    if (!body || !icon || !card) return;
+
+    const isExpanded = card.classList.contains('expanded');
+
+    // Collapse all other expanded cards
+    document.querySelectorAll('.pedido-card').forEach(c => {
+      c.classList.remove('expanded');
+    });
+    document.querySelectorAll('.expand-icon').forEach(i => {
+      i.classList.remove('rotated');
+    });
+    document.querySelectorAll('.pedido-body').forEach(b => {
+      b.style.display = 'none';
+    });
+
+    // If it wasn't expanded before, expand it
+    if (!isExpanded) {
+      card.classList.add('expanded');
+      icon.classList.add('rotated');
+      body.style.display = 'block';
+    }
+  }
+</script>

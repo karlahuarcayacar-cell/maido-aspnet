@@ -3,89 +3,53 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="login-page-container">
-    <div class="login-bg-image"></div>
-    <div class="login-bg-overlay"></div>
-    
-    <div class="container d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 80px);">
-        <div class="auth-card glass-card fade-in-up" style="width: 100%; max-width: 480px; padding: 3rem 2.5rem; margin: auto;">
-
-            <!-- Logo + Título -->
-            <div class="text-center mb-4">
-                <h2 class="display-font text-uppercase fw-bold mb-1" style="letter-spacing: 0.15em; font-size: 1.8rem;">
-                    <span class="text-white">MAI</span><span class="text-accent">DO</span>
-                </h2>
-                <div class="accent-line mx-auto mb-3" style="width: 40px; height: 2px; background: linear-gradient(90deg, var(--accent-red) 0%, var(--accent-gold) 100%);"></div>
-                <h1 class="auth-title text-white fs-4 mb-1">Bienvenido</h1>
-                <p class="text-muted small">Inicia sesión para continuar con tu experiencia Nikkei</p>
-            </div>
-
-            @if (TempData["Exito"] != null)
-            {
-                <div class="alert alert-success py-2 mb-3 border-0">
-                    <i class="bi bi-check-circle me-2"></i>@TempData["Exito"]
-                </div>
-            }
-
-            <form asp-controller="Account" asp-action="Login" method="post">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
-
-                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
-
-                <div class="mb-4">
-                    <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-envelope me-2"></i>Correo electrónico</label>
-                    <input type="email" name="Email" class="form-control form-control-lg text-white maido-input" id="loginEmail"
-                           placeholder="tu@email.com" autocomplete="email" required />
-                </div>
-
-                <div class="mb-5">
-                    <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-lock me-2"></i>Contraseña</label>
-                    <div class="input-group input-group-lg password-group">
-                        <input type="password" name="Password" class="form-control text-white maido-input border-end-0" id="loginPassword"
-                               placeholder="••••••••" autocomplete="current-password" required />
-                        <button class="btn border-start-0 text-muted px-3" type="button" 
-                                style="background: var(--bg-secondary); border: 1px solid var(--border);"
-                                onclick="togglePassword('loginPassword', this)">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-accent btn-lg w-100 py-3 mb-4 text-uppercase fw-bold shadow-glow" id="btnLogin" style="letter-spacing: 1px; font-size: 0.95rem;">
-                    Ingresar <i class="bi bi-arrow-right ms-2"></i>
-                </button>
-            </form>
-
-            <p class="text-center text-muted small mb-3">
-                ¿No tienes cuenta?
-                <a asp-controller="Account" asp-action="Register" class="text-gold fw-bold ms-1" style="letter-spacing: 0.5px;">Regístrate aquí</a>
-            </p>
-
-            <div class="text-center">
-                <a asp-controller="Home" asp-action="Index" class="btn btn-link text-muted small text-decoration-none hover-white">
-                    <i class="bi bi-arrow-left me-1"></i>Volver al menú
-                </a>
-            </div>
-
-        </div>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="logo-jp display-font">間道</span>
+      <span class="logo-text">MAIDO</span>
     </div>
-</div>
+    <h2 class="auth-title">Iniciar Sesión</h2>
+    <p class="text-muted" style="text-align:center;margin-bottom:2rem">Accede a tu cuenta para realizar pedidos</p>
 
-@section Scripts {
-<style>
-    /* Ocultar el footer global en la pantalla de login para evitar el gap negro */
-    footer.maido-footer {
-        display: none !important;
+    @if (TempData["Exito"] != null)
+    {
+      <div class="alert-box alert-box-success py-2 border-0" style="margin-bottom:1rem">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Exito"]
+      </div>
     }
-</style>
 
-<script>
-function togglePassword(id, btn) {
-    const input = document.getElementById(id);
-    const isText = input.type === 'text';
-    input.type = isText ? 'password' : 'text';
-    btn.innerHTML = isText ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
-}
-</script>
-}
+    <form asp-controller="Account" asp-action="Login" method="post">
+      @Html.AntiForgeryToken()
+      <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+
+      <div class="form-group" style="margin-bottom:1.25rem">
+        <label class="form-label">Correo Electrónico</label>
+        <input type="email" name="Email" class="form-input" id="loginEmail" placeholder="tu@correo.com" autocomplete="email" required />
+      </div>
+      <div class="form-group" style="margin-bottom:2rem">
+        <label class="form-label">Contraseña</label>
+        <input type="password" name="Password" class="form-input" id="loginPassword" placeholder="••••••••" autocomplete="current-password" required />
+      </div>
+
+      @if (!ViewData.ModelState.IsValid)
+      {
+        <div class="error-msg">
+          <div asp-validation-summary="All"></div>
+        </div>
+      }
+      else if (ViewBag.Error != null)
+      {
+        <div class="error-msg">@ViewBag.Error</div>
+      }
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
+        Iniciar Sesión
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p class="text-muted">¿No tienes cuenta? <a asp-controller="Account" asp-action="Register" class="text-accent">Regístrate</a></p>
+    </div>
+  </div>
+</div>

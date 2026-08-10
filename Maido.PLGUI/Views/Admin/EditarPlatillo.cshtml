@@ -10,91 +10,88 @@
     @await Html.PartialAsync("_AdminSidebar")
 
     <div class="admin-content">
-        <div class="d-flex align-items-center gap-3 mb-4">
-            <a asp-action="Platillos" class="btn btn-sm btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i>
+        <div class="flex items-center gap-2" style="margin-bottom: 1.5rem;">
+            <a asp-action="Platillos" class="btn btn-ghost btn-icon">
+                ←
             </a>
-            <h2 class="mb-0">Editar Platillo</h2>
+            <h1 style="margin: 0;">Editar <span class="text-accent">Platillo</span></h1>
         </div>
 
-        <div class="checkout-card" style="max-width:680px;">
-            <form asp-action="EditarPlatillo" method="post" enctype="multipart/form-data">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="IdPlatillo" value="@Model.IdPlatillo" />
-                <input type="hidden" name="ImagenUrl" value="@Model.ImagenUrl" />
+        <div class="card" style="max-width: 650px;">
+            <div class="card-body">
+                <form asp-action="EditarPlatillo" method="post" enctype="multipart/form-data" class="flex flex-col gap-2">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="IdPlatillo" value="@Model.IdPlatillo" />
+                    <input type="hidden" name="ImagenUrl" value="@Model.ImagenUrl" />
 
-                <div class="row g-3">
-                    <div class="col-12">
+                    <div class="form-group">
                         <label class="form-label">Nombre del Platillo *</label>
-                        <input type="text" name="Nombre" class="form-control" value="@Model.Nombre" required />
+                        <input type="text" name="Nombre" class="form-input" value="@Model.Nombre" required />
                     </div>
 
-                    <div class="col-12">
+                    <div class="form-group">
                         <label class="form-label">Descripción *</label>
-                        <textarea name="Descripcion" class="form-control" rows="3">@Model.Descripcion</textarea>
+                        <textarea name="Descripcion" class="form-input" rows="3">@Model.Descripcion</textarea>
                         @Html.ValidationMessage("Descripcion", new { @class = "text-danger small" })
                     </div>
 
-                    <div class="col-sm-5">
-                        <label class="form-label">Precio (S/) *</label>
-                        <input type="number" name="Precio" class="form-control" step="0.01"
-                               value="@Model.Precio" required />
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Precio (S/) *</label>
+                            <input type="number" name="Precio" class="form-input" step="0.01" value="@Model.Precio" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Categoría *</label>
+                            <select name="IdCategoria" class="form-input" required>
+                                @foreach (var cat in categorias)
+                                {
+                                    <option value="@cat.IdCategoria" selected="@(Model.IdCategoria == cat.IdCategoria)">
+                                        @cat.Nombre
+                                    </option>
+                                }
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="col-sm-7">
-                        <label class="form-label">Categoría *</label>
-                        <select name="IdCategoria" class="form-select" required>
-                            @foreach (var cat in categorias)
-                            {
-                                <option value="@cat.IdCategoria" selected="@(Model.IdCategoria == cat.IdCategoria)">
-                                    @cat.Nombre
-                                </option>
-                            }
-                        </select>
-                    </div>
-
-                    <!-- Imagen actual + nueva -->
-                    <div class="col-12">
-                        <label class="form-label"><i class="bi bi-image me-1"></i>Imagen</label>
+                    <!-- Imagen -->
+                    <div class="form-group">
+                        <label class="form-label">Imagen del Platillo</label>
                         @if (!string.IsNullOrEmpty(Model.ImagenUrl))
                         {
-                            <div class="mb-2">
-                                <img src="@Model.ImagenUrl" alt="@Model.Nombre" class="img-upload-preview" id="imgPreview" />
-                                <p class="form-text mt-1">Imagen actual. Sube una nueva para reemplazarla.</p>
+                            <div style="margin-bottom: 0.75rem;">
+                                <img src="@Model.ImagenUrl" alt="@Model.Nombre" style="width:120px; height:90px; object-fit:cover; border-radius:var(--radius-sm); border:1px solid var(--border);" id="imgPreview" />
                             </div>
                         }
                         else
                         {
-                            <img id="imgPreview" class="img-upload-preview d-none" src="#" alt="Preview" />
-                            <p class="form-text">Sin imagen. Sube una para este platillo.</p>
+                            <img id="imgPreview" style="display:none; width:120px; height:90px; object-fit:cover; border-radius:var(--radius-sm); border:1px solid var(--border); margin-bottom: 0.75rem;" src="#" alt="Preview" />
                         }
-                        <input type="file" name="imagenFile" class="form-control"
-                               accept=".jpg,.jpeg,.png,.webp" onchange="previewImagen(this)" />
+                        <input type="file" name="imagenFile" class="form-input" accept=".jpg,.jpeg,.png,.webp" onchange="previewImagen(this)" />
                     </div>
 
-                    <div class="col-sm-6">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="Disponible" id="chkDisponible"
-                                   value="true" @(Model.Disponible ? "checked" : "") />
-                            <label class="form-check-label" for="chkDisponible">Disponible en menú</label>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="Destacado" id="chkDestacado"
-                                   value="true" @(Model.Destacado ? "checked" : "") />
-                            <label class="form-check-label" for="chkDestacado">⭐ Platillo Destacado</label>
-                        </div>
+                    <div class="flex gap-4" style="margin-top: 0.5rem;">
+                        <label class="flex items-center gap-1" style="cursor: pointer;">
+                            <input type="checkbox" name="Disponible" value="true" @(Model.Disponible ? "checked" : "") />
+                            <span class="form-label" style="margin: 0;">Disponible (en stock)</span>
+                        </label>
+
+                        <label class="flex items-center gap-1" style="cursor: pointer;">
+                            <input type="checkbox" name="Destacado" value="true" @(Model.Destacado ? "checked" : "") />
+                            <span class="form-label" style="margin: 0;">⭐ Destacado</span>
+                        </label>
                     </div>
 
-                    <div class="col-12 d-flex gap-3 mt-2">
-                        <button type="submit" class="btn btn-accent px-4">
-                            <i class="bi bi-floppy me-2"></i>Actualizar Platillo
+                    <div class="divider"></div>
+
+                    <div class="flex gap-2 justify-between items-center">
+                        <a asp-action="Platillos" class="btn btn-ghost">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            Actualizar Platillo
                         </button>
-                        <a asp-action="Platillos" class="btn btn-outline-secondary">Cancelar</a>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -114,3 +111,4 @@ function previewImagen(input) {
 }
 </script>
 }
+

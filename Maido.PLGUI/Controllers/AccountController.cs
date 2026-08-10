@@ -84,6 +84,11 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegistrarUsuarioDto dto)
     {
+        if (string.IsNullOrEmpty(dto.ConfirmarPassword))
+        {
+            dto.ConfirmarPassword = dto.Password;
+        }
+
         if (!ModelState.IsValid)
             return View(dto);
 
@@ -93,11 +98,26 @@ public class AccountController : Controller
             return View(dto);
         }
 
-        var (exitoso, mensaje, _) = await _usuarioService.RegistrarAsync(dto);
+        var (exitoso, mensaje, idUsuario) = await _usuarioService.RegistrarAsync(dto);
         if (!exitoso)
         {
             ModelState.AddModelError(string.Empty, mensaje);
             return View(dto);
+        }
+
+        // Auto iniciar sesión tras crear cuenta
+        var usuario = await _usuarioService.AutenticarAsync(new LoginDto { Email = dto.Email, Password = dto.Password });
+        if (usuario != null)
+        {
+            SesionHelper.IniciarSesion(
+                HttpContext.Session,
+                usuario.IdUsuario,
+                usuario.NombreCompleto,
+                usuario.Email,
+                usuario.IdRol,
+                usuario.NombreRol);
+            TempData["Exito"] = "¡Cuenta creada exitosamente! Bienvenido a Maido.";
+            return RedirectToAction("Index", "Home");
         }
 
         TempData["Exito"] = "Cuenta creada correctamente. ¡Inicia sesión para continuar!";

@@ -3,103 +3,141 @@
 @{
     ViewData["Title"] = "Dashboard - Admin Maido";
     var nombreAdmin = ViewBag.NombreAdmin as string ?? "Admin";
-    var ultimosPedidos = ViewBag.UltimosPedidos as IEnumerable<PedidoResumenDto> ?? [];
+    var ultimosPedidos = ViewBag.UltimosPedidos as IEnumerable<PedidoResumenDto> ?? Enumerable.Empty<PedidoResumenDto>();
+    dynamic? stats = ViewBag.Stats;
+}
+
+@functions {
+    string BadgeClass(string? estado)
+    {
+        var e = estado?.ToUpper()?.Replace(" ", "_") ?? "";
+        return e switch
+        {
+            "PENDIENTE" or "EN_PREPARACION" => "badge-warning",
+            "EN_CAMINO" => "badge-gold",
+            "ENTREGADO" => "badge-success",
+            "CANCELADO" => "badge-danger",
+            _ => "badge-gold"
+        };
+    }
 }
 
 <div class="admin-layout">
     @await Html.PartialAsync("_AdminSidebar")
 
     <div class="admin-content">
-
-        <!-- Bienvenida -->
-        <div class="mb-5">
-            <h2 class="mb-0">Bienvenido, <span class="text-accent">@nombreAdmin.Split(' ')[0]</span></h2>
-            <p class="text-muted">Panel de administración del Restaurante Maido</p>
-        </div>
-
-        <!-- Stats cards -->
-        <div class="row g-4 mb-5">
-            <div class="col-sm-6 col-xl-3">
-                <div class="stat-card">
-                    <div class="stat-label mb-1">Gestión de Platillos</div>
-                    <div class="stat-value text-accent">🍽️</div>
-                    <div class="mt-2">
-                        <a asp-action="Platillos" class="btn btn-sm btn-outline-accent">Administrar</a>
-                    </div>
-                    <i class="bi bi-egg-fried stat-icon"></i>
-                </div>
-            </div>
-            <div class="col-sm-6 col-xl-3">
-                <div class="stat-card gold">
-                    <div class="stat-label mb-1">Categorías</div>
-                    <div class="stat-value">📂</div>
-                    <div class="mt-2">
-                        <a asp-action="Categorias" class="btn btn-sm btn-gold">Administrar</a>
-                    </div>
-                    <i class="bi bi-tags stat-icon"></i>
-                </div>
-            </div>
-            <div class="col-sm-6 col-xl-3">
-                <div class="stat-card success">
-                    <div class="stat-label mb-1">Monitor de Pedidos</div>
-                    <div class="stat-value">📋</div>
-                    <div class="mt-2">
-                        <a asp-action="Pedidos" class="btn btn-sm" style="background:var(--success);color:#fff;">Ver Pedidos</a>
-                    </div>
-                    <i class="bi bi-receipt stat-icon"></i>
-                </div>
-            </div>
-            <div class="col-sm-6 col-xl-3">
-                <div class="stat-card">
-                    <div class="stat-label mb-1">Reportes</div>
-                    <div class="stat-value">📊</div>
-                    <div class="mt-2">
-                        <a asp-action="Reportes" class="btn btn-sm btn-outline-accent">Ver Reportes</a>
-                    </div>
-                    <i class="bi bi-bar-chart stat-icon"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Últimos pedidos -->
         <div>
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0 fw-bold">Últimos Pedidos</h5>
-                <a asp-action="Pedidos" class="btn btn-sm btn-outline-accent">Ver todos</a>
+            <h1 style="margin-bottom:0.5rem">Dashboard <span class="text-accent">Admin</span></h1>
+            <p class="text-muted" style="margin-bottom:2.5rem">Métricas operativas del día en tiempo real</p>
+
+            @if (stats != null)
+            {
+                <div class="stats-grid">
+                    <div class="stat-card card card-body">
+                        <div class="stat-icon" style="color:var(--accent-gold)">💰</div>
+                        <div>
+                            <p class="stat-label text-muted">Ingresos de Hoy</p>
+                            <p class="stat-value text-gold">S/ @string.Format("{0:N2}", stats.ingresosHoy)</p>
+                            <p style="font-size:0.75rem;margin-top:0.25rem;opacity:0.6">Total histórico: S/ @string.Format("{0:N2}", stats.ingresosTotales)</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card card card-body">
+                        <div class="stat-icon" style="color:#60a5fa">📦</div>
+                        <div>
+                            <p class="stat-label text-muted">Nuevos Pedidos (Hoy)</p>
+                            <p class="stat-value">@stats.pedidosHoy</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card card card-body">
+                        <div class="stat-icon" style="color:#f59e0b">⏳</div>
+                        <div>
+                            <p class="stat-label text-muted">Pedidos Activos</p>
+                            <p class="stat-value" style="color:#f59e0b">@stats.pedidosActivos</p>
+                            <p style="font-size:0.75rem;margin-top:0.25rem;opacity:0.6">En cocina o en camino</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card card card-body @(stats.platillosAgotados > 0 ? "alert-border" : "")">
+                        <div class="stat-icon" style="color:#f44336">⚠️</div>
+                        <div>
+                            <p class="stat-label text-muted">Platillos Agotados</p>
+                            <p class="stat-value" style="color:@(stats.platillosAgotados > 0 ? "#f44336" : "#fff")">@stats.platillosAgotados</p>
+                            @if (stats.platillosAgotados > 0)
+                            {
+                                <a asp-action="Platillos" style="font-size:0.75rem;margin-top:0.25rem;color:#f44336;display:block">Ir a reponer stock →</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Accesos rápidos -->
+            <div class="quick-links">
+                <a asp-action="Platillos" class="quick-card card card-body">
+                    <span class="quick-icon">🍣</span>
+                    <h3>Gestionar Menú</h3>
+                    <p class="text-muted">CRUD de platillos y control de stock</p>
+                </a>
+                <a asp-action="Pedidos" class="quick-card card card-body">
+                    <span class="quick-icon">📋</span>
+                    <h3>Gestión de Pedidos</h3>
+                    <p class="text-muted">Flujo de estados y despachos</p>
+                </a>
+                <a asp-action="Reportes" class="quick-card card card-body">
+                    <span class="quick-icon">📊</span>
+                    <h3>Reportes PDF</h3>
+                    <p class="text-muted">Exportar ventas por rango de fechas</p>
+                </a>
             </div>
 
-            <div class="maido-table">
-                <table class="table maido-table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Cliente</th>
-                            <th>Tipo</th>
-                            <th>Total</th>
-                            <th>Estado</th>
-                            <th>Fecha</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var p in ultimosPedidos)
-                        {
+            <!-- Últimos pedidos -->
+            <div class="recent-section">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:1.25rem">
+                    <h2 style="margin:0">Últimos Pedidos</h2>
+                    <a asp-action="Pedidos" class="text-accent" style="font-size:0.9rem">Ver todos →</a>
+                </div>
+
+                <div class="table-wrapper card">
+                    <table>
+                        <thead>
                             <tr>
-                                <td class="text-gold fw-bold">#@p.IdPedido</td>
-                                <td>@p.NombreCliente</td>
-                                <td>@p.TipoPedido</td>
-                                <td class="fw-bold">S/ @p.Total.ToString("F2")</td>
-                                <td><span class="badge-estado badge-@p.Estado.Replace(" ",".")">@p.Estado</span></td>
-                                <td class="text-muted small">@p.FechaPedido.ToString("dd/MM HH:mm")</td>
+                                <th>#</th>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th>Total</th>
+                                <th>Estado</th>
                             </tr>
-                        }
-                        @if (!ultimosPedidos.Any())
-                        {
-                            <tr><td colspan="6" class="text-center text-muted py-4">Sin pedidos registrados aún.</td></tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in ultimosPedidos)
+                            {
+                                var isPendiente = p.Estado?.ToUpper() == "PENDIENTE";
+                                <tr class="@(isPendiente ? "urgent-row" : "")">
+                                    <td><b>#@p.IdPedido</b></td>
+                                    <td>@p.NombreCliente</td>
+                                    <td class="text-muted" style="font-size:0.85rem">@p.FechaPedido.ToString("dd/MM/yy HH:mm")</td>
+                                    <td class="price">S/ @p.Total.ToString("F2")</td>
+                                    <td>
+                                        <span class="badge @BadgeClass(p.Estado)">@p.Estado</span>
+                                        @if (isPendiente)
+                                        {
+                                            <span class="ping"></span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                            @if (!ultimosPedidos.Any())
+                            {
+                                <tr>
+                                    <td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">No hay pedidos recientes</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-
     </div>
 </div>

@@ -1,108 +1,65 @@
+@model Maido.Application.BL.BC.DTOs.RegistrarUsuarioDto
 @{
     ViewData["Title"] = "Crear Cuenta - Maido";
 }
 
-<div class="login-page-container">
-    <div class="login-bg-image" style="background-image: url('https://images.unsplash.com/photo-1611143669185-af224c5e3252?q=80&w=2000&auto=format&fit=crop');"></div>
-    <div class="login-bg-overlay"></div>
-    
-    <div class="container d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 80px);">
-        <div class="auth-card glass-card fade-in-up" style="width: 100%; max-width: 520px; padding: 2.5rem 2rem; margin: auto;">
-
-            <!-- Logo + Título -->
-            <div class="text-center mb-4">
-                <h2 class="display-font text-uppercase fw-bold mb-1" style="letter-spacing: 0.15em; font-size: 1.8rem;">
-                    <span class="text-white">MAI</span><span class="text-accent">DO</span>
-                </h2>
-                <div class="accent-line mx-auto mb-3" style="width: 40px; height: 2px; background: linear-gradient(90deg, var(--accent-red) 0%, var(--accent-gold) 100%);"></div>
-                <h1 class="auth-title text-white fs-4 mb-1">Crear Cuenta</h1>
-                <p class="text-muted small">Únete a la experiencia Nikkei de Maido</p>
-            </div>
-
-            <form asp-controller="Account" asp-action="Register" method="post">
-                @Html.AntiForgeryToken()
-
-                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-sm-6">
-                        <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;">Nombre</label>
-                        <input type="text" name="Nombre" class="form-control text-white maido-input" id="regNombre"
-                               placeholder="Juan" required />
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;">Apellido</label>
-                        <input type="text" name="Apellido" class="form-control text-white maido-input" id="regApellido"
-                               placeholder="García" required />
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-envelope me-2"></i>Correo electrónico</label>
-                    <input type="email" name="Email" class="form-control text-white maido-input" id="regEmail"
-                           placeholder="tu@email.com" autocomplete="email" required />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-phone me-2"></i>Teléfono <span class="text-muted text-lowercase" style="font-size:0.7rem; font-weight:normal;">(opcional)</span></label>
-                    <input type="tel" name="Telefono" class="form-control text-white maido-input" id="regTelefono"
-                           placeholder="999 888 777" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-lock me-2"></i>Contraseña</label>
-                    <div class="input-group password-group">
-                        <input type="password" name="Password" class="form-control text-white maido-input border-end-0" id="regPass"
-                               placeholder="Mínimo 6 caracteres" required />
-                        <button class="btn border-start-0 text-muted px-3" type="button" 
-                                style="background: var(--bg-secondary); border: 1px solid var(--border);"
-                                onclick="togglePassword('regPass', this)">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px;"><i class="bi bi-lock-fill me-2"></i>Confirmar contraseña</label>
-                    <div class="input-group password-group">
-                        <input type="password" name="ConfirmarPassword" class="form-control text-white maido-input border-end-0" id="regPassConf"
-                               placeholder="Repetir contraseña" required />
-                        <button class="btn border-start-0 text-muted px-3" type="button" 
-                                style="background: var(--bg-secondary); border: 1px solid var(--border);"
-                                onclick="togglePassword('regPassConf', this)">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-accent btn-lg w-100 py-3 mb-4 text-uppercase fw-bold shadow-glow" id="btnRegistrar" style="letter-spacing: 1px; font-size: 0.95rem;">
-                    Crear Mi Cuenta <i class="bi bi-person-plus ms-2"></i>
-                </button>
-            </form>
-
-            <p class="text-center text-muted small mb-0">
-                ¿Ya tienes cuenta?
-                <a asp-controller="Account" asp-action="Login" class="text-gold fw-bold ms-1" style="letter-spacing: 0.5px;">Inicia sesión</a>
-            </p>
-
-        </div>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="logo-jp display-font">間道</span>
+      <span class="logo-text">MAIDO</span>
     </div>
+    <h2 class="auth-title">Crear Cuenta</h2>
+    <p class="text-muted" style="text-align:center;margin-bottom:2rem">Únete a la experiencia Nikkei</p>
+
+    <form asp-controller="Account" asp-action="Register" method="post">
+      @Html.AntiForgeryToken()
+
+      <div asp-validation-summary="All" class="error-msg"></div>
+      @if (ViewBag.Error != null)
+      {
+        <div class="error-msg">@ViewBag.Error</div>
+      }
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" asp-for="Nombre">Nombre</label>
+          <input type="text" class="form-input" asp-for="Nombre" placeholder="Kenji" required />
+          <span class="form-error" asp-validation-for="Nombre"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" asp-for="Apellido">Apellido</label>
+          <input type="text" class="form-input" asp-for="Apellido" placeholder="Fujimoto" required />
+          <span class="form-error" asp-validation-for="Apellido"></span>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label" asp-for="Email">Correo Electrónico</label>
+        <input type="email" class="form-input" asp-for="Email" placeholder="tu@correo.com" required />
+        <span class="form-error" asp-validation-for="Email"></span>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label" asp-for="Password">Contraseña</label>
+        <input type="password" class="form-input" asp-for="Password" placeholder="Mínimo 6 caracteres" required />
+        <span class="form-error" asp-validation-for="Password"></span>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label" asp-for="ConfirmarPassword">Confirmar Contraseña</label>
+        <input type="password" class="form-input" asp-for="ConfirmarPassword" placeholder="Repite tu contraseña" />
+        <span class="form-error" asp-validation-for="ConfirmarPassword"></span>
+      </div>
+      <div class="form-group" style="margin-bottom:1.5rem">
+        <label class="form-label" asp-for="Telefono">Teléfono (opcional)</label>
+        <input type="tel" class="form-input" asp-for="Telefono" placeholder="999 000 000" />
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
+        Crear Cuenta
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p class="text-muted">¿Ya tienes cuenta? <a asp-controller="Account" asp-action="Login" class="text-accent">Inicia sesión</a></p>
+    </div>
+  </div>
 </div>
-
-@section Scripts {
-<style>
-    /* Ocultar el footer global en la pantalla de registro para evitar el gap negro */
-    footer.maido-footer {
-        display: none !important;
-    }
-</style>
-
-<script>
-function togglePassword(id, btn) {
-    const input = document.getElementById(id);
-    const isText = input.type === 'text';
-    input.type = isText ? 'password' : 'text';
-    btn.innerHTML = isText ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
-}
-</script>
-}

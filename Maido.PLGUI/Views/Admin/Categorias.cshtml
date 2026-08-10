@@ -20,7 +20,7 @@
     </div>
 
     <div class="maido-table">
-        <table class="table table-dark table-hover mb-0" style="background-color: transparent;">
+        <table class="table mb-0 align-middle">
             <thead>
                 <tr>
                     <th>Orden</th>
@@ -45,11 +45,11 @@
                         <td>
                             @if (c.Activo)
                             {
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Activo</span>
+                                <span class="badge-estado badge-activo">Activo</span>
                             }
                             else
                             {
-                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25">Inactivo</span>
+                                <span class="badge-estado badge-inactivo">Inactivo</span>
                             }
                         </td>
                         <td class="text-end">

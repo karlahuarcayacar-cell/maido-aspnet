@@ -52,7 +52,7 @@
 
                     <div class="mb-4" id="divDireccion" style="@(esRecojo ? "display:none;" : "")">
                         <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Dirección de entrega *</label>
-                        <input type="text" name="DireccionEntrega" class="form-control form-control-lg bg-dark text-white border-secondary" id="inputDireccion"
+                        <input type="text" name="DireccionEntrega" class="form-control form-control-lg maido-input" id="inputDireccion"
                                value="@Model.DireccionEntrega"
                                placeholder="Ej. Av. Ejemplo 123, Miraflores" maxlength="300" />
                         @Html.ValidationMessage("DireccionEntrega", new { @class = "text-danger small mt-1 d-block" })
@@ -60,7 +60,7 @@
 
                     <div class="mb-4">
                         <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Teléfono de contacto *</label>
-                        <input type="tel" name="Telefono" class="form-control form-control-lg bg-dark text-white border-secondary" id="inputTelefono"
+                        <input type="tel" name="Telefono" class="form-control form-control-lg maido-input" id="inputTelefono"
                                value="@Model.Telefono"
                                placeholder="999888777" maxlength="9" inputmode="numeric"
                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9)" />
@@ -107,7 +107,7 @@
 
                     <div class="mb-5">
                         <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Observaciones <span class="text-secondary text-lowercase fw-normal">(opcional)</span></label>
-                        <textarea name="Observaciones" class="form-control bg-dark text-white border-secondary" rows="3"
+                        <textarea name="Observaciones" class="form-control maido-input" rows="3"
                                   placeholder="Alergias, preferencias especiales, o billete con el que pagarás...">@Model.Observaciones</textarea>
                     </div>
 

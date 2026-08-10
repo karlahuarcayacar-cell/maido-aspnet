@@ -16,7 +16,7 @@
 
         @if (TempData["Exito"] != null)
         {
-            <div class="alert alert-success bg-success text-white border-0 d-flex align-items-center gap-2 mb-4">
+            <div class="alert alert-success border-0 d-flex align-items-center gap-2 mb-4">
                 <i class="bi bi-check-circle-fill"></i>
                 @TempData["Exito"]
             </div>
@@ -29,31 +29,31 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Nombre</label>
-                    <input asp-for="Nombre" class="form-control form-control-lg bg-dark text-white border-secondary" required />
+                    <input asp-for="Nombre" class="form-control form-control-lg maido-input" required />
                     <span asp-validation-for="Nombre" class="text-danger small"></span>
                 </div>
                 
                 <div class="col-md-6">
                     <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Apellido</label>
-                    <input asp-for="Apellido" class="form-control form-control-lg bg-dark text-white border-secondary" required />
+                    <input asp-for="Apellido" class="form-control form-control-lg maido-input" required />
                     <span asp-validation-for="Apellido" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Correo Electrónico</label>
-                    <input class="form-control form-control-lg bg-dark text-secondary border-secondary" value="@Model.Email" readonly disabled />
+                    <input class="form-control form-control-lg maido-input text-secondary" value="@Model.Email" readonly disabled />
                     <div class="form-text text-muted small"><i class="bi bi-info-circle me-1"></i>El correo no puede ser modificado.</div>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Teléfono</label>
-                    <input asp-for="Telefono" class="form-control form-control-lg bg-dark text-white border-secondary" />
+                    <input asp-for="Telefono" class="form-control form-control-lg maido-input" />
                     <span asp-validation-for="Telefono" class="text-danger small"></span>
                 </div>
 
                 <div class="col-12">
                     <label class="form-label text-muted fw-bold small text-uppercase" style="letter-spacing: 1px;">Dirección de Entrega Predeterminada</label>
-                    <textarea asp-for="Direccion" class="form-control bg-dark text-white border-secondary" rows="3" placeholder="Ej. Av. Javier Prado 1234, Dpto 501, San Isidro"></textarea>
+                    <textarea asp-for="Direccion" class="form-control maido-input" rows="3" placeholder="Ej. Av. Javier Prado 1234, Dpto 501, San Isidro"></textarea>
                     <span asp-validation-for="Direccion" class="text-danger small"></span>
                 </div>
             </div>

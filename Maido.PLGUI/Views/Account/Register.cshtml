@@ -95,53 +95,6 @@
     footer.maido-footer {
         display: none !important;
     }
-
-    .login-page-container {
-        position: relative;
-        min-height: calc(100vh - 80px);
-        margin: 0;
-        display: flex;
-        align-items: center;
-    }
-    .login-bg-image {
-        position: absolute;
-        inset: 0;
-        background-size: cover;
-        background-position: center;
-        z-index: -2;
-    }
-    .login-bg-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(15,15,17,0.98) 0%, rgba(15,15,17,0.5) 100%);
-        z-index: -1;
-    }
-    
-    /* Input Group Seamless Focus */
-    .password-group:focus-within .form-control,
-    .password-group:focus-within .btn {
-        border-color: var(--accent-red) !important;
-    }
-    .password-group:focus-within {
-        box-shadow: 0 0 0 3px rgba(217, 56, 30, 0.15);
-        border-radius: var(--radius-sm);
-    }
-    .password-group:focus-within .form-control {
-        box-shadow: none;
-    }
-
-    .fade-in-up {
-        animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    
-    @@keyframes fadeInUp {
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
 </style>
 
 <script>

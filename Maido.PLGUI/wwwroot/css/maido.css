@@ -740,3 +740,168 @@ h1, h2, h3, h4, h5, h6 { font-weight: 700; color: var(--text-primary); }
 .qty-control-box { display: flex; align-items: center; border: 1px solid var(--border-subtle); border-radius: var(--radius); background: var(--bg-card); padding: 0 0.5rem; }
 .btn-qty { background: transparent; border: none; color: var(--text-muted); padding: 0.5rem; transition: color 0.2s; }
 .btn-qty:hover { color: var(--accent); }
+
+/* ─── HOME PAGE & HERO SECTION ──────────────────────── */
+.hero-section {
+    position: relative;
+    height: calc(100vh - 76px);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+.hero-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, var(--bg-main) 0%, rgba(15,15,17,0.7) 60%, transparent 100%);
+    z-index: 10;
+}
+.hero-content {
+    position: relative;
+    z-index: 20;
+}
+.hero-title {
+    font-size: 3.5rem;
+    line-height: 1.1;
+}
+@media (min-width: 768px) {
+    .hero-title {
+        font-size: 4.5rem;
+    }
+}
+.stats-section {
+    background-color: transparent;
+    border-top: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+}
+.stats-number {
+    font-family: var(--font-display);
+    font-size: 3.2rem;
+    color: var(--accent-red);
+    font-weight: 700;
+}
+.product-card-img {
+    height: 250px;
+    overflow: hidden;
+    position: relative;
+}
+.product-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.maido-card:hover .product-card-img img {
+    transform: scale(1.1);
+}
+.delivery-section {
+    position: relative;
+    overflow: hidden;
+}
+.delivery-bg {
+    position: absolute;
+    inset: 0;
+    background: rgba(15,15,17, 0.9);
+    z-index: 10;
+}
+.delivery-section img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.3;
+    z-index: 0;
+}
+.delivery-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    position: relative;
+    z-index: 20;
+}
+
+/* ─── SKELETON LOADER ─────────────────────────────────────────── */
+.skeleton-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    height: 380px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.skeleton-img {
+    height: 200px;
+    background: rgba(255, 255, 255, 0.03);
+    animation: pulse-sk 1.5s ease-in-out infinite;
+}
+.skeleton-text {
+    height: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    margin-bottom: 12px;
+    border-radius: 4px;
+    animation: pulse-sk 1.5s ease-in-out infinite;
+}
+@keyframes pulse-sk {
+    0% { opacity: 0.5; background: rgba(255, 255, 255, 0.03); }
+    50% { opacity: 1; background: rgba(255, 255, 255, 0.08); }
+    100% { opacity: 0.5; background: rgba(255, 255, 255, 0.03); }
+}
+
+/* ─── AUTHENTICATION PAGES & ANIMATIONS ────────────────────────────── */
+.login-page-container {
+    position: relative;
+    min-height: calc(100vh - 80px);
+    margin: 0; 
+    display: flex;
+    align-items: center;
+}
+.login-bg-image {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    z-index: -2;
+}
+.login-bg-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(15,15,17,0.95) 0%, rgba(15,15,17,0.4) 100%);
+    z-index: -1;
+}
+.password-group:focus-within .form-control,
+.password-group:focus-within .btn {
+    border-color: var(--accent-red) !important;
+}
+.password-group:focus-within {
+    box-shadow: 0 0 0 3px rgba(217, 56, 30, 0.15);
+    border-radius: var(--radius-sm);
+}
+.password-group:focus-within .form-control {
+    box-shadow: none;
+}
+.fade-in-up {
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+    transform: translateY(30px);
+}
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.hover-white:hover {
+    color: #fff !important;
+}
+

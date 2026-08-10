@@ -57,35 +57,6 @@
 </section>
 
 @section Scripts {
-    <style>
-        .skeleton-card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            height: 380px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .skeleton-img {
-            height: 200px;
-            background: rgba(255, 255, 255, 0.03);
-            animation: pulse-sk 1.5s ease-in-out infinite;
-        }
-        .skeleton-text {
-            height: 16px;
-            background: rgba(255, 255, 255, 0.03);
-            margin-bottom: 12px;
-            border-radius: 4px;
-            animation: pulse-sk 1.5s ease-in-out infinite;
-        }
-        @@keyframes pulse-sk {
-            0% { opacity: 0.5; background: rgba(255, 255, 255, 0.03); }
-            50% { opacity: 1; background: rgba(255, 255, 255, 0.08); }
-            100% { opacity: 0.5; background: rgba(255, 255, 255, 0.03); }
-        }
-    </style>
-
     <script>
         let currentIdCategoria = @(idCatActual.HasValue ? idCatActual.Value.ToString() : "null");
         let searchTimeout = null;

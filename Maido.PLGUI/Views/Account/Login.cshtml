@@ -22,7 +22,7 @@
 
             @if (TempData["Exito"] != null)
             {
-                <div class="alert alert-success py-2 mb-3 bg-success text-white border-0" style="background-color: rgba(46, 125, 50, 0.2) !important;">
+                <div class="alert alert-success py-2 mb-3 border-0">
                     <i class="bi bi-check-circle me-2"></i>@TempData["Exito"]
                 </div>
             }
@@ -77,58 +77,6 @@
     /* Ocultar el footer global en la pantalla de login para evitar el gap negro */
     footer.maido-footer {
         display: none !important;
-    }
-
-    .login-page-container {
-        position: relative;
-        min-height: calc(100vh - 80px);
-        margin: 0; 
-        display: flex;
-        align-items: center;
-    }
-    .login-bg-image {
-        position: absolute;
-        inset: 0;
-        background-image: url('https://images.unsplash.com/photo-1553621042-f6e147245754?q=80&w=2000&auto=format&fit=crop');
-        background-size: cover;
-        background-position: center;
-        z-index: -2;
-    }
-    .login-bg-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(15,15,17,0.95) 0%, rgba(15,15,17,0.4) 100%);
-        z-index: -1;
-    }
-    
-    /* Input Group Seamless Focus */
-    .password-group:focus-within .form-control,
-    .password-group:focus-within .btn {
-        border-color: var(--accent-red) !important;
-    }
-    .password-group:focus-within {
-        box-shadow: 0 0 0 3px rgba(217, 56, 30, 0.15);
-        border-radius: var(--radius-sm);
-    }
-    .password-group:focus-within .form-control {
-        box-shadow: none; /* Removed from input so it applies to group */
-    }
-
-    .fade-in-up {
-        animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    
-    @@keyframes fadeInUp {
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .hover-white:hover {
-        color: #fff !important;
     }
 </style>
 

@@ -35,15 +35,8 @@ public class ClienteController : Controller
     // ─────────────────────────────────────────────────────
     // GET: Detalle de pedido
     // ─────────────────────────────────────────────────────
-    public async Task<IActionResult> DetallePedido(int id)
+    public IActionResult DetallePedido(int id)
     {
-        if (!SesionHelper.EstaAutenticado(HttpContext.Session))
-            return RedirectToAction("Login", "Account");
-
-        var pedido = await _pedidoService.ObtenerDetalleAsync(id);
-        if (pedido is null)
-            return RedirectToAction("MisPedidos");
-
-        return View(pedido);
+        return RedirectToAction("MisPedidos");
     }
 }

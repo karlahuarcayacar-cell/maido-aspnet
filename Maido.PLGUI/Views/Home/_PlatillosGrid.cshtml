@@ -25,14 +25,11 @@
                     <p class="card-desc text-muted">@p.Descripcion</p>
                     <div class="card-footer">
                         <span class="price">S/ @p.Precio.ToString("F2")</span>
-                        @if (!esAdmin)
-                        {
-                            <button class="btn btn-primary btn-sm"
-                                    disabled="@(!p.Disponible)"
-                                    onclick="agregarAlCarrito(@p.IdPlatillo, 1)">
-                                @(p.Disponible ? "+ Agregar" : "Agotado")
-                            </button>
-                        }
+                        <button class="btn btn-primary btn-sm"
+                                disabled="@(!p.Disponible)"
+                                onclick="agregarAlCarrito(@p.IdPlatillo, 1)">
+                            @(p.Disponible ? "+ Agregar" : "Agotado")
+                        </button>
                     </div>
                 </div>
             </div>

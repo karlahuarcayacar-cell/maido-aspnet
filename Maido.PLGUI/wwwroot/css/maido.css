@@ -567,8 +567,8 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       left: 3px; bottom: 3px; background: #fff; border-radius: 50%;
       transition: 0.25s;
     }
-    .toggle-switch input:checked + .toggle-slider { background: #4caf50; }
-    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+    .toggle-switch input:checked ~ .toggle-slider { background: #4caf50; }
+    .toggle-switch input:checked ~ .toggle-slider::before { transform: translateX(18px); }
 
     /* --- Row states --- */
     .row-inactive td:not(:last-child) { opacity: 0.4; }

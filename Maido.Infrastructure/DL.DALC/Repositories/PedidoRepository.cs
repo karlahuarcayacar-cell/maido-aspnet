@@ -104,7 +104,7 @@ public class PedidoRepository : IPedidoRepository
         return pedidos;
     }
 
-    public async Task<(IEnumerable<Pedido> Pedidos, int TotalRegistros)> ListarPedidosPaginadoAsync(int pagina, int registrosPorPagina, string? estado, DateTime? fechaInicio, DateTime? fechaFin)
+    public async Task<(IEnumerable<Pedido> Pedidos, int TotalRegistros)> ListarPedidosPaginadoAsync(int pagina, int registrosPorPagina, string? estado, DateTime? fechaInicio, DateTime? fechaFin, int? idUsuario = null)
     {
         var pedidos = new List<Pedido>();
         int totalRegistros = 0;
@@ -117,6 +117,7 @@ public class PedidoRepository : IPedidoRepository
         command.Parameters.AddWithValue("@Estado", (object?)estado ?? DBNull.Value);
         command.Parameters.AddWithValue("@FechaInicio", (object?)fechaInicio ?? DBNull.Value);
         command.Parameters.AddWithValue("@FechaFin", (object?)fechaFin ?? DBNull.Value);
+        command.Parameters.AddWithValue("@IdUsuario", (object?)idUsuario ?? DBNull.Value);
 
         var outTotalRegistros = new SqlParameter("@TotalRegistros", SqlDbType.Int)
         {

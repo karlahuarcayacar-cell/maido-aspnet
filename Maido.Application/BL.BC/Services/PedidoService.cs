@@ -84,9 +84,9 @@ public class PedidoService : IPedidoService
     }
 
     public async Task<(IEnumerable<PedidoResumenDto> Items, int Total)> ListarPaginadoAsync(
-        int pagina, int registrosPorPagina, string? estado, DateTime? fechaInicio, DateTime? fechaFin)
+        int pagina, int registrosPorPagina, string? estado, DateTime? fechaInicio, DateTime? fechaFin, int? idUsuario = null)
     {
-        var (pedidos, total) = await _repo.ListarPedidosPaginadoAsync(pagina, registrosPorPagina, estado, fechaInicio, fechaFin);
+        var (pedidos, total) = await _repo.ListarPedidosPaginadoAsync(pagina, registrosPorPagina, estado, fechaInicio, fechaFin, idUsuario);
         return (pedidos.Select(MapResumen), total);
     }
 

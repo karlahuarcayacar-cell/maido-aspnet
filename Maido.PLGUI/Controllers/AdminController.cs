@@ -52,8 +52,30 @@ public class AdminController : Controller
     {
         if (!EsAdmin()) return AccesoDenegado();
 
-        var (pedidos, _) = await _pedidoService.ListarPaginadoAsync(1, 5, null, null, null);
-        ViewBag.UltimosPedidos = pedidos;
+        var (pedidosRecientes, _) = await _pedidoService.ListarPaginadoAsync(1, 5, null, null, null);
+        var (todosPedidos, _) = await _pedidoService.ListarPaginadoAsync(1, 500, null, null, null);
+        var platillos = await _platilloService.ListarPaginadoAsync(1, 500, null, null);
+
+        var hoy = DateTime.Today;
+        var pedidosHoyLista = todosPedidos.Where(p => p.FechaPedido.Date == hoy).ToList();
+        var pedidosValidosHoy = pedidosHoyLista.Where(p => p.Estado?.ToUpper() != "CANCELADO").ToList();
+        var pedidosValidosTotales = todosPedidos.Where(p => p.Estado?.ToUpper() != "CANCELADO").ToList();
+
+        var estadosActivos = new[] { "PENDIENTE", "EN PREPARACION", "EN_PREPARACION", "EN CAMINO", "EN_CAMINO" };
+        var pedidosActivosCount = todosPedidos.Count(p => p.Estado != null && estadosActivos.Contains(p.Estado.ToUpper()));
+
+        var platillosAgotadosCount = platillos.Items.Count(p => !p.Disponible);
+
+        ViewBag.Stats = new
+        {
+            ingresosHoy = pedidosValidosHoy.Sum(p => p.Total),
+            ingresosTotales = pedidosValidosTotales.Sum(p => p.Total),
+            pedidosHoy = pedidosHoyLista.Count,
+            pedidosActivos = pedidosActivosCount,
+            platillosAgotados = platillosAgotadosCount
+        };
+
+        ViewBag.UltimosPedidos = pedidosRecientes;
         ViewBag.NombreAdmin = SesionHelper.ObtenerNombre(HttpContext.Session);
 
         return View();
@@ -164,6 +186,40 @@ public class AdminController : Controller
         return RedirectToAction("Platillos");
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> TogglePlatillo(int id, bool disponible)
+    {
+        if (!EsAdmin()) return AccesoDenegado();
+
+        var platillo = await _platilloService.ObtenerPorIdAsync(id);
+        if (platillo is null) return NotFound();
+
+        var dto = new ActualizarPlatilloDto
+        {
+            IdPlatillo = platillo.IdPlatillo,
+            Nombre = platillo.Nombre,
+            Descripcion = platillo.Descripcion,
+            Precio = platillo.Precio,
+            ImagenUrl = platillo.ImagenUrl,
+            IdCategoria = platillo.IdCategoria,
+            Disponible = disponible,
+            Destacado = platillo.Destacado
+        };
+
+        await _platilloService.ActualizarAsync(dto);
+        TempData["Exito"] = $"Platillo '{platillo.Nombre}' {(disponible ? "marcado en stock" : "marcado como agotado")}.";
+
+        var referer = Request.Headers["Referer"].ToString();
+        if (!string.IsNullOrEmpty(referer))
+        {
+            return Redirect(referer);
+        }
+
+        return RedirectToAction("Platillos");
+    }
+
+
     // ═══════════════════════════════════════════════════
     // CATEGORÍAS
     // ═══════════════════════════════════════════════════
@@ -233,16 +289,48 @@ public class AdminController : Controller
         return RedirectToAction("Categorias");
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleCategoria(int id, bool activo)
+    {
+        if (!EsAdmin()) return AccesoDenegado();
+
+        var cat = await _categoriaService.ObtenerPorIdAsync(id);
+        if (cat is null) return NotFound();
+
+        var dto = new ActualizarCategoriaDto
+        {
+            IdCategoria = cat.IdCategoria,
+            Nombre = cat.Nombre,
+            Descripcion = cat.Descripcion,
+            Icono = cat.Icono,
+            Orden = cat.Orden,
+            Activo = activo
+        };
+
+        await _categoriaService.ActualizarAsync(dto);
+        TempData["Exito"] = $"Categoría '{cat.Nombre}' {(activo ? "activada" : "desactivada")} correctamente.";
+
+        var referer = Request.Headers["Referer"].ToString();
+        if (!string.IsNullOrEmpty(referer))
+        {
+            return Redirect(referer);
+        }
+
+        return RedirectToAction("Categorias");
+    }
+
+
     // ═══════════════════════════════════════════════════
     // PEDIDOS
     // ═══════════════════════════════════════════════════
     [HttpGet]
     public async Task<IActionResult> Pedidos(int pagina = 1, string? estado = null,
-        DateTime? fechaInicio = null, DateTime? fechaFin = null)
+        DateTime? fechaInicio = null, DateTime? fechaFin = null, int? idUsuario = null)
     {
         if (!EsAdmin()) return AccesoDenegado();
 
-        var (items, total) = await _pedidoService.ListarPaginadoAsync(pagina, 10, estado, fechaInicio, fechaFin);
+        var (items, total) = await _pedidoService.ListarPaginadoAsync(pagina, 10, estado, fechaInicio, fechaFin, idUsuario);
 
         var dto = new PedidosPaginadoDto
         {
@@ -255,6 +343,13 @@ public class AdminController : Controller
         ViewBag.EstadoActual = estado;
         ViewBag.FechaInicio = fechaInicio;
         ViewBag.FechaFin = fechaFin;
+        ViewBag.IdUsuarioActual = idUsuario;
+        if (idUsuario.HasValue)
+        {
+            var usuarios = await _usuarioService.ListarAsync();
+            var u = usuarios.FirstOrDefault(x => x.IdUsuario == idUsuario.Value);
+            ViewBag.NombreUsuarioFiltrado = u?.NombreCompleto;
+        }
 
         return View(dto);
     }

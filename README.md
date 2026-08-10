@@ -5,52 +5,60 @@
 ![SQL Server](https://img.shields.io/badge/SQL%20Server-CC292B?style=for-the-badge&logo=microsoftsqlserver&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-Pure%20Custom%20Design-1572B6?style=for-the-badge&logo=css3)
 
-> Sistema web integral de gestión gastronómica y pedidos online para el restaurante **Maido**, desarrollado con arquitectura en capas (N-Tier) sobre **ASP.NET Core 10.0 MVC** y un sistema de diseño customizado en **CSS Puro** con estética oscura y glassmorphism.
+> Sistema web integral de gestión gastronómica y pedidos online para el restaurante **Maido**, desarrollado bajo arquitectura en capas sobre **ASP.NET Core 10.0 MVC**, **SQL Server** con **Transacciones JSON (OPENJSON)** y un sistema de diseño customizado en **CSS Puro** con estética oscura *Nikkei Noir*.
+
+---
+
+## 📖 Documentación de Sustentación
+
+Para una explicación exhaustiva de la arquitectura, patrones de diseño, base de datos, procedimientos almacenados y lógica de negocio, consulta el manual completo:
+👉 **[MANUAL_SUSTENTACION.md](./MANUAL_SUSTENTACION.md)**
 
 ---
 
 ## 🚀 Características Principales
 
 ### 🍽️ Vista Pública y Clientes
-- **Hero & Menú Interactivo**: Exploración de catálogo con filtro instantáneo por categorías y buscador inteligente.
-- **Carrito de Compras AJAX**: Gestión en tiempo real de ítems, cantidades (controles tipo cápsula) y desglose transparente de precios con cálculo automático de **Subtotal e IGV (18%)**.
-- **Checkout & Métodos de Pago**: Proceso de compra con tarjeta simulación glassmorphism (Visa/Mastercard), POS y efectivo al entregar.
-- **Autenticación**: Registro de clientes e Inicio de Sesión con validaciones integradas.
-- **Mi Perfil y Mis Pedidos**: Seguimiento de estado de órdenes activas (Pendiente, En Preparación, En Camino, Entregado, Cancelado) e historial detallado.
+- **Hero & Menú Interactivo**: Exploración de catálogo con filtro instantáneo por categorías y buscador inteligente en tiempo real (AJAX).
+- **Carrito de Compras AJAX**: Gestión en tiempo real de ítems, cantidades y desglose transparente de precios con cálculo automático de **Subtotal e IGV (18%)**.
+- **Checkout & Métodos de Pago**: Proceso de compra atómico con simulación de tarjeta glassmorphism (Visa/Mastercard), POS y efectivo al entregar.
+- **Autenticación**: Registro de clientes e Inicio de Sesión seguro.
+- **Mi Perfil y Mis Pedidos**: Seguimiento de estado de órdenes activas (*Pendiente*, *En Preparación*, *En Camino*, *Entregado*, *Cancelado*) e historial de compras.
 
 ### 🛡️ Panel de Administración (`/Admin`)
-- **Dashboard Analítico**: Métricas principales, resumen de ventas diarias y estado general del sistema.
-- **Gestión de Pedidos en Tiempo Real**: Cambio de estado directo desde la lista de órdenes (*Aceptar/Cocinar*, *Enviar Moto*, *Entregado*, *Cancelar*) y vista extendida de detalle.
-- **Gestión de Platillos y Categorías**: Operaciones CRUD completas con modales de confirmación interactivos de **SweetAlert2**.
-- **Gestión de Usuarios**: Cambio de estado de cuentas (Activo/Inactivo) y control de roles.
-- **Reportes Gastronómicos**: Estadísticas y balances filtrados por fechas.
+- **Dashboard Analítico & KPIs en Tiempo Real**: Métricas operativas en vivo (*Ingresos del día, Ingresos históricos, Pedidos activos, Platillos agotados con alerta roja*).
+- **Gestión de Pedidos & Historial por Cliente**: Cambio de estado de órdenes en vivo y filtrado de pedidos por cliente específico (`idUsuario`).
+- **Gestión de Platillos y Categorías con Toggle Switches**: Control de stock e inhabilitación con 1-clic directo desde las tablas, borrado lógico de seguridad (*Soft Delete*) y ordenamiento.
+- **Gestión de Usuarios**: Buscador instantáneo client-side, chips por rol/estado, *toggle switches* de acceso y protección de cuenta administrativa.
+- **Reportes Gastronómicos en PDF**: Generación y exportación de balances ejecutivos por rango de fechas mediante **QuestPDF**.
 
 ---
 
 ## 🛠️ Tecnologías y Arquitectura
 
-El proyecto sigue una arquitectura limpia orientada a dominio (Clean Architecture / N-Tier):
+El proyecto sigue una arquitectura en capas bien definida (N-Tier / Clean Architecture):
 
 ```text
 Maido Solution/
-├── Maido.Domain/          # Entidades de Dominio (Usuario, Platillo, Categoria, Pedido, DetallePedido)
-├── Maido.Application/     # DTOs, Interfaces y Servicios de Lógica de Negocio
-├── Maido.Infrastructure/  # Acceso a Datos y Repositorios con ADO.NET / Dapper
-└── Maido.PLGUI/           # Presentación (Controladores MVC, Vistas Razor, CSS Puro y Scripts AJAX)
+├── Maido.Domain/          # Entidades de Dominio e Interfaces de Repositorio
+├── Maido.Application/     # DTOs, Interfaces de Servicio y Lógica de Negocio
+├── Maido.Infrastructure/  # Acceso a Datos (ADO.NET, SqlCommand, DbConnectionFactory)
+└── Maido.PLGUI/           # Presentación (Controladores MVC, Vistas Razor, CSS Puro y AJAX)
 ```
 
 - **Framework**: .NET 10.0 (C# 13)
-- **Base de Datos**: Microsoft SQL Server
-- **Estilos y UI**: CSS3 Puro sin frameworks externos (Variables CSS, Flexbox, Grid, Glassmorphism, Micro-animaciones).
-- **Librerías Complementarias**: SweetAlert2 para modales y notificaciones flotantes.
+- **Base de Datos**: Microsoft SQL Server (LocalDB / Express / Enterprise)
+- **Acceso a Datos**: ADO.NET con Stored Procedures y `OPENJSON` para transacciones atómicas.
+- **Estilos y UI**: CSS3 Custom Design System (*Nikkei Noir*, Glassmorphism, Micro-animaciones).
+- **Librerías Complementarias**: QuestPDF para reportes y SweetAlert2 para modales interactivos.
 
 ---
 
 ## 📋 Requisitos Previos
 
 - [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- [Microsoft SQL Server](https://www.microsoft.com/sql-server/) (LocalDB, Express o Enterprise)
-- [SQL Server Management Studio (SSMS)](https://docs.microsoft.com/sql/ssms/download-sql-server-management-studio-ssms) o Azure Data Studio.
+- [Microsoft SQL Server](https://www.microsoft.com/sql-server/) (LocalDB, Express o Server)
+- SQL Server Management Studio (SSMS) o Azure Data Studio.
 
 ---
 
@@ -63,20 +71,14 @@ Maido Solution/
    ```
 
 2. **Base de Datos**:
-   - Ejecuta el script SQL `maido_db.sql` ubicado en la raíz del proyecto dentro de SQL Server para crear la base de datos `maido_db` con sus tablas y datos semilla.
+   - Ejecuta el script SQL `maido_db.sql` dentro de tu instancia de SQL Server para crear la base de datos `maido_db` con sus procedimientos almacenados y datos iniciales.
 
-3. **Configurar la Cadena de Conexión**:
-   - Abre `Maido.PLGUI/appsettings.json` y actualiza `ConnectionStrings:DefaultConnection` según las credenciales de tu servidor SQL local:
-   ```json
-   "ConnectionStrings": {
-     "DefaultConnection": "Server=localhost;Database=maido_db;Trusted_Connection=True;TrustServerCertificate=True;"
-   }
-   ```
+3. **Configurar Cadena de Conexión**:
+   - Revisa `Maido.PLGUI/appsettings.json` y asegura que `ConnectionStrings:maido_db` apunte a tu servidor local.
 
 4. **Compilar y Ejecutar**:
    ```bash
-   cd Maido.PLGUI
-   dotnet run
+   dotnet run --project Maido.PLGUI/Maido.PLGUI.csproj
    ```
    Abre tu navegador en `http://localhost:5046`.
 

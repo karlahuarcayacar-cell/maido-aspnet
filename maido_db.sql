@@ -552,6 +552,7 @@ CREATE OR ALTER PROCEDURE sp_ListarPedidosPaginado
     @Estado             NVARCHAR(30) = NULL,
     @FechaInicio        DATE         = NULL,
     @FechaFin           DATE         = NULL,
+    @IdUsuario          INT          = NULL,
     @TotalRegistros     INT OUTPUT
 AS
 BEGIN
@@ -560,7 +561,8 @@ BEGIN
     FROM Pedidos p
     WHERE (@Estado      IS NULL OR p.Estado = @Estado)
       AND (@FechaInicio IS NULL OR CAST(p.FechaPedido AS DATE) >= @FechaInicio)
-      AND (@FechaFin    IS NULL OR CAST(p.FechaPedido AS DATE) <= @FechaFin);
+      AND (@FechaFin    IS NULL OR CAST(p.FechaPedido AS DATE) <= @FechaFin)
+      AND (@IdUsuario   IS NULL OR p.IdUsuario = @IdUsuario);
 
     SELECT p.IdPedido, p.FechaPedido, p.TipoPedido, p.MetodoPago,
            p.Subtotal, p.IGV, p.Total, p.Estado,
@@ -570,6 +572,7 @@ BEGIN
     WHERE (@Estado      IS NULL OR p.Estado = @Estado)
       AND (@FechaInicio IS NULL OR CAST(p.FechaPedido AS DATE) >= @FechaInicio)
       AND (@FechaFin    IS NULL OR CAST(p.FechaPedido AS DATE) <= @FechaFin)
+      AND (@IdUsuario   IS NULL OR p.IdUsuario = @IdUsuario)
     ORDER BY p.FechaPedido DESC
     OFFSET (@Pagina - 1) * @RegistrosPorPagina ROWS
     FETCH NEXT @RegistrosPorPagina ROWS ONLY;

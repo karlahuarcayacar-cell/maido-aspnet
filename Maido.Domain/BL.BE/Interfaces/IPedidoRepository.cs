@@ -6,6 +6,6 @@ public interface IPedidoRepository
     Task<Pedido?> ObtenerPedidoPorIdAsync(int idPedido);
     Task<IEnumerable<DetallePedido>> ObtenerDetallePedidoAsync(int idPedido);
     Task<IEnumerable<Pedido>> ListarPedidosPorUsuarioAsync(int idUsuario);
-    Task<(IEnumerable<Pedido> Pedidos, int TotalRegistros)> ListarPedidosPaginadoAsync(int pagina, int registrosPorPagina, string? estado, DateTime? fechaInicio, DateTime? fechaFin);
+    Task<(IEnumerable<Pedido> Pedidos, int TotalRegistros)> ListarPedidosPaginadoAsync(int pagina, int registrosPorPagina, string? estado, DateTime? fechaInicio, DateTime? fechaFin, int? idUsuario = null);
     Task ActualizarEstadoPedidoAsync(int idPedido, string estado);
 }

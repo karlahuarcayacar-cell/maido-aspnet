@@ -50,13 +50,21 @@
                     <div class="card-img-wrap">
                         <img src="@p.ImagenUrl" alt="@p.Nombre" class="card-img" loading="lazy">
                         <span class="card-cat badge badge-gold">@p.NombreCategoria</span>
+                        @if (!p.Disponible)
+                        {
+                            <span class="badge badge-danger" style="position:absolute;top:0.75rem;right:0.75rem">Agotado</span>
+                        }
                     </div>
                     <div class="card-body">
                         <h3 class="card-title">@p.Nombre</h3>
                         <p class="card-desc text-muted">@p.Descripcion</p>
                         <div class="card-footer">
                             <span class="price">S/ @p.Precio.ToString("F2")</span>
-                            <button class="btn btn-primary btn-sm" onclick="agregarAlCarrito(@p.IdPlatillo, 1)">+ Agregar</button>
+                            <button class="btn btn-primary btn-sm"
+                                    disabled="@(!p.Disponible)"
+                                    onclick="agregarAlCarrito(@p.IdPlatillo, 1)">
+                                @(p.Disponible ? "+ Agregar" : "Agotado")
+                            </button>
                         </div>
                     </div>
                 </div>

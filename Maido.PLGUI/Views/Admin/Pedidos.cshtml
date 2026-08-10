@@ -4,6 +4,8 @@
 @{
     ViewData["Title"] = "Gestión de Pedidos - Admin";
     var estadoActual = ViewBag.EstadoActual as string;
+    var idUsuarioActual = ViewBag.IdUsuarioActual as int?;
+    var nombreUsuarioFiltrado = ViewBag.NombreUsuarioFiltrado as string;
 }
 
 <div class="admin-layout">
@@ -15,6 +17,13 @@
                 <div>
                     <h1 style="margin-bottom:0.25rem">Gestión de <span class="text-accent">Pedidos</span></h1>
                     <p class="text-muted">Administra el flujo y estado de las órdenes</p>
+                    @if (idUsuarioActual.HasValue)
+                    {
+                        <div style="margin-top:0.5rem;display:inline-flex;align-items:center;gap:0.5rem;background:rgba(224,169,109,0.12);border:1px solid var(--accent-gold);padding:0.4rem 0.8rem;border-radius:6px;font-size:0.85rem">
+                            <span>👤 Filtrado por usuario: <b>@(nombreUsuarioFiltrado ?? $"# {idUsuarioActual}")</b></span>
+                            <a asp-action="Pedidos" class="btn btn-ghost btn-sm" style="padding:1px 6px;margin-left:0.5rem">✕ Quitar filtro</a>
+                        </div>
+                    }
                 </div>
             </div>
 

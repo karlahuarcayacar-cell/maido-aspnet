@@ -34,7 +34,7 @@
                     @foreach (var c in Model)
                     {
                         var icono = string.IsNullOrWhiteSpace(c.Icono) ? "bi-tag" : c.Icono;
-                        <tr>
+                        <tr class="@(!c.Activo ? "row-inactive" : "")">
                             <td class="text-muted fw-bold">@c.Orden</td>
                             <td>
                                 <i class="bi @icono text-gold" style="font-size: 1.2rem;"></i>
@@ -42,14 +42,15 @@
                             <td><b>@c.Nombre</b></td>
                             <td class="text-muted">@(c.Descripcion?.Length > 50 ? c.Descripcion.Substring(0, 50) + "..." : c.Descripcion)</td>
                             <td>
-                                @if (c.Activo)
-                                {
-                                    <span class="badge badge-success">Activo</span>
-                                }
-                                else
-                                {
-                                    <span class="badge badge-danger">Inactivo</span>
-                                }
+                                <form asp-action="ToggleCategoria" method="post" style="margin:0;display:inline-block;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@c.IdCategoria" />
+                                    <label class="toggle-switch" title="@(c.Activo ? "Desactivar categoría" : "Activar categoría")">
+                                        <input type="checkbox" name="activo" value="true" @(c.Activo ? "checked" : "") onchange="this.form.submit()" />
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <input type="hidden" name="activo" value="false" />
+                                </form>
                             </td>
                             <td style="text-align: right;">
                                 <div class="flex justify-between gap-1" style="justify-content: flex-end;">

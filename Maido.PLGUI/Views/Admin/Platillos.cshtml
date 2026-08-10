@@ -47,8 +47,8 @@
       left: 3px; bottom: 3px; background: #fff; border-radius: 50%;
       transition: 0.25s;
     }
-    .toggle-switch input:checked + .toggle-slider { background: #4caf50; }
-    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+    .toggle-switch input:checked ~ .toggle-slider { background: #4caf50; }
+    .toggle-switch input:checked ~ .toggle-slider::before { transform: translateX(18px); }
 
     /* --- Row states --- */
     .row-inactive td:not(:last-child) { opacity: 0.4; }
@@ -145,10 +145,15 @@
                                 <td><span class="badge badge-gold">@p.NombreCategoria</span></td>
                                 <td class="price">S/ @p.Precio.ToString("F2")</td>
                                 <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" @(p.Disponible ? "checked" : "") disabled />
-                                        <span class="toggle-slider"></span>
-                                    </label>
+                                    <form asp-action="TogglePlatillo" method="post" style="margin:0;display:inline-block;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@p.IdPlatillo" />
+                                        <label class="toggle-switch" title="@(p.Disponible ? "Marcar como agotado" : "Marcar en stock")">
+                                            <input type="checkbox" name="disponible" value="true" @(p.Disponible ? "checked" : "") onchange="this.form.submit()" />
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                        <input type="hidden" name="disponible" value="false" />
+                                    </form>
                                 </td>
                                 <td style="display:flex;gap:0.5rem">
                                     <a asp-action="EditarPlatillo" asp-route-id="@p.IdPlatillo" class="btn btn-ghost btn-sm" title="Editar">✏️</a>

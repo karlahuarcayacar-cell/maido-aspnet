@@ -93,4 +93,4 @@ Maido Solution/
 
 ## 📄 Licencia
 
-Desarrollado para la asignatura **Desarrollo de Servicios Web I**. Todos los derechos reservados.
+Desarrollado by Capibara HDP. Todos los derechos reservados.

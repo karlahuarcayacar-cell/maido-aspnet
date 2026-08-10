@@ -86,7 +86,7 @@ Maido Solution/
 
 | Rol | Correo Electrónico | Contraseña |
 |---|---|---|
-| **Administrador** | `admin@maido.pe` | `admin123` |
+| **Administrador** | `admin@maido.pe` | `admin` |
 | **Cliente** | `cliente@gmail.com` | `cliente123` |
 
 ---

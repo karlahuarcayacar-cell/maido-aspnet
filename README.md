@@ -7,15 +7,6 @@
 
 > Sistema web integral de gestión gastronómica y pedidos online para el restaurante **Maido**, desarrollado bajo arquitectura en capas sobre **ASP.NET Core 10.0 MVC**, **SQL Server** con **Transacciones JSON (OPENJSON)** y un sistema de diseño customizado en **CSS Puro** con estética oscura *Nikkei Noir*.
 
----
-
-## 📖 Documentación de Sustentación
-
-Para una explicación exhaustiva de la arquitectura, patrones de diseño, base de datos, procedimientos almacenados y lógica de negocio, consulta el manual completo:
-👉 **[MANUAL_SUSTENTACION.md](./MANUAL_SUSTENTACION.md)**
-
----
-
 ## 🚀 Características Principales
 
 ### 🍽️ Vista Pública y Clientes

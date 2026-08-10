@@ -1,90 +1,80 @@
-# 📖 MANUAL TÉCNICO Y GUÍA DE SUSTENTACIÓN — PROYECTO MAIDO
+# 📖 MANUAL TÉCNICO Y GUÍA COMPLETA DE SUSTENTACIÓN — MAIDO
 
 > **Proyecto:** Sistema Web de Gestión Gastronómica y Pedidos Online para Restaurante Nikkei  
 > **Asignatura:** Desarrollo de Servicios Web I  
-> **Tecnologías Principal:** ASP.NET Core 10.0 (C# 13), Microsoft SQL Server, ADO.NET / Stored Procedures, CSS3 Custom Design System (Sin frameworks externos), QuestPDF, SweetAlert2.
+> **Tecnologías Principal:** ASP.NET Core 10.0 (C# 13), Microsoft SQL Server, ADO.NET / Stored Procedures, CSS3 Custom Design System (*Nikkei Noir*), QuestPDF, SweetAlert2.
+
+---
+
+## ⚡ RESUMEN EXPRESS DE 2 MINUTOS (ELEVATOR PITCH PARA EL PROFESOR)
+
+Si el profesor te pide: *"Sustenta brevemente de qué trata tu proyecto y cómo está construido"*, responde lo siguiente:
+
+> *"El proyecto **MAIDO** es un sistema web integral de e-commerce y gestión operativa para un restaurante de alta cocina Nikkei, construido sobre **ASP.NET Core 10.0 MVC** y **SQL Server**.  
+>  
+> Arquitectónicamente, el sistema sigue una **Arquitectura en 4 Capas (N-Tier)** completamente desacoplada: **Domain** (entidades e interfaces), **Application** (lógica de negocio y DTOs), **Infrastructure** (acceso a datos asíncrono con ADO.NET y Stored Procedures) y **PLGUI** (presentación en MVC con diseño CSS puro sin frameworks pesados).  
+>  
+> Entre sus innovaciones técnicas destacan la **creación atómica de pedidos en una sola transacción SQL mediante `OPENJSON`**, el control de stock y accesos en tiempo real mediante **Toggle Switches interactivos**, métricas ejecutivas **KPIs en tiempo real en el Dashboard**, filtrado asíncrono en vivo con **AJAX** y generación de **reportes ejecutivos en PDF con QuestPDF**."*
 
 ---
 
 ## 📑 TABLA DE CONTENIDOS
 
-1. [Visión General del Proyecto](#1-visión-general-del-proyecto)
-2. [Arquitectura de Software (N-Tier / Clean Architecture)](#2-arquitectura-de-software-n-tier--clean-architecture)
-3. [Configuración del Sistema (`Program.cs`)](#3-configuración-del-sistema-programcs)
-4. [Diseño y Lógica de la Base de Datos (`maido_db.sql`)](#4-diseño-y-lógica-de-la-base-de-datos-maido_dbsql)
-5. [Operación Crítica: Transacción Atómica de Pedidos (`sp_RegistrarPedidoTransaccional`)](#5-operación-crítica-transacción-atómica-de-pedidos-sp_registrarpedidotransaccional)
-6. [Módulos del Sistema y Reglas de Negocio](#6-módulos-del-sistema-y-reglas-de-negocio)
-7. [Sistema de Diseño UI/UX (Estética *Nikkei Noir*)](#7-sistema-de-diseño-uiux-estética-nikkei-noir)
-8. [Patrones de Diseño y Decisiones de Implementación](#8-patrones-de-diseño-y-decisiones-de-implementación)
-9. [Banco de Preguntas y Respuestas para la Sustentación](#9-banco-de-preguntas-y-respuestas-para-la-sustentación)
+1. [Arquitectura de Software (4 Capas N-Tier)](#1-arquitectura-de-software-4-capas-n-tier)
+2. [Punto de Entrada e Inyección de Dependencias (`Program.cs`)](#2-punto-de-entrada-e-inyección-de-dependencias-programcs)
+3. [Base de Datos y Diagrama ER (`maido_db.sql`)](#3-base-de-datos-y-diagrama-er-maido_dbsql)
+4. [La Operación Estrella: Transacción Atómica de Pedidos (`sp_RegistrarPedidoTransaccional`)](#4-la-operación-estrella-transacción-atómica-de-pedidos-sp_registrarpedidotransaccional)
+5. [Recorrido de Datos de Extremo a Extremo (Flujo End-to-End)](#5-recorrido-de-datos-de-extremo-a-extremo-flujo-end-to-end)
+6. [Módulos Principales y Reglas de Negocio](#6-módulos-principales-y-reglas-de-negocio)
+7. [Decisiones de Diseño UI/UX (Estética *Nikkei Noir*)](#7-decisiones-de-diseño-uiux-estética-nikkei-noir)
+8. [🔥 GUÍA DE ESTUDIO: BANCO DE PREGUNTAS Y RESPUESTAS DEL PROFESOR](#8--guía-de-estudio-banco-de-preguntas-y-respuestas-del-profesor)
 
 ---
 
-## 1. VISIÓN GENERAL DEL PROYECTO
+## 1. ARQUITECTURA DE SOFTWARE (4 CAPAS N-TIER)
 
-El proyecto **MAIDO** es un sistema web integral diseñado para la gestión de un restaurante de alta cocina Nikkei (fusión peruano-japonesa). El sistema abarca dos grandes áreas operativas:
-
-1. **Catálogo Público y Comercio Electrónico:** Permite a los clientes explorar la carta interactiva con filtrado en tiempo real, armar su carrito de compras con cálculo automático de IGV (18%), realizar el checkout especificando método de envío (Delivery/Recojo) y medio de pago, y dar seguimiento al estado de sus pedidos.
-2. **Panel Administrativo (`/Admin`):** Un centro de control en tiempo real para la gerencia y personal del restaurante que permite monitorear métricas clave (KPIs de ingresos, órdenes activas, platillos sin stock), cambiar estados de pedidos en vivo, administrar la carta mediante *toggle switches* de un solo clic, gestionar usuarios con búsqueda client-side y exportar reportes ejecutivos en PDF.
-
----
-
-## 2. ARQUITECTURA DE SOFTWARE (N-TIER / CLEAN ARCHITECTURE)
-
-La solución fue estructurada siguiendo el patrón de **Arquitectura en Capas (N-Tier)** con separación clara de responsabilidades en 4 proyectos de C#:
+La solución fue estructurada siguiendo el patrón de **Arquitectura en Capas (N-Tier / Clean Architecture)** para garantizar mantenibilidad, aislamiento de fallas y alta escalabilidad:
 
 ```
 Maido Solution/
-├── 📁 Maido.Domain          (Capa de Dominio - BE)
-├── 📁 Maido.Application     (Capa de Aplicación / Lógica de Negocio - BC)
-├── 📁 Maido.Infrastructure  (Capa de Infraestructura / Datos - DALC)
-└── 📁 Maido.PLGUI           (Capa de Presentación - Web Core MVC)
+├── 📁 Maido.Domain          (Capa 1: Dominio - Sin dependencias externas)
+├── 📁 Maido.Application     (Capa 2: Aplicación / Casos de Uso y DTOs)
+├── 📁 Maido.Infrastructure  (Capa 3: Acceso a Datos con ADO.NET y SQL Server)
+└── 📁 Maido.PLGUI           (Capa 4: Presentación - Controllers, Views, PDF, Session)
 ```
 
-### 2.1. Maido.Domain (`Maido.Domain.csproj`)
-* **Propósito:** Contiene el núcleo de datos del sistema. Define las entidades fundamentales y los contratos (interfaces de repositorios) que deben cumplirse sin depender de librerías externas ni frameworks web.
-* **Componentes principales:**
-  * `Entities/`: `Platillo.cs`, `Categoria.cs`, `Usuario.cs`, `Rol.cs`, `Pedido.cs`, `DetallePedido.cs`, `ReporteEntities.cs`.
-  * `Interfaces/`: `IPlatilloRepository.cs`, `ICategoriaRepository.cs`, `IUsuarioRepository.cs`, `IPedidoRepository.cs`, `IReporteRepository.cs`.
+### 🔹 Capa 1: `Maido.Domain`
+* **¿Qué contiene?:** Entidades puras C# (`Platillo`, `Categoria`, `Usuario`, `Rol`, `Pedido`, `DetallePedido`) y los contratos/interfaces de persistencia (`IPlatilloRepository`, `IPedidoRepository`, etc.).
+* **Regla de oro:** No tiene referencias a ningún proyecto ni paquete NuGet web o de base de datos.
 
-### 2.2. Maido.Application (`Maido.Application.csproj`)
-* **Propósito:** Contiene los casos de uso y la lógica de negocio del sistema. Convierte la información del dominio a DTOs (*Data Transfer Objects*) para desacoplar las entidades de la interfaz de usuario.
-* **Componentes principales:**
-  * `DTOs/`: `PlatilloDto`, `CrearPlatilloDto`, `ActualizarPlatilloDto`, `CategoriaDto`, `UsuarioDto`, `PedidoResumenDto`, `PedidoDetalleDto`, `CheckoutDto`, etc.
-  * `Services/`: Implementación de los servicios de aplicación (`PlatilloService`, `CategoriaService`, `UsuarioService`, `PedidoService`, `ReporteService`).
-  * `ApplicationServiceExtensions.cs`: Registro de inyección de dependencias para los servicios de aplicación.
+### 🔹 Capa 2: `Maido.Application`
+* **¿Qué contiene?:** Los DTOs (*Data Transfer Objects*), las interfaces de servicios (`IPlatilloService`, `IPedidoService`, etc.) y sus implementaciones concretas (`PlatilloService`, `PedidoService`, etc.).
+* **Propósito:** Contener las reglas de negocio (cálculo de montos, mapeos de entidades a DTOs, validaciones).
 
-### 2.3. Maido.Infrastructure (`Maido.Infrastructure.csproj`)
-* **Propósito:** Se encarga del acceso físico a los datos a través de Microsoft SQL Server utilizando **ADO.NET (SqlCommand, SqlDataReader)** y **Stored Procedures**.
-* **Componentes principales:**
-  * `Persistence/DbConnectionFactory.cs`: Factoría encargada de crear conexiones hacia SQL Server utilizando la cadena de conexión inyectada.
-  * `Repositories/`: Implementación directa de las interfaces de dominio (`PlatilloRepository`, `CategoriaRepository`, `UsuarioRepository`, `PedidoRepository`, `ReporteRepository`).
-  * `InfrastructureServiceExtensions.cs`: Registro de inyección de dependencias de la capa de infraestructura.
+### 🔹 Capa 3: `Maido.Infrastructure`
+* **¿Qué contiene?:** El acceso físico a SQL Server. Utiliza `DbConnectionFactory` (inyectado como Singleton) y repositorios que ejecutan `SqlCommand` asíncronos (`ExecuteReaderAsync`, `ExecuteNonQueryAsync`) llamando a **Stored Procedures**.
 
-### 2.4. Maido.PLGUI (`Maido.PLGUI.csproj`)
-* **Propósito:** Capa de interfaz de usuario desarrollada en **ASP.NET Core MVC**. Proporciona los controladores, vistas Razor (`.cshtml`), helpers de sesión, sistema de diseño en CSS puro y generación de reportes en PDF.
-* **Componentes principales:**
-  * `Controllers/`: `AdminController`, `HomeController`, `CartController`, `CheckoutController`, `AccountController`, `ClienteController`.
-  * `Helpers/`: `CarritoHelper.cs` (gestión de carrito en sesión), `SesionHelper.cs` (gestión de perfil/rol en sesión).
-  * `Reports/`: `ReporteVentasPdfBuilder.cs` (generación de PDFs ejecutivos con QuestPDF).
-  * `Views/`: Vistas de usuario final y panel administrativo.
+### 🔹 Capa 4: `Maido.PLGUI`
+* **¿Qué contiene?:** Controladores MVC (`AdminController`, `HomeController`, `CartController`, `CheckoutController`, `AccountController`), Vistas Razor (`.cshtml`), helpers de sesión (`CarritoHelper`, `SesionHelper`), motor de PDF (`ReporteVentasPdfBuilder`) y sistema de diseño en CSS3 puro.
 
 ---
 
-## 3. CONFIGURACIÓN DEL SISTEMA (`Program.cs`)
+## 2. PUNTO DE ENTRADA E INYECCIÓN DE DEPENDENCIAS (`Program.cs`)
 
-El archivo `Program.cs` actúa como el punto de entrada de la aplicación y configura los servicios e inyección de dependencias necesarias:
+En `Program.cs` se configuran los tres niveles de tiempo de vida (*Lifetimes*) de la Inyección de Dependencias de .NET:
 
 ```csharp
-using Maido.Application.BL.BC.Services;
-using Maido.Infrastructure.DL.DALC.Configuration;
+// 1. Singleton: Única instancia viva durante todo el ciclo de la aplicación
+builder.Services.AddSingleton<DbConnectionFactory>();
 
-var builder = WebApplication.CreateBuilder(args);
+// 2. Scoped: Una instancia nueva por cada solicitud HTTP recibida
+builder.Services.AddScoped<IPlatilloRepository, PlatilloRepository>();
+builder.Services.AddScoped<IPlatilloService, PlatilloService>();
+builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
+builder.Services.AddScoped<IPedidoService, PedidoService>();
+// (Misma configuración para Categorías, Usuarios y Reportes)
 
-// 1. Inclusión de MVC
-builder.Services.AddControllersWithViews();
-
-// 2. Configuración del estado de Sesión (Memoria Distribuida)
+// 3. Configuración de Sesión en Memoria (Timeout 60 minutos, Cookie Segura HTTP-Only)
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -93,102 +83,45 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
     options.Cookie.Name = ".Maido.Session";
 });
-
-// 3. Inyección modular por capas
-builder.Services.AddInfrastructureServices();
-builder.Services.AddApplicationServices();
-
-// 4. Configuración de licencia Community para QuestPDF
-QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
-
-// 5. Inyección de IHttpContextAccessor para acceder a la sesión en helpers
-builder.Services.AddHttpContextAccessor();
-
-var app = builder.Build();
-
-// 6. Pipeline HTTP
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-
-app.UseSession();
-app.UseAuthorization();
-
-// 7. Enrutamiento del sistema
-app.MapControllerRoute(
-    name: "admin",
-    pattern: "Admin/{action=Dashboard}/{id?}",
-    defaults: new { controller = "Admin" });
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-app.Run();
 ```
 
 ---
 
-## 4. DISEÑO Y LÓGICA DE LA BASE DE DATOS (`maido_db.sql`)
+## 3. BASE DE DATOS Y DIAGRAMA ER (`maido_db.sql`)
 
-La base de datos `maido_db` consta de 6 tablas relacionales normalizadas:
+El sistema utiliza 6 tablas relacionales estrictamente normalizadas:
 
 ```mermaid
 erDiagram
-    Roles ||--o{ Usuarios : "1:N"
-    Categorias ||--o{ Platillos : "1:N"
-    Usuarios ||--o{ Pedidos : "1:N"
-    Pedidos ||--o{ DetallePedido : "1:N"
-    Platillos ||--o{ DetallePedido : "1:N"
+    Roles ||--o{ Usuarios : "1 a N"
+    Categorias ||--o{ Platillos : "1 a N"
+    Usuarios ||--o{ Pedidos : "1 a N"
+    Pedidos ||--o{ DetallePedido : "1 a N"
+    Platillos ||--o{ DetallePedido : "1 a N"
 
-    Roles {
-        int IdRol PK
-        string NombreRol
-    }
     Usuarios {
         int IdUsuario PK
         string Nombre
         string Apellido
         string Email
-        string Clave
+        string PasswordHash
         string Telefono
         int IdRol FK
         bool Activo
         datetime FechaRegistro
     }
-    Categorias {
-        int IdCategoria PK
-        string Nombre
-        string Descripcion
-        string Icono
-        int Orden
-        bool Activo
-    }
     Platillos {
         int IdPlatillo PK
         string Nombre
-        string Descripcion
         decimal Precio
-        string ImagenUrl
         int IdCategoria FK
         bool Disponible
         bool Destacado
-        datetime FechaAlta
     }
     Pedidos {
         int IdPedido PK
         int IdUsuario FK
         datetime FechaPedido
-        string TipoPedido
-        string DireccionEntrega
-        string Telefono
-        string MetodoPago
         decimal Subtotal
         decimal IGV
         decimal Total
@@ -198,7 +131,6 @@ erDiagram
         int IdDetalle PK
         int IdPedido FK
         int IdPlatillo FK
-        string NombrePlatillo
         decimal PrecioUnitario
         int Cantidad
         decimal Subtotal
@@ -207,9 +139,9 @@ erDiagram
 
 ---
 
-## 5. OPERACIÓN CRÍTICA: TRANSACCIÓN ATÓMICA DE PEDIDOS (`sp_RegistrarPedidoTransaccional`)
+## 4. LA OPERACIÓN ESTRELLA: TRANSACCIÓN ATÓMICA DE PEDIDOS (`sp_RegistrarPedidoTransaccional`)
 
-Uno de los puntos más importantes a nivel de arquitectura y base de datos es la creación de pedidos. Para garantizar que la cabecera del pedido (`Pedidos`) y sus líneas de detalle (`DetallePedido`) se guarden de forma **atómica (todo o nada)**, el sistema utiliza un **Stored Procedure transaccional con parseo JSON integrado (`OPENJSON`)**:
+Si el profesor pregunta: **"¿Cómo registran la venta y cómo evitan que la cabecera del pedido se guarde si falla un producto del detalle?"**, debes explicar este Stored Procedure:
 
 ```sql
 CREATE OR ALTER PROCEDURE sp_RegistrarPedidoTransaccional
@@ -222,7 +154,7 @@ CREATE OR ALTER PROCEDURE sp_RegistrarPedidoTransaccional
     @IGV              DECIMAL(10,2),
     @Total            DECIMAL(10,2),
     @Observaciones    NVARCHAR(500),
-    @DetalleJSON      NVARCHAR(MAX), -- Arreglo JSON enviado desde C#
+    @DetalleJSON      NVARCHAR(MAX), -- Recibe el carrito completo como arreglo JSON
     @IdPedido         INT OUTPUT
 AS
 BEGIN
@@ -231,17 +163,15 @@ BEGIN
 
     BEGIN TRANSACTION;
     BEGIN TRY
-        -- 1. Insertar Cabecera
+        -- 1. Insertar la cabecera en Pedidos
         INSERT INTO Pedidos
-            (IdUsuario, TipoPedido, DireccionEntrega, Telefono,
-             MetodoPago, Subtotal, IGV, Total, Observaciones)
+            (IdUsuario, TipoPedido, DireccionEntrega, Telefono, MetodoPago, Subtotal, IGV, Total, Observaciones)
         VALUES
-            (@IdUsuario, @TipoPedido, @DireccionEntrega, @Telefono,
-             @MetodoPago, @Subtotal, @IGV, @Total, @Observaciones);
+            (@IdUsuario, @TipoPedido, @DireccionEntrega, @Telefono, @MetodoPago, @Subtotal, @IGV, @Total, @Observaciones);
 
-        SET @IdPedido = SCOPE_IDENTITY();
+        SET @IdPedido = SCOPE_IDENTITY(); -- Captura el ID recién generado
 
-        -- 2. Insertar Detalle mediante OPENJSON
+        -- 2. Insertar todos los platillos del detalle procesando la cadena JSON con OPENJSON
         INSERT INTO DetallePedido
             (IdPedido, IdPlatillo, NombrePlatillo, PrecioUnitario, Cantidad, Subtotal)
         SELECT
@@ -259,101 +189,115 @@ BEGIN
             Cantidad       INT            '$.Cantidad'
         ) AS j;
 
-        COMMIT TRANSACTION;
+        COMMIT TRANSACTION; -- Guarda todo si no hubo errores
     END TRY
     BEGIN CATCH
-        ROLLBACK TRANSACTION;
+        ROLLBACK TRANSACTION; -- Revierte todo si ocurrió algún fallo
         SET @IdPedido = -1;
         THROW;
     END CATCH
 END
 ```
 
-### ¿Por qué esta solución es superior?
-1. **Rendimiento e Integridad:** En lugar de realizar múltiples llamadas a la base de datos desde C# dentro de un bucle `for`, todo el carrito se serializa a JSON en C# (`JsonConvert.SerializeObject`) y se envía en un **único viaje de ida y vuelta (round-trip)** hacia la base de datos.
-2. **Atomicidad estricta:** Si ocurre una falla al insertar cualquiera de los platillos del detalle, `ROLLBACK TRANSACTION` revierte la inserción de la cabecera y el detalle, evitando pedidos huérfanos o datos corruptos.
+---
+
+## 5. RECORRIDO DE DATOS DE EXTREMO A EXTREMO (FLUJO END-TO-END)
+
+### Ejemplo: El cliente realiza la compra del carrito
+1. **Cliente en Browser (`Checkout.cshtml`):** Completa sus datos de entrega y hace clic en *"Pagar ahora"*.
+2. **Controller (`CheckoutController.cs`):** Recibe los datos, lee el carrito actual almacenado en la sesión mediante `CarritoHelper.ObtenerCarrito(session)` y calcula Subtotal e IGV (18%).
+3. **Application (`PedidoService.cs`):** Serializa la lista del carrito a formato JSON con `JsonSerializer.Serialize()` y llama al repositorio.
+4. **Infrastructure (`PedidoRepository.cs`):** Abre la conexión asíncrona mediante `DbConnectionFactory`, crea un `SqlCommand` para `sp_RegistrarPedidoTransaccional` pasando los parámetros `@DetalleJSON` y recuperando `@IdPedido` como parámetro de salida (`ParameterDirection.Output`).
+5. **Database (SQL Server):** Inicia la transacción, inserta la cabecera, extrae el ID con `SCOPE_IDENTITY()`, desempaqueta los productos con `OPENJSON` e inserta las filas del detalle en un solo viaje de ida y vuelta (*round-trip*). Si todo sale bien, ejecuta `COMMIT TRANSACTION`.
+6. **Respuesta al Cliente:** Se limpia la sesión del carrito (`CarritoHelper.LimpiarCarrito(session)`) y se redirige a la vista de confirmación con el número de pedido generado.
 
 ---
 
-## 6. MÓDULOS DEL SISTEMA Y REGLAS DE NEGOCIO
+## 6. MÓDULOS PRINCIPALES Y REGLAS DE NEGOCIO
 
-### 6.1. Módulo Público y Carrito de Compras
-* **Cálculo de Impuestos:** El sistema maneja un cálculo transparente de **Subtotal e IGV (18%)**.
-  $$\text{Subtotal} = \sum (\text{PrecioUnitario} \times \text{Cantidad})$$
-  $$\text{IGV} = \text{Subtotal} \times 0.18$$
-  $$\text{Total} = \text{Subtotal} + \text{IGV}$$
-* **Filtrado AJAX del Menú (`/Home/Menu`):** Al presionar sobre un botón de categoría o escribir en el buscador público, JavaScript invoca la vista parcial `/Home/FiltrarMenu`, actualizando el contenedor `#contenedor-grilla` sin recargar la página completa.
-* **Validación de Disponibilidad:** Si un platillo tiene `Disponible = false`, el botón de agregar se deshabilita y se muestra el distintivo **Agotado**.
+### 6.1. Fórmulas de Negocio (Cálculo de Impuestos)
+* **Subtotal:** Suma de `(PrecioUnitario × Cantidad)` de cada ítem del carrito.
+* **IGV (18%):** `Subtotal × 0.18`
+* **Total:** `Subtotal + IGV`
 
 ### 6.2. Panel Administrativo (`/Admin`)
-
-#### A. Dashboard (`/Admin`)
-Muestra métricas calculadas en tiempo real a través de `ViewBag.Stats`:
-* 💰 **Ingresos del Día y Totales:** Facturación acumulada de pedidos concluidos o activos.
-* 📦 **Nuevos Pedidos del Día:** Total de órdenes recibidas en la fecha actual.
-* ⏳ **Pedidos Activos:** Órdenes en estado *Pendiente*, *En Preparación* o *En Camino*.
-* ⚠️ **Platillos Agotados:** Conteo dinámico de platillos sin stock. Muestra un borde rojo de alerta si el número es mayor a 0.
-
-#### B. Gestión de Platillos (`/Admin/Platillos`)
-* Paginación dinámica y filtrado por categorías.
-* **Toggle Switch de Stock:** Permite marcar un platillo como "En Stock" o "Agotado" con un clic instantáneo que invoca a `TogglePlatillo`.
-* **Soft Delete para Seguridad:** Al intentar eliminar un platillo que ya ha sido vendido en pedidos anteriores, la base de datos previene el error de clave foránea aplicando automáticamente un borrado lógico (`Disponible = 0`).
-
-#### C. Gestión de Categorías (`/Admin/Categorias`)
-* **Toggle Switch de Activación:** Al desactivar una categoría (`Activo = 0`), los platillos asociados a esa categoría se ocultan automáticamente del catálogo público (`sp_ListarPlatillosPublico` evalúa `c.Activo = 1`).
-* **Regla de Borrado:** Si la categoría contiene platillos, se desactiva lógicamente (`Activo = 0`); de lo contrario, se elimina físicamente.
-
-#### D. Gestión de Usuarios (`/Admin/Usuarios`)
-* **Filtros por Roles y Estado:** Chips interactivos para filtrar usuarios por *Todos*, *Clientes*, *Admins*, *Activos* e *Inactivos*.
-* **Búsqueda Client-Side Instantánea:** Buscador JavaScript que filtra por nombre, email o teléfono en tiempo real.
-* **Toggle Switch de Estado:** Permite habilitar o deshabilitar accesos. La cuenta principal del Administrador se encuentra **protegida** para evitar el auto-bloqueo.
-* **Navegación al Historial de Pedidos (`🛒 Pedidos`):** Cada usuario cuenta con un enlace hacia `/Admin/Pedidos?idUsuario={id}`, permitiendo auditar todas las compras realizadas por dicho cliente.
-
-#### E. Gestión de Pedidos (`/Admin/Pedidos`)
-* Flujo de trabajo de estados: `Pendiente` ➔ `En Preparación` ➔ `En Camino` ➔ `Entregado` (o `Cancelado`).
-* Banner dinámico al filtrar por cliente específico con botón para remover el filtro.
-
-#### F. Generación de Reportes PDF (`/Admin/Reportes` y `/Admin/ReportePdf`)
-* Generación dinámica de reportes ejecutivos utilizando **QuestPDF**, compilando resúmenes de ventas y ranking de platillos más vendidos por rango de fechas.
+* **Dashboard & KPIs:** Calcula dinámicamente:
+  - 💰 *Ingresos de Hoy* y *Total Histórico* (sumando ventas de pedidos no cancelados).
+  - 📦 *Nuevos Pedidos de Hoy*.
+  - ⏳ *Pedidos Activos* (con estado `PENDIENTE`, `EN PREPARACION` o `EN CAMINO`).
+  - ⚠️ *Platillos Agotados* (destacados con borde rojo de alerta si la cantidad es mayor a 0).
+* **Toggle Switches en Tablas:** Permite activar/desactivar el stock de Platillos, estado de Categorías o acceso de Usuarios con 1 clic mediante formularios auto-enviables (`onchange="this.form.submit()"`).
+* **Protección de Administrador:** En `Usuarios.cshtml`, la cuenta del Administrador principal mantiene su switch deshabilitado (`disabled`) para prevenir bloqueos accidentales.
+* **Filtros e Historial por Usuario:** Permite ver los pedidos de un cliente específico enviando `idUsuario` como parámetro a la vista de Pedidos (`/Admin/Pedidos?idUsuario={id}`).
+* **Generación de PDFs Executivos:** Se utiliza la librería **QuestPDF** en `ReporteVentasPdfBuilder.cs` para compilar reportes descargables por rango de fechas.
 
 ---
 
-## 7. SISTEMA DE DISEÑO UI/UX (ESTÉTICA *NIKKEI NOIR*)
+## 7. DECISIONES DE DISEÑO UI/UX (ESTÉTICA *NIKKEI NOIR*)
 
-Todo el frontend fue construido utilizando **CSS Puro (Vanilla CSS)** con variables personalizadas (`:root`), sin depender de frameworks como Tailwind o Bootstrap.
-
-* **Paleta de Colores Curada:**
-  * Fondo Principal: Dark Obsidian `#121216`
-  * Tarjetas Glassmorphism: `#1E1E24` con bordes traslúcidos `rgba(255,255,255,0.08)`
-  * Colores de Acento: Dorado Maido `#E0A96D` y Rojo Neón `#D9381E`
-* **Tipografía:** Uso de fuentes Google Fonts (*Outfit* e *Inter*).
-* **Componentes Interactivos:** Modales animados con SweetAlert2 y notificaciones flotantes toast.
+* **Diseño CSS Puro:** Desarrollado sin frameworks pesados (sin Bootstrap JS ni Tailwind), utilizando variables CSS nativas (`:root`) en `maido.css`.
+* **Glassmorphism:** Tarjetas translúcidas con fondo `rgba(30, 30, 36, 0.75)` y borde tenue `rgba(255, 255, 255, 0.08)`.
+* **Solución de Binding en Checkboxes ASP.NET Core:**
+  En HTML, los checkboxes desmarcados no envían datos. Para solucionarlo, cada switch incluye un `<input type="hidden" name="campo" value="false" />` posicionado **después** del checkbox. En CSS se aplica el selector de hermano general `input:checked ~ .toggle-slider` para que el interruptor cambie visualmente a verde sin importar la presencia del campo oculto.
 
 ---
 
-## 8. PATRONES DE DISEÑO Y DECISIONES DE IMPLEMENTACIÓN
+## 8. 🔥 GUÍA DE ESTUDIO: BANCO DE PREGUNTAS Y RESPUESTAS DEL PROFESOR
 
-1. **Patrón DTO (Data Transfer Object):** Evita exponer las entidades de base de datos directamente a las vistas. Permite formatear datos (ej. combinar `Nombre` + `Apellido` en `NombreCliente`).
-2. **Patrón Repository & Factory:** Aisla las consultas SQL y el manejo de `SqlCommand` en clases de repositorio dedicadas, desacoplando la lógica de negocio.
-3. **Solución Técnica al Binding de Checkboxes en ASP.NET Core:**
-   * En HTML estándar, un checkbox desmarcado no envía ningún valor en el POST form.
-   * Para resolver esto, los formularios incluyen un `<input type="hidden" name="campo" value="false" />` posicionado **después** del checkbox. En CSS se aplica el selector de hermanos `input:checked ~ .toggle-slider` para mantener la concordancia visual y asegurar que el `BooleanModelBinder` lea `"true"` cuando está marcado y `"false"` cuando no lo está.
+### ❓ Pregunta 1: ¿Por qué usaron ADO.NET con Stored Procedures en lugar de Entity Framework Core?
+> **Respuesta:**  
+> *"Elegimos ADO.NET explícitamente para tener control total sobre el rendimiento y la seguridad. Los Stored Procedures previenen ataques de inyección SQL, reducen el tráfico en la red gracias a la compilación previa del plan de ejecución en SQL Server y nos permitieron procesar transacciones complejas utilizando `OPENJSON`, algo que en ORMs generaría múltiples llamadas individuales a la base de datos."*
 
 ---
 
-## 9. BANCO DE PREGUNTAS Y RESPUESTAS PARA LA SUSTENTACIÓN
-
-### P1: ¿Por qué eligieron una arquitectura en 4 capas (N-Tier)?
-> **Respuesta:** Para cumplir con el principio de responsabilidad única y alta mantenibilidad. Si mañana se desea cambiar la interfaz gráfica MVC por una API REST o una aplicación móvil, la lógica de negocio (`Maido.Application`) y el acceso a datos (`Maido.Infrastructure`) se mantienen intactos sin sufrir alteraciones.
-
-### P2: ¿Cómo aseguran que un pedido no quede incompleto si la conexión falla a mitad de la compra?
-> **Respuesta:** Toda la creación del pedido se realiza dentro del Stored Procedure `sp_RegistrarPedidoTransaccional`. Utiliza un bloque `BEGIN TRANSACTION ... COMMIT TRANSACTION` y parsea el detalle mediante `OPENJSON`. Si algo falla al insertar un producto, el bloque `CATCH` ejecuta `ROLLBACK TRANSACTION`, garantizando la atomicidad completa.
-
-### P3: ¿Por qué no se usó un ORM como Entity Framework Core?
-> **Respuesta:** Se utilizó **ADO.NET directo con Stored Procedures** para maximizar el rendimiento, tener control total sobre las consultas SQL, reducir la sobrecarga en memoria y aprovechar las capacidades nativas de SQL Server como `OPENJSON` y transacciones explícitas.
-
-### P4: ¿Cómo manejan la seguridad de roles y sesiones?
-> **Respuesta:** El sistema maneja una sesión en servidor (`.Maido.Session`) autenticando credenciales a través de `SesionHelper`. Cada acción administrativa verifica el rol mediante la guardia `EsAdmin()` (comprobando `IdRol == 1`). Si un usuario no autorizado intenta ingresar a `/Admin`, es redirigido automáticamente a la pantalla de Login.
+### ❓ Pregunta 2: ¿Cómo evitan que la base de datos falle si intentas eliminar un platillo o categoría que ya tiene pedidos registrados?
+> **Respuesta:**  
+> *"Implementamos la estrategia de **Soft Delete (Borrado Lógico)**. En el Stored Procedure `sp_EliminarPlatillo`, verificamos si el platillo ya existe en la tabla `DetallePedido`. Si ya existen pedidos asociados, en lugar de ejecutar un `DELETE` físico (que lanzaría un error de clave foránea `FK`), actualizamos la columna `Disponible = 0`. De esta manera, el producto desaparece de la venta pero el historial de ventas del restaurante permanece intacto."*
 
 ---
-*Manual elaborado para la sustentación oficial del proyecto MAIDO.*
+
+### ❓ Pregunta 3: ¿Dónde se almacena el carrito de compras y qué pasa si el servidor se reinicia?
+> **Respuesta:**  
+> *"El carrito se almacena en la **Sesión del Servidor (`ISession`)**, serializado en formato JSON a través del helper `CarritoHelper.cs`. Configuramos la sesión en `Program.cs` usando `AddDistributedMemoryCache()` con un tiempo de expiración de 60 minutos y cookies de tipo `HttpOnly` para prevenir ataques de scripting XSS."*
+
+---
+
+### ❓ Pregunta 4: ¿Cómo aseguran la protección contra ataques informáticos como CSRF y SQL Injection?
+> **Respuesta:**  
+> 1. **Contra SQL Injection:** Todos los repositorios usan `SqlCommand` parametrizados con `CommandType.StoredProcedure` (ninguna consulta concatena cadenas SQL a mano).  
+> 2. **Contra CSRF (Cross-Site Request Forgery):** Todos los formularios POST en las vistas incluyen la directiva `@Html.AntiForgeryToken()` y sus acciones correspondientes en los controladores están decoradas con el atributo `[ValidateAntiForgeryToken]`.
+
+---
+
+### ❓ Pregunta 5: ¿Qué diferencia hay entre usar `AddScoped`, `AddSingleton` y `AddTransient` en `Program.cs`?
+> **Respuesta:**  
+> - **Singleton:** Crea una única instancia para toda la aplicación (`DbConnectionFactory`).  
+> - **Scoped:** Crea una instancia por cada petición HTTP (`Services` y `Repositories`), reutilizándola durante toda esa solicitud.  
+> - **Transient:** Crea una instancia nueva cada vez que se solicita el servicio.
+
+---
+
+### ❓ Pregunta 6: ¿Por qué usaron DTOs en lugar de pasar directamente las entidades de dominio a las Vistas Razor?
+> **Respuesta:**  
+> *"Para desacoplar la base de datos de la interfaz de usuario. Las entidades de dominio (`Usuario`, `Pedido`) contienen campos sensibles como contraseñas en hash o estructuras crudas. Los DTOs como `PedidoResumenDto` o `UsuarioDto` nos permiten transportar únicamente los datos que la vista necesita y agregar propiedades calculadas como `NombreCompleto` sin contaminar la entidad de la base de datos."*
+
+---
+
+### ❓ Pregunta 7: ¿Qué pasa si desactivo una categoría en el Admin? ¿Se siguen viendo sus platillos en la tienda?
+> **Respuesta:**  
+> *"No. El Stored Procedure `sp_ListarPlatillosPublico` realiza un `INNER JOIN` entre `Platillos` y `Categorias` filtrando únicamente donde `c.Activo = 1` y `p.Disponible = 1`. Al desactivar una categoría mediante su Toggle Switch, todos sus platillos se ocultan inmediatamente del menú público."*
+
+---
+
+### ❓ Pregunta 8: ¿Cómo funciona la exportación de reportes a PDF?
+> **Respuesta:**  
+> *"Utilizamos la librería **QuestPDF**. En `AdminController.ReportePdf`, el controlador solicita las ventas y platillos más vendidos a `IReporteService` y se los envía a `ReporteVentasPdfBuilder.Generar()`, el cual compone el documento mediante un DSL fluente en C# y retorna un arreglo de bytes (`byte[]`) con el tipo MIME `application/pdf`."*
+
+---
+
+### ❓ Pregunta 9: ¿Cómo aseguran que el Administrador no se desactive a sí mismo?
+> **Respuesta:**  
+> *"Tanto en la vista `Usuarios.cshtml` como en el controlador, la cuenta con `IdRol == 1` está protegida. En la vista, el switch se renderiza con el atributo `disabled`, impidiendo cualquier envío involuntario de estado."*
+
+---
+*Manual elaborado como guía de preparación para la sustentación oficial del proyecto MAIDO.*

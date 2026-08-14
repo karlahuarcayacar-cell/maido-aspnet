@@ -79,6 +79,14 @@ public class AdminController : Controller
         var resultado = await _platilloService.ListarPaginadoAsync(pagina, 10, idCategoria, busqueda);
         var categorias = await _categoriaService.ListarTodasAsync();
 
+        var todosParaConteo = await _platilloService.ListarPaginadoAsync(1, 2000, null, busqueda);
+        var conteos = todosParaConteo.Items
+            .GroupBy(p => p.IdCategoria)
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        ViewBag.TotalGeneral = todosParaConteo.TotalRegistros;
+        ViewBag.ConteosCategoria = conteos;
+
         ViewBag.Categorias = categorias;
         ViewBag.IdCategoriaActual = idCategoria;
         ViewBag.Busqueda = busqueda;

@@ -6,6 +6,8 @@
     var categorias = ViewBag.Categorias as IEnumerable<CategoriaDto> ?? [];
     var idCat = ViewBag.IdCategoriaActual as int?;
     var busqueda = ViewBag.Busqueda as string;
+    var conteos = ViewBag.ConteosCategoria as Dictionary<int, int> ?? new Dictionary<int, int>();
+    var totalGeneral = ViewBag.TotalGeneral as int? ?? Model.TotalRegistros;
 }
 
 <style>
@@ -109,12 +111,13 @@
 
             <div class="filter-bar">
                 <a asp-action="Platillos" asp-route-idCategoria="" asp-route-busqueda="@busqueda" class="filter-chip @(!idCat.HasValue ? "active" : "")">
-                    📋 Todos <span class="chip-count">@Model.TotalRegistros</span>
+                    📋 Todos <span class="chip-count">@totalGeneral</span>
                 </a>
                 @foreach (var cat in categorias)
                 {
+                    var count = conteos.ContainsKey(cat.IdCategoria) ? conteos[cat.IdCategoria] : 0;
                     <a asp-action="Platillos" asp-route-idCategoria="@cat.IdCategoria" asp-route-busqueda="@busqueda" class="filter-chip @(idCat == cat.IdCategoria ? "active" : "")">
-                        @cat.Nombre
+                        @cat.Nombre <span class="chip-count">@count</span>
                     </a>
                 }
             </div>

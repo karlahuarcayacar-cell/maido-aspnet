@@ -9,6 +9,12 @@ using Microsoft.Data.SqlClient;
 
 namespace Maido.Infrastructure.DL.DALC.Repositories;
 
+/// <summary>
+/// CAPA DE INFRAESTRUCTURA - REPOSITORIO CONCRETO: CategoriaRepository
+/// 
+/// CONCEPTOS PARA EL ESTUDIANTE:
+/// Implementa las operaciones CRUD sobre la tabla [Categorias] invocando Procedimientos Almacenados con ADO.NET.
+/// </summary>
 public class CategoriaRepository : ICategoriaRepository
 {
     private readonly DbConnectionFactory _connectionFactory;
@@ -18,6 +24,9 @@ public class CategoriaRepository : ICategoriaRepository
         _connectionFactory = connectionFactory;
     }
 
+    /// <summary>
+    /// Recupera las categorías activas llamando a `sp_ListarCategorias`.
+    /// </summary>
     public async Task<IEnumerable<Categoria>> ListarCategoriasAsync()
     {
         var categorias = new List<Categoria>();
@@ -35,6 +44,9 @@ public class CategoriaRepository : ICategoriaRepository
         return categorias;
     }
 
+    /// <summary>
+    /// Recupera todas las categorías (incluso inactivas) para el administrador mediante `sp_ListarCategoriasAdmin`.
+    /// </summary>
     public async Task<IEnumerable<Categoria>> ListarCategoriasAdminAsync()
     {
         var categorias = new List<Categoria>();
@@ -52,6 +64,9 @@ public class CategoriaRepository : ICategoriaRepository
         return categorias;
     }
 
+    /// <summary>
+    /// Obtiene una categoría por su ID ejecutando `sp_ObtenerCategoriaPorId`.
+    /// </summary>
     public async Task<Categoria?> ObtenerCategoriaPorIdAsync(int idCategoria)
     {
         Categoria? categoria = null;
@@ -70,6 +85,9 @@ public class CategoriaRepository : ICategoriaRepository
         return categoria;
     }
 
+    /// <summary>
+    /// Inserta una nueva categoría llamando a `sp_InsertarCategoria` y retorna el ID autoincremental asignado por SQL Server.
+    /// </summary>
     public async Task<int> InsertarCategoriaAsync(Categoria categoria)
     {
         using var connection = _connectionFactory.CreateConnection();
@@ -86,6 +104,9 @@ public class CategoriaRepository : ICategoriaRepository
         return Convert.ToInt32(result);
     }
 
+    /// <summary>
+    /// Actualiza los campos de una categoría llamando a `sp_ActualizarCategoria`.
+    /// </summary>
     public async Task ActualizarCategoriaAsync(Categoria categoria)
     {
         using var connection = _connectionFactory.CreateConnection();
@@ -103,6 +124,9 @@ public class CategoriaRepository : ICategoriaRepository
         await command.ExecuteNonQueryAsync();
     }
 
+    /// <summary>
+    /// Elimina la categoría ejecutando `sp_EliminarCategoria`.
+    /// </summary>
     public async Task EliminarCategoriaAsync(int idCategoria)
     {
         using var connection = _connectionFactory.CreateConnection();
@@ -114,6 +138,9 @@ public class CategoriaRepository : ICategoriaRepository
         await command.ExecuteNonQueryAsync();
     }
 
+    /// <summary>
+    /// Mapea la fila actual del SqlDataReader hacia un objeto de Entidad Categoria.
+    /// </summary>
     private Categoria MapCategoria(SqlDataReader reader)
     {
         return new Categoria
@@ -127,3 +154,4 @@ public class CategoriaRepository : ICategoriaRepository
         };
     }
 }
+

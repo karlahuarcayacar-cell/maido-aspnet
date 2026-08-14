@@ -9,15 +9,40 @@ using Microsoft.Data.SqlClient;
 
 namespace Maido.Infrastructure.DL.DALC.Repositories;
 
+/// <summary>
+/// CAPA DE INFRAESTRUCTURA - REPOSITORIO CONCRETO: UsuarioRepository
+/// 
+/// CONCEPTOS CLAVE PARA EL ESTUDIANTE:
+/// 1. ADO.NET Purista con Stored Procedures:
+///    Se utiliza el proveedor de datos de SQL Server (`Microsoft.Data.SqlClient`) mediante:
+///    - `SqlConnection`: Administra la conexión física a la BD SQL Server.
+///    - `SqlCommand`: Configura y ejecuta Procedimientos Almacenados (Stored Procedures).
+///    - `SqlDataReader`: Lee los registros fila por fila desde la base de datos de manera altamente eficiente.
+/// 
+/// 2. Programación Asíncrona (`async` / `await` / `Task`):
+///    - Métodos como `OpenAsync()`, `ExecuteReaderAsync()`, `ExecuteScalarAsync()`, `ExecuteNonQueryAsync()` y `ReadAsync()`
+///      liberan el hilo del servidor web (ThreadPool thread) mientras SQL Server procesa la consulta.
+///    - Esto permite que el servidor web soporte miles de usuarios concurrentes sin congelar recursos de CPU.
+/// 
+/// 3. Bloques `using var`:
+///    Utiliza la declaración `using` de C# 8+. Garantiza que las conexiones y comandos SQL se cierren y destruyan (Dispose)
+///    inmediatamente al terminar el método, evitando fugas de memoria o conexiones colgadas en SQL Server.
+/// </summary>
 public class UsuarioRepository : IUsuarioRepository
 {
     private readonly DbConnectionFactory _connectionFactory;
 
+    /// <summary>
+    /// Recibe la fábrica de conexiones mediante Inyección de Dependencias.
+    /// </summary>
     public UsuarioRepository(DbConnectionFactory connectionFactory)
     {
         _connectionFactory = connectionFactory;
     }
 
+    /// <summary>
+    /// Invoca al SP `sp_ObtenerUsuarioPorEmail` para recuperar los datos del usuario.
+    /// </summary>
     public async Task<Usuario?> ObtenerUsuarioPorEmailAsync(string email)
     {
         Usuario? usuario = null;
@@ -36,6 +61,10 @@ public class UsuarioRepository : IUsuarioRepository
         return usuario;
     }
 
+    /// <summary>
+    /// Invoca al SP `sp_RegistrarUsuario`. 
+    /// Utiliza `ExecuteScalarAsync()` porque el Stored Procedure retorna el ID generado (SCOPE_IDENTITY()) o -1 en caso de duplicidad.
+    /// </summary>
     public async Task<int> RegistrarUsuarioAsync(Usuario usuario)
     {
         using var connection = _connectionFactory.CreateConnection();
@@ -53,6 +82,9 @@ public class UsuarioRepository : IUsuarioRepository
         return Convert.ToInt32(result);
     }
 
+    /// <summary>
+    /// Invoca al SP `sp_ListarUsuarios` devolviendo la lista completa.
+    /// </summary>
     public async Task<IEnumerable<Usuario>> ListarUsuariosAsync()
     {
         var usuarios = new List<Usuario>();
@@ -70,6 +102,9 @@ public class UsuarioRepository : IUsuarioRepository
         return usuarios;
     }
 
+    /// <summary>
+    /// Invoca al SP `sp_ActualizarEstadoUsuario`. Utiliza `ExecuteNonQueryAsync()` ya que no retorna filas.
+    /// </summary>
     public async Task ActualizarEstadoUsuarioAsync(int idUsuario, bool activo)
     {
         using var connection = _connectionFactory.CreateConnection();
@@ -82,6 +117,9 @@ public class UsuarioRepository : IUsuarioRepository
         await command.ExecuteNonQueryAsync();
     }
 
+    /// <summary>
+    /// Invoca al SP `sp_ActualizarPerfilUsuario`.
+    /// </summary>
     public async Task ActualizarPerfilUsuarioAsync(Usuario usuario)
     {
         using var connection = _connectionFactory.CreateConnection();
@@ -97,6 +135,11 @@ public class UsuarioRepository : IUsuarioRepository
         await command.ExecuteNonQueryAsync();
     }
 
+    /// <summary>
+    /// HELPER DE MAPEO MANUAL (SqlDataReader -> Usuario Entity):
+    /// Extrae el valor de cada columna utilizando ordinales dinámicos (`reader.GetOrdinal("Columna")`).
+    /// Verifica nulabilidad con `reader.IsDBNull` para evitar excepciones de casteo `NullReferenceException`.
+    /// </summary>
     private Usuario MapUsuario(SqlDataReader reader)
     {
         var usuario = new Usuario
@@ -127,6 +170,9 @@ public class UsuarioRepository : IUsuarioRepository
         return usuario;
     }
 
+    /// <summary>
+    /// Comprueba de manera defensiva si una columna existe en el resultado de la consulta actual.
+    /// </summary>
     private bool ColumnExists(SqlDataReader reader, string columnName)
     {
         for (int i = 0; i < reader.FieldCount; i++)
@@ -137,3 +183,4 @@ public class UsuarioRepository : IUsuarioRepository
         return false;
     }
 }
+

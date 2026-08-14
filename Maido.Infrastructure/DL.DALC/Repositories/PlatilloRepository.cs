@@ -9,6 +9,13 @@ using Microsoft.Data.SqlClient;
 
 namespace Maido.Infrastructure.DL.DALC.Repositories;
 
+/// <summary>
+/// CAPA DE INFRAESTRUCTURA - REPOSITORIO CONCRETO: PlatilloRepository
+/// 
+/// CONCEPTOS PARA EL ESTUDIANTE:
+/// Implementación con ADO.NET para las operaciones CRUD y consultas paginadas/filtradas 
+/// de la tabla [Platillos] vinculada mediante JOIN con [Categorias].
+/// </summary>
 public class PlatilloRepository : IPlatilloRepository
 {
     private readonly DbConnectionFactory _connectionFactory;
@@ -18,6 +25,9 @@ public class PlatilloRepository : IPlatilloRepository
         _connectionFactory = connectionFactory;
     }
 
+    /// <summary>
+    /// Consulta los platillos activos para la carta del cliente pasando parámetros opcionales `@IdCategoria` y `@Busqueda`.
+    /// </summary>
     public async Task<IEnumerable<Platillo>> ListarPlatillosPublicoAsync(int? idCategoria, string? busqueda)
     {
         var platillos = new List<Platillo>();
@@ -38,6 +48,9 @@ public class PlatilloRepository : IPlatilloRepository
         return platillos;
     }
 
+    /// <summary>
+    /// Consulta Paginada de Platillos con OFFSET-FETCH NEXT y parámetro de salida `@TotalRegistros` (OUTPUT).
+    /// </summary>
     public async Task<(IEnumerable<Platillo> Platillos, int TotalRegistros)> ListarPlatillosPaginadoAsync(int pagina, int registrosPorPagina, int? idCategoria, string? busqueda)
     {
         var platillos = new List<Platillo>();
@@ -70,6 +83,9 @@ public class PlatilloRepository : IPlatilloRepository
         return (platillos, totalRegistros);
     }
 
+    /// <summary>
+    /// Busca un platillo específico por su clave primaria IdPlatillo mediante `sp_ObtenerPlatilloPorId`.
+    /// </summary>
     public async Task<Platillo?> ObtenerPlatilloPorIdAsync(int idPlatillo)
     {
         Platillo? platillo = null;
@@ -88,6 +104,9 @@ public class PlatilloRepository : IPlatilloRepository
         return platillo;
     }
 
+    /// <summary>
+    /// Inserta un nuevo platillo con `sp_InsertarPlatillo` y retorna el ID autoincremental de SQL Server.
+    /// </summary>
     public async Task<int> InsertarPlatilloAsync(Platillo platillo)
     {
         using var connection = _connectionFactory.CreateConnection();
@@ -107,6 +126,9 @@ public class PlatilloRepository : IPlatilloRepository
         return Convert.ToInt32(result);
     }
 
+    /// <summary>
+    /// Modifica los atributos de un platillo con `sp_ActualizarPlatillo`.
+    /// </summary>
     public async Task ActualizarPlatilloAsync(Platillo platillo)
     {
         using var connection = _connectionFactory.CreateConnection();
@@ -126,6 +148,9 @@ public class PlatilloRepository : IPlatilloRepository
         await command.ExecuteNonQueryAsync();
     }
 
+    /// <summary>
+    /// Elimina un platillo mediante `sp_EliminarPlatillo`.
+    /// </summary>
     public async Task EliminarPlatilloAsync(int idPlatillo)
     {
         using var connection = _connectionFactory.CreateConnection();
@@ -137,6 +162,9 @@ public class PlatilloRepository : IPlatilloRepository
         await command.ExecuteNonQueryAsync();
     }
 
+    /// <summary>
+    /// Helper de Mapeo defensivo: Convierte la fila actual de `SqlDataReader` a la Entidad `Platillo`.
+    /// </summary>
     private Platillo MapPlatillo(SqlDataReader reader)
     {
         var platillo = new Platillo
@@ -160,6 +188,9 @@ public class PlatilloRepository : IPlatilloRepository
         return platillo;
     }
 
+    /// <summary>
+    /// Comprueba la existencia de una columna específica por nombre en el SqlDataReader.
+    /// </summary>
     private bool ColumnExists(SqlDataReader reader, string columnName)
     {
         for (int i = 0; i < reader.FieldCount; i++)
@@ -170,3 +201,4 @@ public class PlatilloRepository : IPlatilloRepository
         return false;
     }
 }
+

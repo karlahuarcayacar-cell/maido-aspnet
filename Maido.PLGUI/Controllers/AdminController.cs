@@ -6,6 +6,23 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Maido.PLGUI.Controllers;
 
+/// <summary>
+/// CAPA DE PRESENTACIÓN - CONTROLADOR ADMINISTRATIVO: AdminController
+/// 
+/// CONCEPTOS CLAVE PARA EL ESTUDIANTE:
+/// 1. Verificación de Seguridad y Roles en Métodos Privados (`EsAdmin()`):
+///    Todos los Métodos de Acción validan primero si la sesión activa pertenece a un Administrador (`SesionHelper.EsAdministrador`).
+///    Si un usuario normal o anónimo intenta ingresar a `/Admin/...`, es rechazado inmediatamente.
+/// 
+/// 2. Subida y Almacenamiento de Archivos (`IFormFile`):
+///    En la creación/edición de platillos, se recibe una imagen binaria `IFormFile`.
+///    El controlador genera un nombre único aleatorio con `Guid.NewGuid()`, valida extensiones (.jpg, .png, .webp) 
+///    y la almacena físicamente en el directorio del servidor `wwwroot/uploads/platillos/` usando `FileStream`.
+/// 
+/// 3. Generación y Descarga de Documentos PDF (`ReportePdf`):
+///    Invoca a `ReporteVentasPdfBuilder` para armar dinámicamente un documento en memoria y lo descarga 
+///    enviando la respuesta de archivo mediante `File(pdfBytes, "application/pdf", nombreArchivo)`.
+/// </summary>
 public class AdminController : Controller
 {
     private readonly IPlatilloService _platilloService;
@@ -15,6 +32,9 @@ public class AdminController : Controller
     private readonly IReporteService _reporteService;
     private readonly IWebHostEnvironment _env;
 
+    /// <summary>
+    /// Inyección de dependencias de todos los servicios de aplicación y el entorno web (`IWebHostEnvironment`).
+    /// </summary>
     public AdminController(
         IPlatilloService platilloService,
         ICategoriaService categoriaService,
@@ -31,13 +51,22 @@ public class AdminController : Controller
         _env = env;
     }
 
+    /// <summary>
+    /// Verificación de seguridad de rol de Administrador.
+    /// </summary>
     private bool EsAdmin()
         => SesionHelper.EstaAutenticado(HttpContext.Session)
            && SesionHelper.EsAdministrador(HttpContext.Session);
 
+    /// <summary>
+    /// Redirecciona al Login cuando un usuario no autorizado intenta acceder a zonas restringidas.
+    /// </summary>
     private IActionResult AccesoDenegado()
         => RedirectToAction("Login", "Account");
 
+    /// <summary>
+    /// [GET] Dashboard principal con KPI Estadísticos (Ingresos Hoy, Pedidos Activos, Platillos Agotados).
+    /// </summary>
     public async Task<IActionResult> Dashboard()
     {
         if (!EsAdmin()) return AccesoDenegado();
@@ -56,6 +85,7 @@ public class AdminController : Controller
 
         var platillosAgotadosCount = platillos.Items.Count(p => !p.Disponible);
 
+        // Envío de objeto anónimo con métricas al ViewBag
         ViewBag.Stats = new
         {
             ingresosHoy = pedidosValidosHoy.Sum(p => p.Total),
@@ -71,6 +101,9 @@ public class AdminController : Controller
         return View();
     }
 
+    /// <summary>
+    /// [GET] Mantenimiento y grilla paginada de Platillos.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Platillos(int pagina = 1, int? idCategoria = null, string? busqueda = null)
     {
@@ -94,6 +127,9 @@ public class AdminController : Controller
         return View(resultado);
     }
 
+    /// <summary>
+    /// [GET] Muestra el formulario para crear un nuevo platillo.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> CrearPlatillo()
     {
@@ -102,6 +138,9 @@ public class AdminController : Controller
         return View(new CrearPlatilloDto());
     }
 
+    /// <summary>
+    /// [POST] Procesa el alta de un platillo guardando la imagen subida si fue adjuntada.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CrearPlatillo(CrearPlatilloDto dto, IFormFile? imagenFile)
@@ -117,6 +156,7 @@ public class AdminController : Controller
             return View(dto);
         }
 
+        // Subida física del archivo de imagen
         dto.ImagenUrl = await GuardarImagenAsync(imagenFile);
 
         await _platilloService.CrearAsync(dto);
@@ -124,6 +164,9 @@ public class AdminController : Controller
         return RedirectToAction("Platillos");
     }
 
+    /// <summary>
+    /// [GET] Carga el formulario de edición con los datos del platillo seleccionado.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> EditarPlatillo(int id)
     {
@@ -148,6 +191,9 @@ public class AdminController : Controller
         return View(dto);
     }
 
+    /// <summary>
+    /// [POST] Aplica los cambios realizados al platillo.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditarPlatillo(ActualizarPlatilloDto dto, IFormFile? imagenFile)
@@ -171,6 +217,9 @@ public class AdminController : Controller
         return RedirectToAction("Platillos");
     }
 
+    /// <summary>
+    /// [POST] Elimina el platillo seleccionado.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EliminarPlatillo(int id)
@@ -181,6 +230,9 @@ public class AdminController : Controller
         return RedirectToAction("Platillos");
     }
 
+    /// <summary>
+    /// [POST] Cambia rápidamente la disponibilidad de stock de un platillo (Disponible = true/false).
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> TogglePlatillo(int id, bool disponible)
@@ -214,6 +266,9 @@ public class AdminController : Controller
         return RedirectToAction("Platillos");
     }
 
+    /// <summary>
+    /// [GET] Muestra la lista de Categorías en el panel de administración.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Categorias()
     {
@@ -222,6 +277,9 @@ public class AdminController : Controller
         return View(categorias);
     }
 
+    /// <summary>
+    /// [GET] Carga el formulario de creación de categorías.
+    /// </summary>
     [HttpGet]
     public IActionResult CrearCategoria()
     {
@@ -229,6 +287,9 @@ public class AdminController : Controller
         return View(new CrearCategoriaDto());
     }
 
+    /// <summary>
+    /// [POST] Inserta una nueva categoría en la base de datos.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CrearCategoria(CrearCategoriaDto dto)
@@ -240,6 +301,9 @@ public class AdminController : Controller
         return RedirectToAction("Categorias");
     }
 
+    /// <summary>
+    /// [GET] Carga el formulario para modificar una categoría.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> EditarCategoria(int id)
     {
@@ -259,6 +323,9 @@ public class AdminController : Controller
         return View(dto);
     }
 
+    /// <summary>
+    /// [POST] Actualiza la categoría enviada.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditarCategoria(ActualizarCategoriaDto dto)
@@ -270,6 +337,9 @@ public class AdminController : Controller
         return RedirectToAction("Categorias");
     }
 
+    /// <summary>
+    /// [POST] Elimina una categoría por su ID.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EliminarCategoria(int id)
@@ -280,6 +350,9 @@ public class AdminController : Controller
         return RedirectToAction("Categorias");
     }
 
+    /// <summary>
+    /// [POST] Habilita o deshabilita la visibilidad de una categoría en la carta pública.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ToggleCategoria(int id, bool activo)
@@ -311,6 +384,9 @@ public class AdminController : Controller
         return RedirectToAction("Categorias");
     }
 
+    /// <summary>
+    /// [GET] Bandeja de gestión y filtrado paginado de Pedidos.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Pedidos(int pagina = 1, string? estado = null,
         DateTime? fechaInicio = null, DateTime? fechaFin = null, int? idUsuario = null)
@@ -350,6 +426,9 @@ public class AdminController : Controller
         return View(dto);
     }
 
+    /// <summary>
+    /// [GET] Muestra la vista detallada de un pedido con su listado de productos comprados.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> DetallePedido(int id)
     {
@@ -359,6 +438,9 @@ public class AdminController : Controller
         return View(pedido);
     }
 
+    /// <summary>
+    /// [POST] Actualiza el estado operativo de una orden (Pendiente -> En Preparación -> En Camino -> Entregado).
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ActualizarEstadoPedido(int idPedido, string estado, string? returnUrl = null)
@@ -381,6 +463,9 @@ public class AdminController : Controller
         return RedirectToAction("DetallePedido", new { id = idPedido });
     }
 
+    /// <summary>
+    /// [GET] Muestra la lista de usuarios registrados para gestión del administrador.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Usuarios()
     {
@@ -389,6 +474,9 @@ public class AdminController : Controller
         return View(usuarios);
     }
 
+    /// <summary>
+    /// [POST] Suspende o reactiva la cuenta de un usuario (Activo = true/false).
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ToggleUsuario(int idUsuario, bool activo)
@@ -399,6 +487,9 @@ public class AdminController : Controller
         return RedirectToAction("Usuarios");
     }
 
+    /// <summary>
+    /// [GET] Muestra la pantalla de Reportes comerciales e indicadores con filtros por rango de fechas.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Reportes(FiltroReporteDto? filtro)
     {
@@ -415,6 +506,9 @@ public class AdminController : Controller
         return View(filtro);
     }
 
+    /// <summary>
+    /// [GET] Genera y transmite el reporte ejecutivo en PDF utilizando QuestPDF.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> ReportePdf(FiltroReporteDto? filtro)
     {
@@ -431,6 +525,12 @@ public class AdminController : Controller
         return File(pdfBytes, "application/pdf", nombreArchivo);
     }
 
+    /// <summary>
+    /// HELPER AUXILIAR DE SUBIDA DE ARCHIVOS (IFormFile -> FileSystem):
+    /// 1. Valida la presencia y extensión del archivo subido.
+    /// 2. Crea un nombre aleatorio UUID/GUID para evitar sobrescribir imágenes existentes.
+    /// 3. Guarda el archivo en `/wwwroot/uploads/platillos/` y retorna la URL relativa.
+    /// </summary>
     private async Task<string?> GuardarImagenAsync(IFormFile? archivo)
     {
         if (archivo is null || archivo.Length == 0)
@@ -453,3 +553,4 @@ public class AdminController : Controller
         return $"/uploads/platillos/{nombreArchivo}";
     }
 }
+

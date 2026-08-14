@@ -4,6 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Maido.PLGUI.Controllers;
 
+/// <summary>
+/// CAPA DE PRESENTACIÓN - CONTROLADOR DE ÁREA DE CLIENTES: ClienteController
+/// 
+/// CONCEPTOS PARA EL ESTUDIANTE:
+/// Permite al cliente autenticado consultar el historial de todas sus órdenes registradas.
+/// </summary>
 public class ClienteController : Controller
 {
     private readonly IPedidoService _pedidoService;
@@ -13,6 +19,10 @@ public class ClienteController : Controller
         _pedidoService = pedidoService;
     }
 
+    /// <summary>
+    /// [GET] Muestra el historial de compras del cliente logueado.
+    /// Valida que exista una sesión activa antes de consultar la base de datos.
+    /// </summary>
     public async Task<IActionResult> MisPedidos()
     {
         if (!SesionHelper.EstaAutenticado(HttpContext.Session))
@@ -25,3 +35,4 @@ public class ClienteController : Controller
         return View(pedidos);
     }
 }
+

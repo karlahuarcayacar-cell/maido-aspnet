@@ -5,6 +5,18 @@ using QuestPDF.Infrastructure;
 
 namespace Maido.PLGUI.Reports;
 
+/// <summary>
+/// CAPA DE PRESENTACIÓN - GENERADOR DE REPORTES PDF (QuestPDF): ReporteVentasPdfBuilder
+/// 
+/// CONCEPTOS CLAVE PARA EL ESTUDIANTE:
+/// 1. ¿Qué es QuestPDF?
+///    Es una librería moderna e imperativa de maquetación de documentos PDF para .NET.
+///    Permite construir PDFs con componentes fluidos (Header, Content, Footer, Tables, Cards, Charts).
+/// 
+/// 2. Generación Binaria Dinámica (`byte[]`):
+///    El método `Generar(...)` procesa la data agregada de ventas y platillos, construye el diseño vectorial 
+///    y retorna una matriz binaria `byte[]` que el Controller entrega al navegador mediante `File(pdfBytes, "application/pdf", filename)`.
+/// </summary>
 public static class ReporteVentasPdfBuilder
 {
     private const string Rojo = "#D9381E";
@@ -14,8 +26,12 @@ public static class ReporteVentasPdfBuilder
     private const string GrisFondo = "#F4F4F6";
     private const string Verde = "#2E7D32";
 
+    /// <summary>
+    /// Construye el documento PDF de reporte ejecutivo y devuelve su buffer binario.
+    /// </summary>
     public static byte[] Generar(FiltroReporteDto filtro, IEnumerable<VentaPorFechaDto> ventas,
         IEnumerable<PlatilloMasVendidoDto> platillos, string nombreAdmin)
+
     {
         var listaVentas = ventas.ToList();
         var listaPlatillos = platillos.ToList();

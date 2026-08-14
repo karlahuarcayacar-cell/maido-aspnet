@@ -1,3 +1,21 @@
+@*
+  CAPA DE PRESENTACIÓN - VISTA RAZOR: Account/Login.cshtml
+
+  CONCEPTOS CLAVE PARA EL ESTUDIANTE:
+  1. ¿Qué es Razor (.cshtml)?
+     Es el motor de plantillas de ASP.NET Core MVC que combina marcaje HTML5 estándar con código C# usando el símbolo `@`.
+  
+  2. Mecanismos de envío de datos recibidos del Controller:
+     - `ViewData["Title"]`: Diccionario de datos para establecer información global (como el título en la pestaña).
+     - `@TempData["AuthExito"]`: Almacenamiento temporal para mostrar notificaciones de confirmación tras redirecciones.
+     - `@ViewBag.ReturnUrl`: Propiedad dinámica enviada por el controlador para recordar a dónde volver tras autenticarse.
+     - `@ViewData.ModelState.IsValid`: Colección de errores de validación de formulario.
+
+  3. Tag Helpers de ASP.NET Core:
+     - `asp-controller="Account"` y `asp-action="Login"`: Generan automáticamente la URL correcta de destino del formulario HTML (`/Account/Login`).
+     - `@Html.AntiForgeryToken()`: Genera un campo oculto `<input name="__RequestVerificationToken" type="hidden" ... />` para seguridad contra CSRF.
+*@
+
 @{
     ViewData["Title"] = "Iniciar Sesión - Maido";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -53,3 +71,4 @@
     </div>
   </div>
 </div>
+

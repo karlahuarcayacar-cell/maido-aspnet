@@ -10,21 +10,48 @@ using Microsoft.Data.SqlClient;
 
 namespace Maido.Infrastructure.DL.DALC.Repositories;
 
+/// <summary>
+/// CAPA DE INFRAESTRUCTURA - REPOSITORIO CONCRETO: PedidoRepository
+/// 
+/// CONCEPTOS CLAVE PARA EL ESTUDIANTE (CONCEPTO MÁS IMPORTANTE DEL PROYECTO):
+/// 1. REGISTRO TRANSACCIONAL CON OPENJSON:
+///    - En sistemas tradicionales, insertar la cabecera del pedido (`Pedidos`) y sus 5 ítems del detalle (`DetallePedido`) 
+///      requería 6 viajes de ida y vuelta a la base de datos (6 Round-trips de red).
+///    - En este proyecto se optimiza utilizando **JSON y Transacciones Atómicas en SQL Server**:
+///      a) C# serializa la lista de detalles `pedido.Detalle` a un string JSON con `JsonSerializer.Serialize()`.
+///      b) Se envía el JSON completo como parámetro `@DetalleJSON` al Stored Procedure `sp_RegistrarPedidoTransaccional`.
+///      c) SQL Server inicia `BEGIN TRANSACTION`, inserta la cabecera, obtiene `SCOPE_IDENTITY()`, 
+///         y usa `OPENJSON(@DetalleJSON)` para volcar masivamente los detalles en la tabla `DetallePedido`.
+///      d) Si todo sale bien ejecuta `COMMIT TRANSACTION`. Si ocurre cualquier falla, ejecuta `ROLLBACK TRANSACTION`.
+///    - Garantiza las propiedades **ACID**: Jamás quedará una cabecera grabada sin sus detalles ni viceversa.
+/// 
+/// 2. PARÁMETROS DE SALIDA (OUTPUT PARAMETERS):
+///    Se utiliza `SqlParameter` con `Direction = ParameterDirection.Output` para que el Stored Procedure nos devuelva 
+///    el `IdPedido` recién generado de manera inmediata.
+/// </summary>
 public class PedidoRepository : IPedidoRepository
 {
     private readonly DbConnectionFactory _connectionFactory;
 
+    /// <summary>
+    /// Inyección de la fábrica de conexiones SQL.
+    /// </summary>
     public PedidoRepository(DbConnectionFactory connectionFactory)
     {
         _connectionFactory = connectionFactory;
     }
 
+    /// <summary>
+    /// MÉTODO CRÍTICO: RegistrarPedidoTransaccionalAsync
+    /// Envía la cabecera y el array de ítems serializado a JSON para procesamiento atómico en SQL Server.
+    /// </summary>
     public async Task<int> RegistrarPedidoTransaccionalAsync(Pedido pedido)
     {
         using var connection = _connectionFactory.CreateConnection();
         using var command = new SqlCommand("sp_RegistrarPedidoTransaccional", connection);
         command.CommandType = CommandType.StoredProcedure;
 
+        // Serialización del gráfico de objetos C# a cadena JSON
         string detalleJson = JsonSerializer.Serialize(pedido.Detalle);
 
         command.Parameters.AddWithValue("@IdUsuario", pedido.IdUsuario);
@@ -38,6 +65,7 @@ public class PedidoRepository : IPedidoRepository
         command.Parameters.AddWithValue("@Observaciones", (object?)pedido.Observaciones ?? DBNull.Value);
         command.Parameters.AddWithValue("@DetalleJSON", detalleJson);
 
+        // Definición del Parámetro de Salida OUTPUT para recuperar el ID autonumérico
         var outIdPedido = new SqlParameter("@IdPedido", SqlDbType.Int)
         {
             Direction = ParameterDirection.Output
@@ -47,9 +75,13 @@ public class PedidoRepository : IPedidoRepository
         await connection.OpenAsync();
         await command.ExecuteNonQueryAsync();
 
+        // Extraer el valor retornado por el parámetro OUTPUT de SQL Server
         return (int)outIdPedido.Value;
     }
 
+    /// <summary>
+    /// Recupera la cabecera del pedido por ID llamando a `sp_ObtenerPedidoPorId`.
+    /// </summary>
     public async Task<Pedido?> ObtenerPedidoPorIdAsync(int idPedido)
     {
         Pedido? pedido = null;
@@ -68,6 +100,9 @@ public class PedidoRepository : IPedidoRepository
         return pedido;
     }
 
+    /// <summary>
+    /// Recupera la lista de productos comprados en un pedido llamando a `sp_ObtenerDetallePedido`.
+    /// </summary>
     public async Task<IEnumerable<DetallePedido>> ObtenerDetallePedidoAsync(int idPedido)
     {
         var detalles = new List<DetallePedido>();
@@ -86,6 +121,9 @@ public class PedidoRepository : IPedidoRepository
         return detalles;
     }
 
+    /// <summary>
+    /// Obtiene las compras del cliente en "Mis Pedidos" invocando `sp_ListarPedidosPorUsuario`.
+    /// </summary>
     public async Task<IEnumerable<Pedido>> ListarPedidosPorUsuarioAsync(int idUsuario)
     {
         var pedidos = new List<Pedido>();
@@ -104,7 +142,13 @@ public class PedidoRepository : IPedidoRepository
         return pedidos;
     }
 
-    public async Task<(IEnumerable<Pedido> Pedidos, int TotalRegistros)> ListarPedidosPaginadoAsync(int pagina, int registrosPorPagina, string? estado, DateTime? fechaInicio, DateTime? fechaFin, int? idUsuario = null)
+    /// <summary>
+    /// Consulta Paginada de Pedidos para la bandeja administrativa.
+    /// Utiliza `SqlParameter` de salida `@TotalRegistros` para conocer cuántas páginas existen en total 
+    /// aplicando OFFSET-FETCH NEXT en SQL Server.
+    /// </summary>
+    public async Task<(IEnumerable<Pedido> Pedidos, int TotalRegistros)> ListarPedidosPaginadoAsync(
+        int pagina, int registrosPorPagina, string? estado, DateTime? fechaInicio, DateTime? fechaFin, int? idUsuario = null)
     {
         var pedidos = new List<Pedido>();
         int totalRegistros = 0;
@@ -138,6 +182,9 @@ public class PedidoRepository : IPedidoRepository
         return (pedidos, totalRegistros);
     }
 
+    /// <summary>
+    /// Cambia el estado del pedido invocando a `sp_ActualizarEstadoPedido`.
+    /// </summary>
     public async Task ActualizarEstadoPedidoAsync(int idPedido, string estado)
     {
         using var connection = _connectionFactory.CreateConnection();
@@ -150,6 +197,9 @@ public class PedidoRepository : IPedidoRepository
         await command.ExecuteNonQueryAsync();
     }
 
+    /// <summary>
+    /// Helper de mapeo defensivo para la cabecera de Pedido.
+    /// </summary>
     private Pedido MapPedido(SqlDataReader reader)
     {
         var p = new Pedido
@@ -180,6 +230,9 @@ public class PedidoRepository : IPedidoRepository
         return p;
     }
 
+    /// <summary>
+    /// Helper de mapeo para las líneas del detalle de pedido.
+    /// </summary>
     private DetallePedido MapDetallePedido(SqlDataReader reader)
     {
         var detalle = new DetallePedido
@@ -199,6 +252,9 @@ public class PedidoRepository : IPedidoRepository
         return detalle;
     }
 
+    /// <summary>
+    /// Comprueba la presencia de columnas en el SqlDataReader.
+    /// </summary>
     private bool ColumnExists(SqlDataReader reader, string columnName)
     {
         for (int i = 0; i < reader.FieldCount; i++)
@@ -209,3 +265,4 @@ public class PedidoRepository : IPedidoRepository
         return false;
     }
 }
+

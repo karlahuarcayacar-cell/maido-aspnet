@@ -3,6 +3,13 @@ using Maido.Domain.BL.BE.Interfaces;
 
 namespace Maido.Application.BL.BC.Services;
 
+/// <summary>
+/// CAPA DE APLICACIÓN - SERVICIO DE NEGOCIO: ReporteService
+/// 
+/// CONCEPTOS PARA EL ESTUDIANTE:
+/// Servicio encargado de orquestar la generación de reportes comerciales y estadísticas 
+/// para el Dashboard de Administración y la generación de documentos PDF.
+/// </summary>
 public class ReporteService : IReporteService
 {
     private readonly IReporteRepository _reporteRepository;
@@ -12,6 +19,9 @@ public class ReporteService : IReporteService
         _reporteRepository = reporteRepository;
     }
 
+    /// <summary>
+    /// Genera la lista de ventas agrupadas por fecha en un periodo seleccionado.
+    /// </summary>
     public async Task<IEnumerable<VentaPorFechaDto>> ReporteVentasAsync(DateTime fechaInicio, DateTime fechaFin)
     {
         var ventas = await _reporteRepository.ReporteVentasPorFechaAsync(fechaInicio, fechaFin);
@@ -24,6 +34,9 @@ public class ReporteService : IReporteService
         });
     }
 
+    /// <summary>
+    /// Genera el ranking Top N de los platillos con mayor rotación e ingresos generados.
+    /// </summary>
     public async Task<IEnumerable<PlatilloMasVendidoDto>> PlatillosMasVendidosAsync(DateTime? fechaInicio, DateTime? fechaFin, int top = 10)
     {
         var platillos = await _reporteRepository.ReportePlatillosMasVendidosAsync(fechaInicio, fechaFin, top);
@@ -37,3 +50,4 @@ public class ReporteService : IReporteService
         });
     }
 }
+

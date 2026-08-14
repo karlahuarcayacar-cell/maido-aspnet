@@ -6,12 +6,22 @@ using Microsoft.Data.SqlClient;
 
 namespace Maido.Infrastructure.DL.DALC.Repositories;
 
+/// <summary>
+/// CAPA DE INFRAESTRUCTURA - REPOSITORIO CONCRETO: ReporteRepository
+/// 
+/// CONCEPTOS PARA EL ESTUDIANTE:
+/// Repositorio de analítica de datos. Ejecuta Stored Procedures de aglomeración estadística (GROUP BY)
+/// para alimentar los dashboards y reportes impresos.
+/// </summary>
 public class ReporteRepository : IReporteRepository
 {
     private readonly DbConnectionFactory _factory;
 
     public ReporteRepository(DbConnectionFactory factory) => _factory = factory;
 
+    /// <summary>
+    /// Invoca a `sp_ReporteVentasPorFecha` enviando rango de fechas en formato .Date.
+    /// </summary>
     public async Task<IEnumerable<ReporteVentas>> ReporteVentasPorFechaAsync(DateTime fechaInicio, DateTime fechaFin)
     {
         var lista = new List<ReporteVentas>();
@@ -35,6 +45,9 @@ public class ReporteRepository : IReporteRepository
         return lista;
     }
 
+    /// <summary>
+    /// Invoca a `sp_ReportePlatillosMasVendidos` especificando el parámetro `@Top`.
+    /// </summary>
     public async Task<IEnumerable<ReportePlatillos>> ReportePlatillosMasVendidosAsync(DateTime? fechaInicio, DateTime? fechaFin, int top)
     {
         var lista = new List<ReportePlatillos>();
@@ -60,3 +73,4 @@ public class ReporteRepository : IReporteRepository
         return lista;
     }
 }
+

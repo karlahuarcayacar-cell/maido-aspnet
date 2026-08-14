@@ -5,9 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Maido.PLGUI.Controllers;
 
-/// <summary>
-/// Controlador de autenticación: Login y Registro.
-/// </summary>
 public class AccountController : Controller
 {
     private readonly IUsuarioService _usuarioService;
@@ -17,22 +14,18 @@ public class AccountController : Controller
         _usuarioService = usuarioService;
     }
 
-    // ─────────────────────────────────────────────────────
-    // GET: Login
-    // ─────────────────────────────────────────────────────
     [HttpGet]
     public IActionResult Login(string? returnUrl)
     {
         if (SesionHelper.EstaAutenticado(HttpContext.Session))
             return RedirectToHome();
 
+        TempData.Remove("Exito");
+
         ViewBag.ReturnUrl = returnUrl;
         return View();
     }
 
-    // ─────────────────────────────────────────────────────
-    // POST: Login
-    // ─────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginDto dto, string? returnUrl)
@@ -65,9 +58,6 @@ public class AccountController : Controller
         return RedirectToHome();
     }
 
-    // ─────────────────────────────────────────────────────
-    // GET: Registro
-    // ─────────────────────────────────────────────────────
     [HttpGet]
     public IActionResult Register()
     {
@@ -77,9 +67,6 @@ public class AccountController : Controller
         return View();
     }
 
-    // ─────────────────────────────────────────────────────
-    // POST: Registro
-    // ─────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegistrarUsuarioDto dto)
@@ -105,7 +92,6 @@ public class AccountController : Controller
             return View(dto);
         }
 
-        // Auto iniciar sesión tras crear cuenta
         var usuario = await _usuarioService.AutenticarAsync(new LoginDto { Email = dto.Email, Password = dto.Password });
         if (usuario != null)
         {
@@ -116,17 +102,14 @@ public class AccountController : Controller
                 usuario.Email,
                 usuario.IdRol,
                 usuario.NombreRol);
-            TempData["Exito"] = "¡Cuenta creada exitosamente! Bienvenido a Maido.";
+            TempData["AuthExito"] = "¡Cuenta creada exitosamente! Bienvenido a Maido.";
             return RedirectToAction("Index", "Home");
         }
 
-        TempData["Exito"] = "Cuenta creada correctamente. ¡Inicia sesión para continuar!";
+        TempData["AuthExito"] = "Cuenta creada correctamente. ¡Inicia sesión para continuar!";
         return RedirectToAction("Login");
     }
 
-    // ─────────────────────────────────────────────────────
-    // GET: Perfil
-    // ─────────────────────────────────────────────────────
     [HttpGet]
     public async Task<IActionResult> Perfil()
     {
@@ -144,9 +127,6 @@ public class AccountController : Controller
         return View(perfil);
     }
 
-    // ─────────────────────────────────────────────────────
-    // POST: Perfil
-    // ─────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Perfil(PerfilDto dto)
@@ -157,23 +137,18 @@ public class AccountController : Controller
         if (!ModelState.IsValid)
             return View(dto);
 
-        // Seguridad: Asegurar que el IdUsuario coincida con la sesión
         var sessionId = HttpContext.Session.GetInt32("Maido_IdUsuario");
         if (sessionId != dto.IdUsuario)
             return RedirectToAction("Login");
 
         await _usuarioService.ActualizarPerfilAsync(dto);
 
-        // Actualizar la sesión por si cambió su nombre
         HttpContext.Session.SetString("Maido_Nombre", $"{dto.Nombre} {dto.Apellido}");
 
         TempData["Exito"] = "Perfil actualizado correctamente.";
         return RedirectToAction("Perfil");
     }
 
-    // ─────────────────────────────────────────────────────
-    // POST: Logout
-    // ─────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Logout()
@@ -182,9 +157,6 @@ public class AccountController : Controller
         return RedirectToAction("Index", "Home");
     }
 
-    // ─────────────────────────────────────────────────────
-    // Redirección según rol
-    // ─────────────────────────────────────────────────────
     private IActionResult RedirectToHome()
     {
         if (SesionHelper.EsAdministrador(HttpContext.Session))

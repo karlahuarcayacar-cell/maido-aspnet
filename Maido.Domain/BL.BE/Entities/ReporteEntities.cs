@@ -1,8 +1,5 @@
 namespace Maido.Domain.BL.BE.Entities;
 
-/// <summary>
-/// Resultado de reporte de ventas agrupado por fecha.
-/// </summary>
 public class ReporteVentas
 {
     public DateTime Fecha { get; set; }
@@ -10,9 +7,6 @@ public class ReporteVentas
     public decimal MontoTotal { get; set; }
 }
 
-/// <summary>
-/// Resultado de reporte de platillos más vendidos.
-/// </summary>
 public class ReportePlatillos
 {
     public int IdPlatillo { get; set; }

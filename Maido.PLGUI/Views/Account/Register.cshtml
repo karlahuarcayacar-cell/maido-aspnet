@@ -15,8 +15,13 @@
     <form asp-controller="Account" asp-action="Register" method="post">
       @Html.AntiForgeryToken()
 
-      <div asp-validation-summary="All" class="error-msg"></div>
-      @if (ViewBag.Error != null)
+      @if (!ViewData.ModelState.IsValid)
+      {
+        <div class="error-msg">
+          <div asp-validation-summary="All"></div>
+        </div>
+      }
+      else if (ViewBag.Error != null)
       {
         <div class="error-msg">@ViewBag.Error</div>
       }

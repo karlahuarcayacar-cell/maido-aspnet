@@ -8,13 +8,11 @@
 <div class="container" style="padding-top: 6rem; padding-bottom: 5rem; max-width: 680px;">
     <div class="card" style="text-align: center; padding: 2.5rem 2rem;">
 
-        <!-- Ícono de confirmación animado -->
         <div style="font-size: 3.5rem; margin-bottom: 1rem;">✅</div>
 
         <h1 style="margin-bottom: 0.5rem;">¡Pedido <span class="text-accent">Confirmado</span>!</h1>
         <p class="text-muted" style="margin-bottom: 2rem;">Tu pedido <b class="text-gold">#@Model.IdPedido</b> ha sido registrado exitosamente.</p>
 
-        <!-- Resumen info -->
         <div class="grid-2" style="text-align: left; background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem;">
             <div>
                 <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.2rem;">CLIENTE</p>
@@ -50,7 +48,6 @@
             }
         </div>
 
-        <!-- Detalle de items -->
         <div style="text-align: left; margin-bottom: 2rem;">
             <p class="text-muted" style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Detalle del pedido</p>
             @foreach (var item in Model.Items)
@@ -61,7 +58,6 @@
                 </div>
             }
 
-            <!-- Totales -->
             <div style="margin-top: 1rem;">
                 <div class="flex justify-between text-muted" style="font-size: 0.9rem; margin-bottom: 0.3rem;">
                     <span>Subtotal</span><span>S/ @Model.Subtotal.ToString("F2")</span>
@@ -80,7 +76,6 @@
             <span class="badge badge-success">@Model.Estado</span>
         </div>
 
-        <!-- Botones -->
         <div class="flex gap-2 justify-center" style="flex-wrap: wrap;">
             <a asp-controller="Cliente" asp-action="MisPedidos" class="btn btn-secondary">
                 📋 Mis Pedidos
@@ -92,4 +87,3 @@
 
     </div>
 </div>
-

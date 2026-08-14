@@ -4,9 +4,6 @@ using Microsoft.AspNetCore.Http;
 
 namespace Maido.PLGUI.Helpers;
 
-/// <summary>
-/// Helper para gestionar el carrito de compras en Session.
-/// </summary>
 public static class CarritoHelper
 {
     private const string SessionKey = "Maido_Carrito";

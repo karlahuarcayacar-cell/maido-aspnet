@@ -1,0 +1,12 @@
+@if (TempData["Exito"] != null)
+{
+    <div class="alert-box alert-box-success" style="margin-bottom: 1.5rem; padding: 0.75rem 1rem; background: rgba(76,175,80,0.12); border: 1px solid rgba(76,175,80,0.3); color: #4caf50; border-radius: var(--radius-sm); font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>✅</span> <span>@TempData["Exito"]</span>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert-box alert-box-danger" style="margin-bottom: 1.5rem; padding: 0.75rem 1rem; background: rgba(244,67,54,0.12); border: 1px solid rgba(244,67,54,0.3); color: #f44336; border-radius: var(--radius-sm); font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>❌</span> <span>@TempData["Error"]</span>
+    </div>
+}

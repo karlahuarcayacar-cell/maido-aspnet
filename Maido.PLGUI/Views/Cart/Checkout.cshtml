@@ -20,7 +20,6 @@
       <h1 style="margin-bottom:2rem;text-align:center">Finalizar <span class="text-accent">Compra</span></h1>
     }
 
-    <!-- PANTALLA DE ÉXITO -->
     @if (success)
     {
       <div class="success-screen">
@@ -30,7 +29,6 @@
             <h2>¡Pedido Confirmado!</h2>
             <p class="text-muted">Orden #@pedidoId recibida exitosamente</p>
           </div>
-          
           <div class="tracker">
             <div class="tracker-step active">
               <div class="dot"></div>
@@ -54,17 +52,12 @@
       </div>
     }
 
-    <!-- CHECKOUT NORMAL -->
     @if (!success)
     {
       <div class="checkout-layout">
-        
-        <!-- COLUMNA IZQUIERDA: FORMULARIO POR PASOS -->
         <div class="checkout-steps">
           <form asp-controller="Cart" asp-action="Checkout" method="post" id="formCheckout">
             @Html.AntiForgeryToken()
-            
-            <!-- PASO 1: ENTREGA -->
             <div class="step-card card">
               <div class="step-header">
                 <span class="step-number">1</span>
@@ -96,7 +89,6 @@
               </div>
             </div>
 
-            <!-- PASO 2: PAGO -->
             <div class="step-card card">
               <div class="step-header">
                 <span class="step-number">2</span>
@@ -124,7 +116,6 @@
                   </label>
                 </div>
 
-                <!-- SIMULADOR TARJETA (Glassmorphism) -->
                 <div class="card-simulation-wrapper" id="cardSimulation" style="@(metodoActual == "TARJETA" ? "display:block;" : "display:none;")">
                   <div class="glass-card">
                     <div class="card-sim-header">
@@ -134,12 +125,10 @@
                         <span class="brand mc">MC</span>
                       </div>
                     </div>
-                    
                     <div class="form-group" style="margin-bottom:1.5rem">
                       <label style="font-size:0.7rem;text-transform:uppercase;color:rgba(255,255,255,0.6)">Número de Tarjeta</label>
                       <input type="text" class="form-input card-input" id="tarjetaNumero" placeholder="0000 0000 0000 0000" maxlength="19" oninput="formatCardNumber(this)">
                     </div>
-                    
                     <div style="display:flex; gap:1.5rem">
                       <div class="form-group" style="flex:1;margin:0">
                         <label style="font-size:0.7rem;text-transform:uppercase;color:rgba(255,255,255,0.6)">Vence</label>
@@ -155,18 +144,15 @@
               </div>
             </div>
 
-            <!-- BOTON CONFIRMAR -->
             <button type="submit" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;margin-top:1rem;font-size:1.1rem">
               Pagar S/ @total.ToString("F2")
             </button>
           </form>
         </div>
 
-        <!-- COLUMNA DERECHA: RESUMEN STICKY -->
         <div class="summary-wrapper">
           <div class="card summary-card sticky">
             <h3 style="margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">Resumen de Orden</h3>
-            
             <div class="summary-items">
               @foreach (var item in carrito)
               {
@@ -213,7 +199,6 @@
         function selectPaymentMethod(metodo) {
             document.querySelectorAll('.payment-card').forEach(c => c.classList.remove('active'));
             const cardSim = document.getElementById('cardSimulation');
-            
             if (metodo === 'EFECTIVO') {
                 document.getElementById('labelEfectivo').classList.add('active');
                 if (cardSim) cardSim.style.display = 'none';

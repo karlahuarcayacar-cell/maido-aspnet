@@ -1,13 +1,10 @@
-﻿using Maido.Application.BL.BC.DTOs;
+using Maido.Application.BL.BC.DTOs;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 
 namespace Maido.PLGUI.Reports;
 
-/// <summary>
-/// Construye el PDF ejecutivo del módulo de Reportes (ventas por fecha + platillos más vendidos).
-/// </summary>
 public static class ReporteVentasPdfBuilder
 {
     private const string Rojo = "#D9381E";

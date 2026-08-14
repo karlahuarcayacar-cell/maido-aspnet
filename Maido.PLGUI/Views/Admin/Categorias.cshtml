@@ -8,6 +8,7 @@
 <div class="admin-layout">
     @await Html.PartialAsync("_AdminSidebar")
     <div class="admin-content">
+        @await Html.PartialAsync("_AdminAlerts")
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
             <div>
                 <h1 style="margin-bottom:0.25rem">Gestión de <span class="text-accent">Categorías</span></h1>

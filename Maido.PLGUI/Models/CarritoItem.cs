@@ -1,8 +1,5 @@
 namespace Maido.PLGUI.Models;
 
-/// <summary>
-/// Elemento del carrito almacenado en Session.
-/// </summary>
 public class CarritoItem
 {
     public int IdPlatillo { get; set; }

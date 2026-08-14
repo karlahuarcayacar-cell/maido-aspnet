@@ -6,10 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Maido.PLGUI.Controllers;
 
-/// <summary>
-/// Controlador administrativo. Requiere rol Administrador (IdRol == 1).
-/// Maneja: Dashboard, Platillos, Categorías, Pedidos y Reportes.
-/// </summary>
 public class AdminController : Controller
 {
     private readonly IPlatilloService _platilloService;
@@ -35,9 +31,6 @@ public class AdminController : Controller
         _env = env;
     }
 
-    // ─────────────────────────────────────────────────────
-    // Guard: solo Admin
-    // ─────────────────────────────────────────────────────
     private bool EsAdmin()
         => SesionHelper.EstaAutenticado(HttpContext.Session)
            && SesionHelper.EsAdministrador(HttpContext.Session);
@@ -45,9 +38,6 @@ public class AdminController : Controller
     private IActionResult AccesoDenegado()
         => RedirectToAction("Login", "Account");
 
-    // ═══════════════════════════════════════════════════
-    // DASHBOARD
-    // ═══════════════════════════════════════════════════
     public async Task<IActionResult> Dashboard()
     {
         if (!EsAdmin()) return AccesoDenegado();
@@ -81,9 +71,6 @@ public class AdminController : Controller
         return View();
     }
 
-    // ═══════════════════════════════════════════════════
-    // PLATILLOS
-    // ═══════════════════════════════════════════════════
     [HttpGet]
     public async Task<IActionResult> Platillos(int pagina = 1, int? idCategoria = null, string? busqueda = null)
     {
@@ -219,10 +206,6 @@ public class AdminController : Controller
         return RedirectToAction("Platillos");
     }
 
-
-    // ═══════════════════════════════════════════════════
-    // CATEGORÍAS
-    // ═══════════════════════════════════════════════════
     [HttpGet]
     public async Task<IActionResult> Categorias()
     {
@@ -320,10 +303,6 @@ public class AdminController : Controller
         return RedirectToAction("Categorias");
     }
 
-
-    // ═══════════════════════════════════════════════════
-    // PEDIDOS
-    // ═══════════════════════════════════════════════════
     [HttpGet]
     public async Task<IActionResult> Pedidos(int pagina = 1, string? estado = null,
         DateTime? fechaInicio = null, DateTime? fechaFin = null, int? idUsuario = null)
@@ -331,6 +310,15 @@ public class AdminController : Controller
         if (!EsAdmin()) return AccesoDenegado();
 
         var (items, total) = await _pedidoService.ListarPaginadoAsync(pagina, 10, estado, fechaInicio, fechaFin, idUsuario);
+
+        var (todosParaConteo, totalGeneral) = await _pedidoService.ListarPaginadoAsync(1, 2000, null, fechaInicio, fechaFin, idUsuario);
+
+        ViewBag.TotalGeneral = totalGeneral;
+        ViewBag.CountPendiente = todosParaConteo.Count(p => p.Estado.Equals("Pendiente", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("PENDIENTE", StringComparison.OrdinalIgnoreCase));
+        ViewBag.CountPreparacion = todosParaConteo.Count(p => p.Estado.Equals("En Preparacion", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("EN_PREPARACION", StringComparison.OrdinalIgnoreCase));
+        ViewBag.CountCamino = todosParaConteo.Count(p => p.Estado.Equals("En Camino", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("EN_CAMINO", StringComparison.OrdinalIgnoreCase));
+        ViewBag.CountEntregado = todosParaConteo.Count(p => p.Estado.Equals("Entregado", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("ENTREGADO", StringComparison.OrdinalIgnoreCase));
+        ViewBag.CountCancelado = todosParaConteo.Count(p => p.Estado.Equals("Cancelado", StringComparison.OrdinalIgnoreCase) || p.Estado.Equals("CANCELADO", StringComparison.OrdinalIgnoreCase));
 
         var dto = new PedidosPaginadoDto
         {
@@ -385,9 +373,6 @@ public class AdminController : Controller
         return RedirectToAction("DetallePedido", new { id = idPedido });
     }
 
-    // ═══════════════════════════════════════════════════
-    // USUARIOS
-    // ═══════════════════════════════════════════════════
     [HttpGet]
     public async Task<IActionResult> Usuarios()
     {
@@ -406,9 +391,6 @@ public class AdminController : Controller
         return RedirectToAction("Usuarios");
     }
 
-    // ═══════════════════════════════════════════════════
-    // REPORTES
-    // ═══════════════════════════════════════════════════
     [HttpGet]
     public async Task<IActionResult> Reportes(FiltroReporteDto? filtro)
     {
@@ -425,9 +407,6 @@ public class AdminController : Controller
         return View(filtro);
     }
 
-    // ─────────────────────────────────────────────────────
-    // GET: Descargar reporte ejecutivo en PDF
-    // ─────────────────────────────────────────────────────
     [HttpGet]
     public async Task<IActionResult> ReportePdf(FiltroReporteDto? filtro)
     {
@@ -444,9 +423,6 @@ public class AdminController : Controller
         return File(pdfBytes, "application/pdf", nombreArchivo);
     }
 
-    // ═══════════════════════════════════════════════════
-    // Helper: Guardar imagen en wwwroot/uploads/platillos/
-    // ═══════════════════════════════════════════════════
     private async Task<string?> GuardarImagenAsync(IFormFile? archivo)
     {
         if (archivo is null || archivo.Length == 0)

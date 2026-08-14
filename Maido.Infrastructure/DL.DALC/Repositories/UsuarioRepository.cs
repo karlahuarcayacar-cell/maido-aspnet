@@ -97,7 +97,6 @@ public class UsuarioRepository : IUsuarioRepository
         await command.ExecuteNonQueryAsync();
     }
 
-
     private Usuario MapUsuario(SqlDataReader reader)
     {
         var usuario = new Usuario
@@ -120,7 +119,6 @@ public class UsuarioRepository : IUsuarioRepository
         if (ColumnExists(reader, "PasswordHash"))
             usuario.PasswordHash = reader.GetString(reader.GetOrdinal("PasswordHash"));
 
-        // Try map NombreRol if present
         if (ColumnExists(reader, "NombreRol") && !reader.IsDBNull(reader.GetOrdinal("NombreRol")))
         {
             usuario.NombreRol = reader.GetString(reader.GetOrdinal("NombreRol"));

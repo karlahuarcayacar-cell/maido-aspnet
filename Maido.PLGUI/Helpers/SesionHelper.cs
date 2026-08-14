@@ -1,11 +1,7 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 
 namespace Maido.PLGUI.Helpers;
 
-/// <summary>
-/// Helper para gestionar la sesión del usuario autenticado.
-/// </summary>
 public static class SesionHelper
 {
     private const string KeyIdUsuario  = "Maido_IdUsuario";

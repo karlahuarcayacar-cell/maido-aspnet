@@ -10,6 +10,7 @@
     @await Html.PartialAsync("_AdminSidebar")
 
     <div class="admin-content">
+        @await Html.PartialAsync("_AdminAlerts")
         @{
             var badgeClass = "badge-gold";
             if (Model.Estado.Equals("Pendiente", StringComparison.OrdinalIgnoreCase)) badgeClass = "badge-warning";
@@ -31,25 +32,24 @@
         </div>
 
         <div class="grid-2" style="align-items: start;">
-            <!-- Izquierda: Información y Tabla de Items -->
             <div class="flex flex-col gap-3">
                 <div class="card">
                     <div class="card-body">
                         <p class="text-muted" style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;">👤 Información del Cliente</p>
-                        <div class="grid-2" style="font-size: 0.9rem;">
-                            <div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; font-size: 0.9rem;">
+                            <div style="min-width: 0;">
                                 <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Nombre</p>
-                                <p style="font-weight: 600; margin-bottom: 0.75rem;">@Model.NombreCliente</p>
+                                <p style="font-weight: 600; margin-bottom: 0.75rem; word-break: break-word;">@Model.NombreCliente</p>
                             </div>
-                            <div>
+                            <div style="min-width: 0;">
                                 <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Email</p>
-                                <p style="margin-bottom: 0.75rem;">✉️ @Model.Email</p>
+                                <p style="margin-bottom: 0.75rem; word-break: break-word; overflow-wrap: anywhere;">✉️ @Model.Email</p>
                             </div>
-                            <div>
+                            <div style="min-width: 0;">
                                 <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Teléfono</p>
                                 <p style="margin-bottom: 0.75rem;">📞 @(string.IsNullOrEmpty(Model.Telefono) ? "Sin teléfono" : Model.Telefono)</p>
                             </div>
-                            <div>
+                            <div style="min-width: 0;">
                                 <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Tipo de entrega</p>
                                 <p style="font-weight: 600; margin-bottom: 0.75rem;">
                                     @(Model.TipoPedido == "Delivery" ? "🚴 Delivery" : "🏪 Recojo en local")
@@ -57,27 +57,26 @@
                             </div>
                             @if (!string.IsNullOrEmpty(Model.DireccionEntrega))
                             {
-                                <div style="grid-column: span 2;">
+                                <div style="grid-column: 1 / -1; min-width: 0;">
                                     <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Dirección de Entrega</p>
-                                    <p style="margin-bottom: 0.75rem; font-weight: 500;">📍 @Model.DireccionEntrega</p>
+                                    <p style="margin-bottom: 0.75rem; font-weight: 500; word-break: break-word;">📍 @Model.DireccionEntrega</p>
                                 </div>
                             }
-                            <div>
+                            <div style="min-width: 0;">
                                 <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Método de pago</p>
                                 <p style="margin-bottom: 0.75rem;">💳 @Model.MetodoPago</p>
                             </div>
                             @if (!string.IsNullOrEmpty(Model.Observaciones))
                             {
-                                <div style="grid-column: span 2;">
+                                <div style="grid-column: 1 / -1; min-width: 0;">
                                     <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.2rem;">Observaciones</p>
-                                    <p style="color: var(--accent-gold); background: rgba(224,169,109,0.08); padding: 0.75rem; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-gold); margin: 0;">📝 @Model.Observaciones</p>
+                                    <p style="color: var(--accent-gold); background: rgba(224,169,109,0.08); padding: 0.75rem; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-gold); margin: 0; word-break: break-word; overflow-wrap: anywhere;">📝 @Model.Observaciones</p>
                                 </div>
                             }
                         </div>
                     </div>
                 </div>
 
-                <!-- Tabla de Platillos -->
                 <div class="table-wrapper card">
                     <table>
                         <thead>
@@ -93,7 +92,7 @@
                             {
                                 <tr>
                                     <td><b>🍣 @item.Nombre</b></td>
-                                    <td style="text-align: center;"><span class="badge badge-gold">x@item.Cantidad</span></td>
+                                    <td style="text-align: center;"><span class="badge badge-gold">x@(item.Cantidad)</span></td>
                                     <td style="text-align: right;" class="text-muted">S/ @item.Precio.ToString("F2")</td>
                                     <td style="text-align: right;" class="price">S/ @item.Subtotal.ToString("F2")</td>
                                 </tr>
@@ -117,12 +116,10 @@
                 </div>
             </div>
 
-            <!-- Derecha: Acciones rápidas de cambio de estado -->
             <div class="flex flex-col gap-3">
                 <div class="card">
                     <div class="card-body">
                         <p class="text-muted" style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.25rem;">⚡ Acciones Rápidas</p>
-                        
                         <div class="flex flex-col gap-2" style="margin-bottom: 1.5rem;">
                             @if (Model.Estado.Equals("Pendiente", StringComparison.OrdinalIgnoreCase))
                             {
@@ -193,4 +190,3 @@
         </div>
     </div>
 </div>
-

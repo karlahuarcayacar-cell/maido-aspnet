@@ -11,15 +11,12 @@
 
 <div class="perfil-page">
   <div class="container">
-    
     <div class="perfil-layout">
-      <!-- Sidebar -->
       <div class="perfil-sidebar">
         <div class="user-card card">
           <div class="user-avatar-lg">@initials</div>
           <h2 class="user-name">@Model?.Nombre @Model?.Apellido</h2>
           <p class="user-email text-muted">@Model?.Email</p>
-          
           <div class="user-stats">
             <div class="stat">
               <span class="stat-value text-gold">@rolNombre</span>
@@ -29,7 +26,6 @@
         </div>
       </div>
 
-      <!-- Formulario Principal -->
       <div class="perfil-content">
         <div class="card glass-card">
           <div class="card-header">
@@ -47,7 +43,6 @@
           <form asp-action="Perfil" method="post" class="perfil-form">
             <input type="hidden" asp-for="IdUsuario" />
             <input type="hidden" asp-for="Email" />
-            
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Nombre *</label>

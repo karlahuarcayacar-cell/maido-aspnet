@@ -26,7 +26,6 @@
         else
         {
             <div class="cart-layout" id="cart-content-layout">
-                <!-- Items -->
                 <div class="cart-items" id="cart-items-container">
                     @foreach (var item in carrito)
                     {
@@ -50,7 +49,6 @@
                     }
                 </div>
 
-                <!-- Resumen -->
                 <div class="cart-summary card card-body">
                     <h3 style="margin-bottom:1.5rem">Resumen del Pedido</h3>
                     <div id="summary-rows-container">
@@ -124,7 +122,6 @@
                 await removerItemLocal(idPlatillo);
                 return;
             }
-            
             try {
                 const res = await fetch('/Cart/ActualizarCantidad', {
                     method: 'POST',
@@ -137,7 +134,6 @@
                         actualizarBadge(data.totalItems);
                     }
                     updateCartCountText(data.totalItems);
-                    
                     const qtyVal = document.getElementById('qty-val-' + idPlatillo);
                     if (qtyVal) qtyVal.textContent = nuevaCantidad;
 
@@ -169,7 +165,6 @@
         async function removerItemLocal(idPlatillo) {
             const itemElem = document.getElementById('grid-layout-' + idPlatillo);
             const summaryRow = document.getElementById('summary-row-' + idPlatillo);
-            
             if (itemElem) {
                 itemElem.style.opacity = '0';
                 itemElem.style.transform = 'scale(0.95)';

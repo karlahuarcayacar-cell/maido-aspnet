@@ -7,9 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Maido.PLGUI.Controllers;
 
-/// <summary>
-/// Controlador del carrito de compras y proceso de checkout.
-
 public class CartController : Controller
 {
     private readonly IPlatilloService _platilloService;
@@ -23,7 +20,6 @@ public class CartController : Controller
         _usuarioService = usuarioService;
     }
 
-   
     [HttpPost]
     public async Task<IActionResult> AgregarItem([FromBody] AgregarCarritoRequest req)
     {
@@ -49,7 +45,6 @@ public class CartController : Controller
         });
     }
 
-    
     [HttpPost]
     public IActionResult ActualizarCantidad([FromBody] ActualizarCantidadRequest req)
     {
@@ -69,7 +64,6 @@ public class CartController : Controller
         });
     }
 
-   
     [HttpPost]
     public IActionResult EliminarItem([FromBody] EliminarItemRequest req)
     {
@@ -88,7 +82,6 @@ public class CartController : Controller
         });
     }
 
-   
     [HttpGet]
     public IActionResult ObtenerCarrito()
     {
@@ -100,7 +93,6 @@ public class CartController : Controller
         return Json(new { items = carrito, subtotal, igv, total });
     }
 
-   
     [HttpGet]
     public async Task<IActionResult> Index()
     {
@@ -108,7 +100,6 @@ public class CartController : Controller
         var subtotal = carrito.Sum(c => c.Subtotal);
         var igv = Math.Round(subtotal * 0.18m, 2);
 
-        // Sugerencias (2 destacados al azar)
         var todos = await _platilloService.ListarPublicoAsync(null, null);
         var sugerencias = todos.Where(p => p.Destacado && !carrito.Any(c => c.IdPlatillo == p.IdPlatillo))
                                .OrderBy(x => Guid.NewGuid())
@@ -123,7 +114,6 @@ public class CartController : Controller
         return View();
     }
 
- 
     [HttpGet]
     public async Task<IActionResult> Checkout()
     {
@@ -143,7 +133,6 @@ public class CartController : Controller
         ViewBag.IGV = igv;
         ViewBag.Total = total;
 
-       
         var emailUsuario = HttpContext.Session.GetString("Maido_Email");
         var perfil = emailUsuario != null ? await _usuarioService.ObtenerPerfilPorEmailAsync(emailUsuario) : null;
 
@@ -170,7 +159,6 @@ public class CartController : Controller
             return RedirectToAction("Index", "Home");
         }
 
-       
         if (string.IsNullOrWhiteSpace(checkout.Telefono))
         {
             ModelState.AddModelError("Telefono", "El teléfono es obligatorio.");
@@ -185,7 +173,6 @@ public class CartController : Controller
             ModelState.AddModelError("DireccionEntrega", "La dirección de entrega es obligatoria para Delivery.");
         }
        
-
         if (!ModelState.IsValid)
         {
        
@@ -222,7 +209,6 @@ public class CartController : Controller
         return RedirectToAction("Checkout");
     }
 
-
     [HttpGet]
     public async Task<IActionResult> Confirmacion(int id)
     {
@@ -236,7 +222,6 @@ public class CartController : Controller
         return View(pedido);
     }
 }
-
 
 public record AgregarCarritoRequest(int IdPlatillo, int Cantidad);
 public record ActualizarCantidadRequest(int IdPlatillo, int Cantidad);

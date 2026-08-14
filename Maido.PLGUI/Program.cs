@@ -3,14 +3,8 @@ using Maido.Infrastructure.DL.DALC.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ─────────────────────────────────────────────────────
-// Servicios MVC
-// ─────────────────────────────────────────────────────
 builder.Services.AddControllersWithViews();
 
-// ─────────────────────────────────────────────────────
-// Sesiones (carrito + autenticación manual)
-// ─────────────────────────────────────────────────────
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -20,24 +14,15 @@ builder.Services.AddSession(options =>
     options.Cookie.Name = ".Maido.Session";
 });
 
-// ─────────────────────────────────────────────────────
-// Capas de Infraestructura y Aplicación
-// ─────────────────────────────────────────────────────
 builder.Services.AddInfrastructureServices();
 builder.Services.AddApplicationServices();
 
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
-// ─────────────────────────────────────────────────────
-// HttpContextAccessor (para sesiones en servicios)
-// ─────────────────────────────────────────────────────
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-// ─────────────────────────────────────────────────────
-// Pipeline HTTP
-// ─────────────────────────────────────────────────────
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -52,7 +37,6 @@ app.UseSession();
 
 app.UseAuthorization();
 
-// Rutas
 app.MapControllerRoute(
     name: "admin",
     pattern: "Admin/{action=Dashboard}/{id?}",

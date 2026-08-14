@@ -97,6 +97,7 @@
     @await Html.PartialAsync("_AdminSidebar")
 
     <div class="admin-content">
+        @await Html.PartialAsync("_AdminAlerts")
         <div>
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
                 <div>
@@ -106,7 +107,6 @@
                 <a asp-action="CrearPlatillo" class="btn btn-primary">+ Nuevo Platillo</a>
             </div>
 
-            <!-- Filtros -->
             <div class="filter-bar">
                 <a asp-action="Platillos" asp-route-idCategoria="" asp-route-busqueda="@busqueda" class="filter-chip @(!idCat.HasValue ? "active" : "")">
                     📋 Todos <span class="chip-count">@Model.TotalRegistros</span>
@@ -119,7 +119,6 @@
                 }
             </div>
 
-            <!-- Table -->
             <div class="table-wrapper card">
                 <table>
                     <thead>
@@ -175,7 +174,6 @@
                 </table>
             </div>
 
-            <!-- Paginación -->
             @if (Model.TotalPaginas > 1)
             {
                 <div style="display:flex;justify-content:center;align-items:center;gap:1rem;margin-top:1.5rem">

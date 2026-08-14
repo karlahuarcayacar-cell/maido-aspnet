@@ -109,7 +109,6 @@
 
     /* Skeleton Loader */
     .skeleton-card { height:120px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); margin-bottom:1rem; animation:pulse 1.5s infinite; }
-    
     /* Empty State */
     .empty-state { text-align:center; padding:4rem 2rem; background:rgba(255,255,255,0.01); border-style:dashed; }
     .empty-icon { font-size:4.5rem; margin-bottom:1rem; opacity:0.8; }
@@ -133,7 +132,6 @@
     .pedido-date { font-size:0.85rem; color:var(--text-muted); }
     .header-right { display:flex; flex-direction:column; align-items:flex-end; gap:0.5rem; }
     .pedido-total { font-size:1.1rem; font-weight:800; color:var(--text-primary); }
-    
     .expand-icon { font-size:1.2rem; color:var(--text-muted); transition:transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); margin-left:0.5rem; }
     .expand-icon.rotated { transform:rotate(180deg); color:var(--accent-gold); }
 
@@ -162,22 +160,18 @@
     }
     @@keyframes pulseGlow { 0%,100% { box-shadow:0 0 10px rgba(224,169,109,0.5); transform:scale(1); } 50% { box-shadow:0 0 20px rgba(224,169,109,0.9); transform:scale(1.2); } }
     @@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-    
     .timeline-cancelled { padding:0.5rem 1.5rem 1.5rem; font-size:0.9rem; color:#ef4444; font-weight:600; }
 
     /* Body expandible */
     .pedido-body { animation:slideDown 0.3s ease forwards; background:rgba(0,0,0,0.1); border-top:1px solid var(--border); }
     @@keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
-    
     .pedido-items { padding:1rem 1.5rem; }
     .detalle-row {
       display:flex; justify-content:space-between; align-items:center; padding:0.75rem 0;
       border-bottom:1px solid rgba(255,255,255,0.05);
     }
     .detalle-row:last-child { border:none; }
-    
     .item-img { width: 45px; height: 45px; border-radius: 50%; background-size: cover; background-position: center; border:2px solid rgba(255,255,255,0.1); }
-    
     .pedido-footer { padding:1.25rem 1.5rem; background:rgba(0,0,0,0.2); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; border-top:1px solid var(--border); }
     .footer-details { display:flex; flex-direction:column; gap:0.4rem; flex:1; min-width:250px; }
     .footer-row { font-size:0.85rem; color:var(--text-muted); }
@@ -200,7 +194,6 @@
     <h1 style="margin-bottom:0.5rem">📋 Mis <span class="text-accent">Pedidos</span></h1>
     <p class="text-muted" style="margin-bottom:2rem">Historial de tus pedidos en Maido</p>
 
-    <!-- Filtros -->
     <div class="filter-chips">
       @foreach (var f in filters)
       {
@@ -218,7 +211,6 @@
       }
     </div>
 
-    <!-- Empty State (No orders at all) -->
     @if (pedidos.Count == 0)
     {
       <div class="empty-state card">
@@ -232,7 +224,6 @@
     }
     else
     {
-      <!-- Empty State for Filter -->
       <div id="emptyFilterState" class="empty-state card" style="display: none;">
         <div class="empty-icon">🍱</div>
         <h3>Sin pedidos en este filtro</h3>
@@ -241,7 +232,6 @@
         </button>
       </div>
 
-      <!-- Lista de Pedidos -->
       <div class="pedidos-list">
         @foreach (var p in pedidos)
         {
@@ -253,7 +243,6 @@
 
           <div class="pedido-card card" data-estado="@normEstado" id="pedido-card-@p.IdPedido">
 
-            <!-- Header (clickeable) -->
             <div class="pedido-header" onclick="togglePedido(@p.IdPedido)">
               <div class="header-left">
                 <h3 class="pedido-num">Pedido #@p.IdPedido</h3>
@@ -266,7 +255,6 @@
               <div class="expand-icon" id="expand-icon-@p.IdPedido">▾</div>
             </div>
 
-            <!-- Timeline -->
             @if (normEstado != "CANCELADO")
             {
               <div class="timeline-bar">
@@ -292,7 +280,6 @@
               </div>
             }
 
-            <!-- Detalle expandible -->
             <div class="pedido-body" id="pedido-body-@p.IdPedido" style="display: none;">
               <div class="pedido-footer">
                 <div class="footer-details">
@@ -309,7 +296,6 @@
                     </div>
                   }
                 </div>
-                
                 <div class="footer-actions">
                   <a asp-controller="Cart" asp-action="Confirmacion" asp-route-id="@p.IdPedido" class="btn btn-primary">
                     <span>🔁 Ver Recibo / Repetir</span>
@@ -330,8 +316,6 @@
 
   function setFilter(val) {
     activeFilter = val;
-    
-    // Update chip active states
     document.querySelectorAll('.filter-chips .chip').forEach(chip => {
       if (chip.getAttribute('data-filter') === val) {
         chip.classList.add('active');
@@ -340,7 +324,6 @@
       }
     });
 
-    // Filter cards
     const cards = document.querySelectorAll('.pedidos-list .pedido-card');
     let visibleCount = 0;
 
@@ -354,7 +337,6 @@
       }
     });
 
-    // Show empty state for filter if needed
     const emptyState = document.getElementById('emptyFilterState');
     if (emptyState) {
       emptyState.style.display = (visibleCount === 0) ? 'block' : 'none';
@@ -370,7 +352,6 @@
 
     const isExpanded = card.classList.contains('expanded');
 
-    // Collapse all other expanded cards
     document.querySelectorAll('.pedido-card').forEach(c => {
       c.classList.remove('expanded');
     });
@@ -381,7 +362,6 @@
       b.style.display = 'none';
     });
 
-    // If it wasn't expanded before, expand it
     if (!isExpanded) {
       card.classList.add('expanded');
       icon.classList.add('rotated');

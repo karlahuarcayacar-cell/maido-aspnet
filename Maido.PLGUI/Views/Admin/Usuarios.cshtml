@@ -3,8 +3,6 @@
 
 @{
     ViewData["Title"] = "Gestión de Usuarios";
-    
-    // Función auxiliar para extraer iniciales
     string GetInitials(string name)
     {
         if (string.IsNullOrWhiteSpace(name)) return "U";
@@ -16,9 +14,8 @@
 
 <div class="admin-layout">
     @await Html.PartialAsync("_AdminSidebar")
-    
     <div class="admin-content">
-        <!-- Header -->
+        @await Html.PartialAsync("_AdminAlerts")
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
             <div>
                 <h1 style="margin-bottom:0.25rem">Gestión de <span class="text-accent">Usuarios</span></h1>
@@ -26,7 +23,6 @@
             </div>
         </div>
 
-        <!-- Search and Filter Bar -->
         <div style="margin-bottom:1.5rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
             <div style="position:relative;flex:1;min-width:280px;max-width:400px">
                 <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#888">🔍</span>
@@ -41,7 +37,6 @@
             </div>
         </div>
 
-        <!-- Tabla de Usuarios -->
         <div class="table-wrapper card">
             <table>
                 <thead>
@@ -59,7 +54,6 @@
                     {
                         var initials = GetInitials(u.NombreCompleto);
                         var searchText = $"{u.NombreCompleto} {u.Email} {u.Telefono}".ToLower();
-                        
                         <tr class="usuario-row @(!u.Activo ? "row-inactive" : "")" data-search="@searchText" data-rol="@u.IdRol" data-activo="@u.Activo.ToString().ToLower()">
                             <td>
                                 <div class="flex items-center gap-2">

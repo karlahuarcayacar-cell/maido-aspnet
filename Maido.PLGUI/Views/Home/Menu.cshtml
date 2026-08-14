@@ -11,7 +11,6 @@
 }
 
 <div class="catalogo-page">
-    <!-- Header -->
     <div class="cat-header">
         <div class="container">
             <h1>Nuestro <span class="text-accent">Menú</span></h1>
@@ -20,7 +19,6 @@
     </div>
 
     <div class="container" style="padding-top:2rem; padding-bottom:4rem">
-        <!-- Filtros -->
         <div class="filters-bar">
             <form id="formBusqueda" asp-controller="Home" asp-action="Menu" method="get" class="search-wrap">
                 <input type="hidden" name="idCategoria" value="@idCatActual" />
@@ -39,7 +37,6 @@
             </div>
         </div>
 
-        <!-- Grilla de Platillos -->
         <div id="contenedor-grilla">
             @await Html.PartialAsync("_PlatillosGrid", Model)
         </div>
@@ -59,7 +56,6 @@
             });
             elemento.classList.remove('button-ghost');
             elemento.classList.add('button-primary');
-            
             document.getElementById('inputBusqueda').value = '';
             ejecutarFiltro();
         }
@@ -74,7 +70,6 @@
         function ejecutarFiltro() {
             const busqueda = document.getElementById('inputBusqueda').value;
             const contenedor = document.getElementById('contenedor-grilla');
-            
             let url = '/Home/FiltrarMenu?';
             if (currentIdCategoria) url += 'idCategoria=' + currentIdCategoria + '&';
             if (busqueda) url += 'busqueda=' + encodeURIComponent(busqueda);
@@ -91,11 +86,9 @@
                     contenedor.innerHTML = '<div style="color: var(--danger);">Ocurrió un error cargando el menú.</div>';
                 });
         }
-        
         document.getElementById('formBusqueda').addEventListener('submit', function(e) {
             e.preventDefault();
             filtrarInstantaneo();
         });
     </script>
 }
-

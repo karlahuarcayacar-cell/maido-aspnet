@@ -1,4 +1,8 @@
-# 🍱 MAIDO — Restaurante & Experiencia Gastronómica Nikkei
+<div align="center">
+
+# 🍣 MAIDO
+
+### Sistema Web de Pedidos Online — Restaurante Nikkei
 
 ![.NET 10.0](https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet)
 ![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core-MVC-blue?style=for-the-badge&logo=microsoft)

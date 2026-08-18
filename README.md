@@ -1,9 +1,15 @@
-# 🍱 MAIDO — Restaurante & Experiencia Gastronómica Nikkei
+<div align="center">
+
+# 🍣 MAIDO
+
+### Sistema Web de Pedidos Online — Restaurante Nikkei
 
 ![.NET 10.0](https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet)
 ![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core-MVC-blue?style=for-the-badge&logo=microsoft)
 ![SQL Server](https://img.shields.io/badge/SQL%20Server-CC292B?style=for-the-badge&logo=microsoftsqlserver&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-Pure%20Custom%20Design-1572B6?style=for-the-badge&logo=css3)
+
+</div>
 
 > Sistema web integral de gestión gastronómica y pedidos online para el restaurante **Maido**, desarrollado bajo arquitectura en capas sobre **ASP.NET Core 10.0 MVC**, **SQL Server** con **Transacciones JSON (OPENJSON)** y un sistema de diseño customizado en **CSS Puro** con estética oscura *Nikkei Noir*.
 

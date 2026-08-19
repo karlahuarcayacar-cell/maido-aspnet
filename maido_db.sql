@@ -1,9 +1,3 @@
--- ============================================================
--- BASE DE DATOS: maido_db
--- PROYECTO: Sistema Web de Pedidos en Línea - Restaurante Maido
--- CURSO: Desarrollo de Servicios Web I | Cibertec
--- ============================================================
-
 USE master;
 GO
 
@@ -20,11 +14,6 @@ GO
 USE maido_db;
 GO
 
--- ============================================================
--- SECCIÓN 1: TABLAS
--- ============================================================
-
--- Tabla: Roles
 CREATE TABLE Roles (
     IdRol       INT           NOT NULL PRIMARY KEY,
     Nombre      NVARCHAR(50)  NOT NULL,
@@ -32,7 +21,6 @@ CREATE TABLE Roles (
 );
 GO
 
--- Tabla: Usuarios
 CREATE TABLE Usuarios (
     IdUsuario       INT            NOT NULL IDENTITY(1,1) PRIMARY KEY,
     Nombre          NVARCHAR(100)  NOT NULL,
@@ -48,7 +36,6 @@ CREATE TABLE Usuarios (
 );
 GO
 
--- Tabla: Categorias
 CREATE TABLE Categorias (
     IdCategoria INT           NOT NULL IDENTITY(1,1) PRIMARY KEY,
     Nombre      NVARCHAR(100) NOT NULL,
@@ -59,7 +46,6 @@ CREATE TABLE Categorias (
 );
 GO
 
--- Tabla: Platillos
 CREATE TABLE Platillos (
     IdPlatillo  INT             NOT NULL IDENTITY(1,1) PRIMARY KEY,
     Nombre      NVARCHAR(150)   NOT NULL,
@@ -74,7 +60,6 @@ CREATE TABLE Platillos (
 );
 GO
 
--- Tabla: Pedidos (Cabecera)
 CREATE TABLE Pedidos (
     IdPedido         INT             NOT NULL IDENTITY(1,1) PRIMARY KEY,
     IdUsuario        INT             NOT NULL,
@@ -93,7 +78,6 @@ CREATE TABLE Pedidos (
 );
 GO
 
--- Tabla: DetallePedido
 CREATE TABLE DetallePedido (
     IdDetalle      INT             NOT NULL IDENTITY(1,1) PRIMARY KEY,
     IdPedido       INT             NOT NULL,
@@ -107,25 +91,17 @@ CREATE TABLE DetallePedido (
 );
 GO
 
--- ============================================================
--- SECCIÓN 2: DATOS SEMILLA
--- ============================================================
-
--- Roles
 INSERT INTO Roles (IdRol, Nombre, Descripcion) VALUES
 (1, 'Administrador', 'Acceso total al sistema administrativo'),
 (2, 'Cliente',       'Acceso al catalogo, carrito e historial de pedidos');
 GO
 
--- Usuario Administrador
--- PasswordHash SHA-256 de 'admin': 8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
 INSERT INTO Usuarios (Nombre, Apellido, Email, PasswordHash, Telefono, IdRol)
 VALUES ('Admin', 'Maido', 'admin@maido.pe',
         '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918',
         '999888777', 1);
 GO
 
--- Categorias
 INSERT INTO Categorias (Nombre, Descripcion, Icono, Orden) VALUES
     ('Entradas y Piqueos', 'Pequeños platillos para iniciar la experiencia', 'bi-cup-hot', 1),
     ('Makis y Sushi', 'Rollos y cortes frescos con el toque nikkei',         'bi-record-circle',   2),
@@ -134,9 +110,7 @@ INSERT INTO Categorias (Nombre, Descripcion, Icono, Orden) VALUES
     ('Bebidas y Cocteles', 'Bebidas refrescantes y coctelería de autor',     'bi-cup-straw',     5);
 GO
 
--- Platillos
 INSERT INTO Platillos (Nombre, Descripcion, Precio, ImagenUrl, IdCategoria, Destacado) VALUES
--- Entradas (IdCategoria=1)
 ('Tiradito Nikkei',
  'Laminas de corvina en leche de tigre con aji amarillo y ajonjoli tostado.',
  32.00, 'https://images.unsplash.com/photo-1580822184713-fc5400e7fe10?w=600&q=80', 1, 1),
@@ -146,7 +120,6 @@ INSERT INTO Platillos (Nombre, Descripcion, Precio, ImagenUrl, IdCategoria, Dest
 ('Causa Nikkei',
  'Causa limeña rellena de tartar de atun con mayonesa de wasabi.',
  28.00, 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80', 1, 1),
--- Nikkei Rolls (IdCategoria=2)
 ('Dragon Roll',
  'Roll tempura de langostinos con palta y anguila glaseada en salsa teriyaki.',
  42.00, 'https://images.unsplash.com/photo-1553621042-f6e147245754?w=600&q=80', 2, 1),
@@ -156,7 +129,6 @@ INSERT INTO Platillos (Nombre, Descripcion, Precio, ImagenUrl, IdCategoria, Dest
 ('Spicy Tuna Roll',
  'Roll de atun spicy, pepino y aguacate con salsa sriracha.',
  35.00, 'https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=600&q=80', 2, 0),
--- Platos de Fondo (IdCategoria=3)
 ('Arroz Nikkei',
  'Arroz con langostinos salteados, edamame, huevo y salsa sillao.',
  45.00, 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=600&q=80', 3, 1),
@@ -166,14 +138,12 @@ INSERT INTO Platillos (Nombre, Descripcion, Precio, ImagenUrl, IdCategoria, Dest
 ('Ceviche Clasico',
  'Corvina fresca en leche de tigre, aji limo, choclo y cancha serrana.',
  38.00, 'https://images.unsplash.com/photo-1555126634-323283e090fa?w=600&q=80', 3, 0),
--- Postres (IdCategoria=4)
 ('Mochi de Maracuya',
  'Mochi artesanal relleno de crema de maracuya con hoja de oro.',
  18.00, 'https://images.unsplash.com/photo-1599785209707-a456fc1337bb?w=600&q=80', 4, 0),
 ('Dorayaki de Lucuma',
  'Panqueques esponjosos rellenos de crema de lucuma con miel de abeja.',
  16.00, 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&q=80', 4, 1),
--- Bebidas (IdCategoria=5)
 ('Pisco Sour Clasico',
  'Pisco quebranta, limon, azucar, clara de huevo y amargo de Angostura.',
  22.00, 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&q=80', 5, 1),
@@ -184,14 +154,6 @@ INSERT INTO Platillos (Nombre, Descripcion, Precio, ImagenUrl, IdCategoria, Dest
  'Limonada artesanal con yuzu, hierbabuena y agua con gas.',
  14.00, 'https://images.unsplash.com/photo-1621263764928-df1444c5e859?w=600&q=80', 5, 0);
 GO
-
--- ============================================================
--- SECCIÓN 3: STORED PROCEDURES
--- ============================================================
-
--- ─────────────────────────────────────────────────────
--- SP: Usuarios
--- ─────────────────────────────────────────────────────
 
 CREATE OR ALTER PROCEDURE sp_ObtenerUsuarioPorEmail
     @Email NVARCHAR(150)
@@ -247,10 +209,6 @@ BEGIN
     UPDATE Usuarios SET Activo = @Activo WHERE IdUsuario = @IdUsuario;
 END
 GO
-
--- ─────────────────────────────────────────────────────
--- SP: Categorias
--- ─────────────────────────────────────────────────────
 
 CREATE OR ALTER PROCEDURE sp_ListarCategorias
 AS
@@ -329,10 +287,6 @@ BEGIN
         DELETE FROM Categorias WHERE IdCategoria = @IdCategoria;
 END
 GO
-
--- ─────────────────────────────────────────────────────
--- SP: Platillos
--- ─────────────────────────────────────────────────────
 
 CREATE OR ALTER PROCEDURE sp_ListarPlatillosPublico
     @IdCategoria INT           = NULL,
@@ -448,10 +402,6 @@ BEGIN
 END
 GO
 
--- ─────────────────────────────────────────────────────
--- SP: Pedidos (Transaccional con OPENJSON)
--- ─────────────────────────────────────────────────────
-
 CREATE OR ALTER PROCEDURE sp_RegistrarPedidoTransaccional
     @IdUsuario        INT,
     @TipoPedido       NVARCHAR(20),
@@ -462,7 +412,7 @@ CREATE OR ALTER PROCEDURE sp_RegistrarPedidoTransaccional
     @IGV              DECIMAL(10,2),
     @Total            DECIMAL(10,2),
     @Observaciones    NVARCHAR(500),
-    @DetalleJSON      NVARCHAR(MAX), -- JSON: [{IdPlatillo, Nombre, Precio, Cantidad}]
+    @DetalleJSON      NVARCHAR(MAX),
     @IdPedido         INT OUTPUT
 AS
 BEGIN
@@ -589,10 +539,6 @@ BEGIN
 END
 GO
 
--- ─────────────────────────────────────────────────────
--- SP: Reportes
--- ─────────────────────────────────────────────────────
-
 CREATE OR ALTER PROCEDURE sp_ReporteVentasPorFecha
     @FechaInicio DATE,
     @FechaFin    DATE
@@ -636,7 +582,6 @@ GO
 PRINT 'Script maido_db ejecutado correctamente.';
 GO
 
-GO
 CREATE PROCEDURE sp_ActualizarPerfilUsuario
     @IdUsuario INT,
     @Nombre NVARCHAR(100),
